@@ -1,0 +1,48 @@
+{
+  "name": "AdminAI - Hivatalos dokumentumok egyszerűen",
+  "short_name": "AdminAI",
+  "description": "Töltse fel hivatalos dokumentumait és kapjon egyszerű magyar nyelvű magyarázatot az AI segítségével",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dokumentum feltöltése",
+      "short_name": "Feltöltés",
+      "description": "Új dokumentum feltöltése",
+      "url": "/upload",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Archívum",
+      "short_name": "Archívum",
+      "description": "Dokumentumok megtekintése",
+      "url": "/archive",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
+
