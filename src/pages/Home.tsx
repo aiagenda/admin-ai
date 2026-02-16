@@ -441,10 +441,6 @@ export default function Home() {
               <span className="text-primary">egyszerűen</span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Töltse fel dokumentumait, és mi magyarul elmagyarázzuk, miről szól és mit kell tennie.
-            </p>
-
             {/* ÚJ SZLOGEN BLOKK */}
             <p className="text-md sm:text-lg text-foreground font-medium max-w-2xl mx-auto">
               A ChatGPT-nek elmagyarázhatod, mit kaptál.
@@ -518,10 +514,10 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="border-primary/30 bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20">
+            <Card>
               <CardContent className="pt-6 space-y-4">
-                <div className="h-12 w-12 rounded-lg bg-violet-500/20 flex items-center justify-center">
-                  <Receipt className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Receipt className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold">Számlák & könyvelés</h3>
                 <p className="text-muted-foreground">
