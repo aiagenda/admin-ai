@@ -25,6 +25,10 @@ import Analytics from "./pages/admin/Analytics";
 import KnowledgeBaseAdmin from "./pages/admin/KnowledgeBaseAdmin";
 import Settings from "./pages/Settings";
 import Checkout from "./pages/Checkout";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
+import InvoiceArchive from "./pages/InvoiceArchive";
+import InvoiceUpload from "./pages/InvoiceUpload";
+import InvoiceDetail from "./pages/InvoiceDetail";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +42,7 @@ const App = () => (
           <AuthProvider>
             <div className="min-h-screen flex flex-col">
               <Navbar />
+              <PWAInstallBanner />
               <main className="flex-1">
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -106,6 +111,39 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <Checkout />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/checkout/success"
+                  element={
+                    <ProtectedRoute>
+                      <CheckoutSuccess />
+                    </ProtectedRoute>
+                  }
+                />
+                {/* Könyvelés modul - Számlák */}
+                <Route
+                  path="/invoices"
+                  element={
+                    <ProtectedRoute>
+                      <InvoiceArchive />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/invoices/upload"
+                  element={
+                    <ProtectedRoute>
+                      <InvoiceUpload />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/invoices/:id"
+                  element={
+                    <ProtectedRoute>
+                      <InvoiceDetail />
                     </ProtectedRoute>
                   }
                 />

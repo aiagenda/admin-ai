@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hivatalos Levelek - AdminAI Teszt</title>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #1e1b4b; color: white; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 10px; }
+    .subtitle { text-align: center; color: #a5b4fc; margin-bottom: 30px; }
+    .controls { text-align: center; margin-bottom: 30px; }
+    .controls button {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white; border: none; padding: 15px 30px; font-size: 16px;
+      border-radius: 8px; cursor: pointer; margin: 5px;
+    }
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 30px; max-width: 1800px; margin: 0 auto;
+    }
+    .doc-wrapper { background: #312e81; border-radius: 12px; padding: 15px; }
+    .doc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .doc-title { font-weight: bold; color: #c4b5fd; font-size: 14px; }
+    .doc-badge { font-size: 10px; padding: 4px 8px; border-radius: 4px; background: #4c1d95; color: #c4b5fd; }
+    .download-btn { background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+    
+    .document {
+      width: 450px; min-height: 600px;
+      background: white; color: #1f2937;
+      padding: 30px; font-size: 12px; line-height: 1.6;
+      font-family: 'Times New Roman', serif;
+    }
+    .doc-logo { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid; }
+    .doc-logo.nav { border-color: #1e40af; }
+    .doc-logo.onk { border-color: #b45309; }
+    .doc-logo.tb { border-color: #15803d; }
+    .doc-logo.oep { border-color: #0891b2; }
+    .doc-logo.mkik { border-color: #7c3aed; }
+    .logo-box { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; border-radius: 8px; color: white; }
+    .logo-box.nav { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+    .logo-box.onk { background: linear-gradient(135deg, #b45309, #f59e0b); }
+    .logo-box.tb { background: linear-gradient(135deg, #15803d, #22c55e); }
+    .logo-box.oep { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+    .logo-box.mkik { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+    .logo-box.bank { background: linear-gradient(135deg, #dc2626, #f87171); }
+    .logo-box.police { background: linear-gradient(135deg, #1f2937, #6b7280); }
+    .org-name { font-size: 16px; font-weight: bold; }
+    .org-sub { font-size: 11px; color: #6b7280; }
+    .meta-row { display: flex; margin-bottom: 5px; font-size: 11px; }
+    .meta-label { width: 130px; color: #6b7280; }
+    .subject { font-size: 14px; font-weight: bold; text-align: center; margin: 25px 0; padding: 12px; background: #f3f4f6; border-left: 4px solid #1e40af; }
+    .body p { margin-bottom: 12px; text-align: justify; }
+    .highlight { background: #fef3c7; padding: 12px; margin: 15px 0; border-radius: 4px; }
+    .warning { background: #fee2e2; padding: 12px; margin: 15px 0; border-radius: 4px; border-left: 4px solid #dc2626; }
+    .info { background: #dbeafe; padding: 12px; margin: 15px 0; border-radius: 4px; border-left: 4px solid #2563eb; }
+    .success { background: #dcfce7; padding: 12px; margin: 15px 0; border-radius: 4px; border-left: 4px solid #16a34a; }
+    .amount { font-size: 16px; font-weight: bold; color: #dc2626; }
+    .deadline { font-weight: bold; color: #1e40af; }
+    .bank-info { background: #f1f5f9; padding: 12px; margin: 15px 0; border-radius: 4px; font-family: monospace; font-size: 11px; }
+    .signature { margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .stamp { width: 80px; height: 80px; border: 2px dashed #9ca3af; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #6b7280; text-align: center; }
+    .sig-area { text-align: center; }
+    .sig-line { width: 180px; border-top: 1px solid #333; padding-top: 5px; margin-top: 50px; font-size: 11px; }
+    ul, ol { margin-left: 20px; margin-bottom: 12px; }
+    li { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+
+<h1>Hivatalos Levelek - Teszt Dokumentumok</h1>
+<p class="subtitle">10 különböző hatósági levél az AdminAI teszteléséhez</p>
+
+<div class="controls">
+  <button onclick="downloadAll()">Mind letöltése (10 levél)</button>
+</div>
+
+<div class="doc-grid">
+
+  <!-- 1. NAV - Adófolyószámla kivonat -->
+  <div class="doc-wrapper">
+    <div class="doc-header">
+      <span class="doc-title">1. NAV Adófolyószámla kivonat</span>
+      <span class="doc-badge">Tájékoztató</span>
+      <button class="download-btn" onclick="downloadDoc('doc1', 'nav_adofolyoszamla.png')">Letöltés</button>
+    </div>
+    <div class="document" id="doc1">
+      <div class="doc-logo nav">
+        <div class="logo-box nav">NAV</div>
+        <div><div class="org-name">Nemzeti Adó- és Vámhivatal</div><div class="org-sub">Közép-magyarországi Adó- és Vámigazgatóság</div></div>
+      </div>
+      <div class="meta-row"><span class="meta-label">Ügyiratszám:</span> NAV-KM-2026/00456</div>
+      <div class="meta-row"><span class="meta-label">Adószám:</span> 12345678-2-41</div>
+      <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 28.</div>
+      <div class="subject" style="border-color: #1e40af;">ADÓFOLYÓSZÁMLA KIVONAT<br>2025. adóév</div>
+      <div class="body">
+        <p>Tisztelt Adózó!</p>
+        <p>Tájékoztatjuk, hogy az Ön adófolyószámláján az alábbi egyenleg szerepel:</p>
+        <div class="highlight">
+          <strong>Személyi jövedelemadó (SZJA):</strong> 0 Ft (rendezett)<br>
+          <strong>Általános forgalmi adó (ÁFA):</strong> -45 230 Ft (túlfizetés)<br>
+          <strong>Társasági adó (TAO):</strong> 0 Ft (rendezett)<br>
+          <strong>Helyi iparűzési adó:</strong> 23 400 Ft tartozás
+        </div>
+        <p>Az ÁFA túlfizetés visszaigénylése az eBEV rendszeren keresztül kezdeményezhető.</p>
+        <div class="info">
+          <strong>Teendő:</strong> A helyi iparűzési adó tartozás (23 400 Ft) rendezése az illetékes önkormányzat felé szükséges, nem a NAV-hoz tartozó tétel.
+        </div>
+        <p>Amennyiben kérdése van, forduljon a NAV ügyfélszolgálatához.</p>
+      </div>
+      <div class="signature">
+        <div class="stamp">HIVATALOS<br>PECSÉT</div>
+        <div class="sig-area"><div class="sig-line">Elektronikusan hitelesítve</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Önkormányzat - Gépjárműadó -->
+  <div class="doc-wrapper">
+    <div class="doc-header">
+      <span class="doc-title">2. Gépjárműadó kivetés</span>
+      <span class="doc-badge">Határozat</span>
+      <button class="download-btn" onclick="downloadDoc('doc2', 'onk_gepjarmuado.png')">Letöltés</button>
+    </div>
+    <div class="document" id="doc2">
+      <div class="doc-logo onk">
+        <div class="logo-box onk">BP<br>XI</div>
+        <div><div class="org-name">Budapest XI. Kerületi Önkormányzat</div><div class="org-sub">Adóügyi Osztály</div></div>
+      </div>
+      <div class="meta-row"><span class="meta-label">Határozatszám:</span> ÖNK-XI-2026/GJA-00789</div>
+      <div class="meta-row"><span class="meta-label">Adózó:</span> Példa Péter (1118 Budapest, Kelenhegyi út 12.)</div>
+      <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 20.</div>
+      <div class="subject" style="border-color: #b45309;">HATÁROZAT<br>Gépjárműadó kivetés - 2026. év</div>
+      <div class="body">
+        <p><strong>Rendelkező rész:</strong></p>
+        <p>A gépjárműadóról szóló 1991. évi LXXXII. törvény alapján az Ön tulajdonában/üzembentartásában lévő gépjármű(vek) után <strong>2026. évre</strong> az alábbi adót vetem ki:</p>
+        <div class="highlight">
+          <strong>Rendszám:</strong> ABC-123<br>
+          <strong>Típus:</strong> Volkswagen Golf (1395 cm³)<br>
+          <strong>Adótétel:</strong> 345 Ft/kW × 74 kW = <span class="amount">25 530 Ft/év</span>
+        </div>
+        <p><strong>Fizetési ütemezés:</strong></p>
+        <ul>
+          <li>I. részlet (12 765 Ft): <span class="deadline">2026. április 15.</span></li>
+          <li>II. részlet (12 765 Ft): <span class="deadline">2026. szeptember 15.</span></li>
+        </ul>
+        <div class="bank-info">
+          <strong>Bankszámla:</strong> 11784009-15511001-08660000<br>
+          <strong>Közlemény:</strong> GJA-2026-ABC123
+        </div>
+        <div class="info">
+          <strong>Jogorvoslat:</strong> E határozat ellen a kézhezvételtől számított 15 napon belül fellebbezéssel élhet.
+        </div>
+      </div>
+      <div class="signature">
+        <div class="stamp">HIVATALOS<br>PECSÉT</div>
+        <div class="sig-area"><div class="sig-line">Dr. Kiss Anna<br>adóügyi osztályvezető</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. NEAK - TAJ érvényesség -->
+  <div class="doc-wrapper">
+    <div class="doc-header">
+      <span class="doc-title">3. TAJ érvényesség igazolás</span>
+      <span class="doc-badge">Igazolás</span>
+      <button class="download-btn" onclick="downloadDoc('doc3', 'neak_taj_igazolas.png')">Letöltés</button>
+    </div>
+    <div class="document" id="doc3">
+      <div class="doc-logo tb">
+        <div class="logo-box tb">NEAK</div>
+        <div><div class="org-name">Nemzeti Egészségbiztosítási Alapkezelő</div><div class="org-sub">Központi Hivatala</div></div>
+      </div>
+      <div class="meta-row"><span class="meta-label">Iktatószám:</span> NEAK-2026/IGZ-012345</div>
+      <div class="meta-row"><span class="meta-label">TAJ szám:</span> 123-456-789</div>
+      <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 25.</div>
+      <div class="subject" style="border-color: #15803d;">IGAZOLÁS<br>Társadalombiztosítási jogviszonyról</div>
+      <div class="body">
+        <p>Alulírott igazolom, hogy</p>
+        <div class="highlight">
+          <strong>Név:</strong> Teszt Tamás<br>
+          <strong>Születési hely, idő:</strong> Budapest, 1985. május 12.<br>
+          <strong>Anyja neve:</strong> Kovács Mária<br>
+          <strong>TAJ száma:</strong> 123-456-789
+        </div>
+        <div class="success">
+          <strong>Biztosítási jogviszonya ÉRVÉNYES.</strong><br>
+          Jogviszony típusa: Munkaviszonyból eredő biztosítás<br>
+          Érvényesség kezdete: 2020. március 01.<br>
+          Foglalkoztató: TechCorp Hungary Kft.
+        </div>
+        <p>A fent nevezett személy a magyar társadalombiztosítás keretében jogosult az egészségügyi szolgáltatások igénybevételére.</p>
+        <p>Jelen igazolás a kiállítás napjától számított 30 napig érvényes.</p>
+      </div>
+      <div class="signature">
+        <div class="stamp">HIVATALOS<br>PECSÉT</div>
+        <div class="sig-area"><div class="sig-line">Elektronikusan hitelesítve<br>NEAK Központ</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. NAV - Végrehajtás megszüntetése -->
+  <div class="doc-wrapper">
+    <div class="doc-header">
+      <span class="doc-title">4. Végrehajtás megszüntetése</span>
+      <span class="doc-badge">Határozat</span>
+      <button class="download-btn" onclick="downloadDoc('doc4', 'nav_vegrehajtas_megszuntetes.png')">Letöltés</button>
+    </div>
+    <div class="document" id="doc4">
+      <div class="doc-logo nav">
+        <div class="logo-box nav">NAV</div>
+        <div><div class="org-name">Nemzeti Adó- és Vámhivatal</div><div class="org-sub">Behajtási Főosztály</div></div>
+      </div>
+      <div class="meta-row"><span class="meta-label">Ügyiratszám:</span> NAV-VH-2026/00234-M</div>
+      <div class="meta-row"><span class="meta-label">Adószám:</span> 87654321-1-42</div>
+      <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 22.</div>
+      <div class="subject" style="border-color: #16a34a;">HATÁROZAT<br>Végrehajtási eljárás megszüntetéséről</div>
+      <div class="body">
+        <p>Tisztelt Adózó!</p>
+        <p>Tájékoztatom, hogy az Ön ellen indított <strong>NAV-VH-2025/04567</strong> számú végrehajtási eljárást</p>
+        <div class="success">
+          <strong style="font-size: 14px;">MEGSZÜNTETEM</strong><br><br>
+          <strong>Indoklás:</strong> A tartozás teljes összege (234 560 Ft) 2026. január 18-án jóváírásra került, így a végrehajtás alapjául szolgáló követelés megszűnt.
+        </div>
+        <p><strong>A megszüntetés következményei:</strong></p>
+        <ul>
+          <li>Az Ön bankszámlájára vezetett inkasszó feloldásra kerül</li>
+          <li>Az ingatlan-nyilvántartásba bejegyzett jelzálogjog törlése iránt intézkedünk</li>
+          <li>A munkáltatójánál elrendelt letiltás visszavonásra kerül</li>
+        </ul>
+        <p>A fenti intézkedések végrehajtása 5-10 munkanapot vehet igénybe.</p>
+      </div>
+      <div class="signature">
+        <div class="stamp">HIVATALOS<br>PECSÉT</div>
+        <div class="sig-area"><div class="sig-line">Dr. Szabó István<br>végrehajtási előadó</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Cégbíróság - Változásbejegyzés -->
+  <div class="doc-wrapper">
+    <div class="doc-header">
+      <span class="doc-title">5. Cégbírósági végzés</span>
+      <span class="doc-badge">Végzés</span>
+      <button class="download-btn" onclick="downloadDoc('doc5', 'cegbirosag_vegzes.png')">Letöltés</button>
+    </div>
+    <div class="document" id="doc5">
+      <div class="doc-logo mkik">
+        <div class="logo-box mkik">CB</div>
+        <div><div class="org-name">Fővárosi Törvényszék Cégbírósága</div><div class="org-sub">mint Cégbíróság</div></div>
+      </div>
+      <div class="meta-row"><span class="meta-label">Cégjegyzékszám:</span> 01-09-123456</div>
+      <div class="meta-row"><span class="meta-label">Ügyszám:</span> Cg.01-09-123456/25</div>
+      <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 15.</div>
+      <div class="subject" style="border-color: #7c3aed;">V É G Z É S</div>
+      <div class="body">
+        <p>A Fővárosi Törvényszék Cégbírósága a(z)</p>
+        <div class="highlight">
+          <strong>Innovate Solutions Korlátolt Felelősségű Társaság</strong><br>
+          (székhely: 1134 Budapest, Váci út 45. 3. em. 12.)<br>
+          cégjegyzékszám: 01-09-123456
+        </div>
+        <p>cég változásbejegyzési kérelmét elbírálta és az alábbi változásokat a cégjegyzékbe <strong>bejegyezte:</strong></p>
+        <div class="info">
+          <strong>1. Székhelyváltozás:</strong><br>
+          Korábbi: 1052 Budapest, Váci u. 12.<br>
+          Új: 1134 Budapest, Váci út 45. 3. em. 12.<br><br>
+          <strong>2. Új ügyvezető:</strong><br>
+          Név: Horváth Gábor (an.: Kiss Éva)<br>
+          Lakcím: 1118 Budapest, Ménesi út 44.<br>
+          Megbízatás: 2026.01.15 - 2031.01.14.
+        </div>
+        <p><strong>Bejegyzés időpontja:</strong> 2026. január 15.</p>
+        <p>A végzés ellen fellebbezésnek helye nincs.</p>
+      </div>
+      <div class="signature">
+        <div class="stamp">BÍRÓSÁG<br>PECSÉT</div>
+        <div class="sig-area"><div class="sig-line">Dr. Tóth Katalin<br>cégbírósági tanácsos</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Rendőrség - Szabálysértési határozat -->
+  <div class="doc-wrapper">
+    <div class="doc-header">
+      <span class="doc-title">6. Szabálysértési bírság</span>
+      <span class="doc-badge">Bírság</span>
+      <button class="download-btn" onclick="downloadDoc('doc6', 'rendorseg_szabalysertesi.png')">Letöltés</button>
+    </div>
+    <div class="document" id="doc6">
+      <div class="doc-logo">
+        <div class="logo-box police">RFK</div>
+        <div><div class="org-name">Budapest Rendőr-főkapitányság</div><div class="org-sub">Közlekedésrendészeti Főosztály</div></div>
+      </div>
+      <div class="meta-row"><span class="meta-label">Határozatszám:</span> BRFK-KRF-2026/00567</div>
+      <div class="meta-row"><span class="meta-label">Eljárás alá vont:</span> Vezetői Vilmos</div>
+      <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 18.</div>
+      <div class="subject" style="border-color: #dc2626;">SZABÁLYSÉRTÉSI HATÁROZAT</div>
+      <div class="body">
+        <p>A közigazgatási szabálysértések szankcionálásáról szóló törvény alapján az alábbi határozatot hozom:</p>
+        <div class="warning">
+          <strong>Szabálysértés megnevezése:</strong> Gyorshajtás közigazgatási szabálysértés<br><br>
+          <strong>Elkövetés helye és ideje:</strong> Budapest, Hungária krt. 78. sz. előtt, 2026. január 10. 14:32<br><br>
+          <strong>Megengedett sebesség:</strong> 50 km/h<br>
+          <strong>Mért sebesség:</strong> 73 km/h (hibahatár levonva: 69 km/h)<br>
+          <strong>Túllépés mértéke:</strong> 19 km/h
+        </div>
+        <div class="highlight">
+          <strong>Kiszabott bírság:</strong> <span class="amount">30 000 Ft</span><br>
+          <strong>Fizetési határidő:</strong> <span class="deadline">2026. február 17.</span>
+        </div>
+        <div class="bank-info">
+          <strong>Bankszámla:</strong> 10023002-00299592-00000000<br>
+          <strong>Közlemény:</strong> BRFK-KRF-2026/00567
+        </div>
+        <p>A bírság meg nem fizetése esetén közérdekű munkára vagy elzárásra átváltoztatható.</p>
+      </div>
+      <div class="signature">
+        <div class="stamp">HIVATALOS<br>PECSÉT</div>
+        <div class="sig-area"><div class="sig-line">Tóth Béla r. őrnagy<br>szabálysértési előadó</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. OTP Bank - Hiteltörlesztési értesítő -->
+  <div class="doc-wrapper">
+    <div class="doc-header">
+      <span class="doc-title">7. Bank - Törlesztési értesítő</span>
+      <span class="doc-badge">Bank</span>
+      <button class="download-btn" onclick="downloadDoc('doc7', 'bank_hitelertesito.png')">Letöltés</button>
+    </div>
+    <div class="document" id="doc7">
+      <div class="doc-logo">
+        <div class="logo-box bank">OTP</div>
+        <div><div class="org-name">OTP Bank Nyrt.</div><div class="org-sub">Lakossági Hitelkezelési Igazgatóság</div></div>
+      </div>
+      <div class="meta-row"><span class="meta-label">Hitelszerződés száma:</span> HL-2022/0456789</div>
+      <div class="meta-row"><span class="meta-label">Ügyfél:</span> Lakatos László</div>
+      <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 25.</div>
+      <div class="subject" style="border-color: #dc2626;">HITELTÖRLESZTÉSI ÉRTESÍTŐ<br>2026. február havi törlesztőrészlet</div>
+      <div class="body">
+        <p>Tisztelt Ügyfelünk!</p>
+        <p>Tájékoztatjuk, hogy lakáshitelének következő törlesztőrészlete az alábbiak szerint esedékes:</p>
+        <div class="highlight">
+          <strong>Törlesztőrészlet összege:</strong> <span class="amount">127 450 Ft</span><br>
+          <strong>Ebből tőke:</strong> 89 230 Ft<br>
+          <strong>Ebből kamat:</strong> 38 220 Ft<br><br>
+          <strong>Esedékesség:</strong> <span class="deadline">2026. február 5.</span>
+        </div>
+        <p><strong>Hitel aktuális állása:</strong></p>
+        <ul>
+          <li>Eredeti hitelösszeg: 18 000 000 Ft</li>
+          <li>Fennálló tőketartozás: 12 456 780 Ft</li>
+          <li>Hátralévő futamidő: 156 hónap</li>
+          <li>Aktuális kamatláb: 6.9% (3 havi BUBOR + 3.5%)</li>
+        </ul>
+        <div class="info">
+          A törlesztőrészlet a megadott bankszámláról automatikusan kerül levonásra. Kérjük, gondoskodjon megfelelő egyenlegről!
+        </div>
+      </div>
+      <div class="signature">
+        <div class="stamp">OTP<br>BANK</div>
+        <div class="sig-area"><div class="sig-line">OTP Bank Nyrt.<br>Hitelkezelés</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Földhivatal - Tulajdoni lap másolat -->
+  <div class="doc-wrapper">
+    <div class="doc-header">
+      <span class="doc-title">8. Tulajdoni lap másolat</span>
+      <span class="doc-badge">Ingatlan</span>
+      <button class="download-btn" onclick="downloadDoc('doc8', 'foldhivatal_tulajdoni_lap.png')">Letöltés</button>
+    </div>
+    <div class="document" id="doc8">
+      <div class="doc-logo oep">
+        <div class="logo-box oep">FH</div>
+        <div><div class="org-name">Budapest Főváros Kormányhivatala</div><div class="org-sub">XI. Kerületi Földhivatal</div></div>
+      </div>
+      <div class="meta-row"><span class="meta-label">Helyrajzi szám:</span> 12345/1/A/12</div>
+      <div class="meta-row"><span class="meta-label">Lekérdezés ideje:</span> 2026.01.28 09:45:12</div>
+      <div class="subject" style="border-color: #0891b2;">TULAJDONI LAP MÁSOLAT<br>(nem hiteles)</div>
+      <div class="body">
+        <p><strong>I. RÉSZ - Az ingatlan adatai:</strong></p>
+        <div class="info">
+          <strong>Cím:</strong> 1118 Budapest, Ménesi út 44. 2. em. 5.<br>
+          <strong>Megnevezés:</strong> lakás<br>
+          <strong>Területnagyság:</strong> 68 m²<br>
+          <strong>Építés éve:</strong> 1985<br>
+          <strong>Fűtés:</strong> távfűtés
+        </div>
+        <p><strong>II. RÉSZ - Tulajdonosok:</strong></p>
+        <div class="highlight">
+          <strong>1. Tulajdonos:</strong><br>
+          Név: Lakó Levente<br>
+          Anyja neve: Tóth Teréz<br>
+          Tulajdoni hányad: 1/1<br>
+          Szerzés jogcíme: adásvétel<br>
+          Bejegyzés: 45678/2020
+        </div>
+        <p><strong>III. RÉSZ - Terhek:</strong></p>
+        <div class="warning" style="background: #fef9c3; border-color: #ca8a04;">
+          <strong>Jelzálogjog:</strong><br>
+          Jogosult: OTP Bank Nyrt.<br>
+          Összeg: 18 000 000 Ft<br>
+          Bejegyzés: 45679/2020
+        </div>
+        <p style="font-size: 10px; color: #6b7280; margin-top: 20px;">
+          Ez a dokumentum tájékoztató jellegű, jogi eljárásban nem használható. Hiteles másolatért forduljon a földhivatalhoz.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. NAV - Áfa visszaigénylés jóváhagyás -->
+  <div class="doc-wrapper">
+    <div class="doc-header">
+      <span class="doc-title">9. ÁFA visszaigénylés</span>
+      <span class="doc-badge">Jóváhagyás</span>
+      <button class="download-btn" onclick="downloadDoc('doc9', 'nav_afa_visszaigenyles.png')">Letöltés</button>
+    </div>
+    <div class="document" id="doc9">
+      <div class="doc-logo nav">
+        <div class="logo-box nav">NAV</div>
+        <div><div class="org-name">Nemzeti Adó- és Vámhivatal</div><div class="org-sub">ÁFA Kiutalási Osztály</div></div>
+      </div>
+      <div class="meta-row"><span class="meta-label">Ügyiratszám:</span> NAV-AFA-2026/00123-K</div>
+      <div class="meta-row"><span class="meta-label">Adószám:</span> 99887766-2-43</div>
+      <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 27.</div>
+      <div class="subject" style="border-color: #16a34a;">ÉRTESÍTÉS<br>ÁFA visszaigénylés teljesítéséről</div>
+      <div class="body">
+        <p>Tisztelt Adózó!</p>
+        <p>Tájékoztatom, hogy a 2025. IV. negyedévi ÁFA bevallásában (2565A) igényelt visszatérítendő adót felülvizsgáltuk.</p>
+        <div class="success">
+          <strong style="font-size: 14px;">A visszaigénylés JÓVÁHAGYVA</strong><br><br>
+          <strong>Igényelt összeg:</strong> 1 234 560 Ft<br>
+          <strong>Jóváhagyott összeg:</strong> 1 234 560 Ft<br>
+          <strong>Levonás (korábbi tartozás):</strong> 0 Ft<br><br>
+          <strong>Kiutalandó összeg:</strong> <span style="color: #16a34a; font-size: 18px;">1 234 560 Ft</span>
+        </div>
+        <p><strong>Kiutalás részletei:</strong></p>
+        <ul>
+          <li>Kedvezményezett: Export Trading Kft.</li>
+          <li>Bankszámla: 11773016-12345678-00000000</li>
+          <li>Várható kiutalás: 2026. február 3.</li>
+        </ul>
+        <div class="info">
+          A kiutalás a NAV által nyilvántartott bankszámlára történik. Ha bankszámlát kíván módosítani, azt a változásbejelentő lapon teheti meg.
+        </div>
+      </div>
+      <div class="signature">
+        <div class="stamp">HIVATALOS<br>PECSÉT</div>
+        <div class="sig-area"><div class="sig-line">Elektronikusan hitelesítve</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. Munkaügyi bíróság - Idézés -->
+  <div class="doc-wrapper">
+    <div class="doc-header">
+      <span class="doc-title">10. Bírósági idézés</span>
+      <span class="doc-badge">Sürgős</span>
+      <button class="download-btn" onclick="downloadDoc('doc10', 'birosag_idezes.png')">Letöltés</button>
+    </div>
+    <div class="document" id="doc10">
+      <div class="doc-logo">
+        <div class="logo-box police" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6);">BÍR</div>
+        <div><div class="org-name">Fővárosi Törvényszék</div><div class="org-sub">Munkaügyi Kollégium</div></div>
+      </div>
+      <div class="meta-row"><span class="meta-label">Ügyszám:</span> 25.M.70.123/2026/5</div>
+      <div class="meta-row"><span class="meta-label">Felperes:</span> Nagy Nóra</div>
+      <div class="meta-row"><span class="meta-label">Alperes:</span> MegaCorp Hungary Kft.</div>
+      <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 20.</div>
+      <div class="subject" style="border-color: #dc2626; background: #fee2e2;">I D É Z É S</div>
+      <div class="body">
+        <p>A Fővárosi Törvényszék mint munkaügyi bíróság</p>
+        <div class="warning">
+          <strong>IDÉZI ÖNT</strong> a fent megjelölt munkaügyi perben <strong>alperesként</strong> megtartandó tárgyalásra.<br><br>
+          <strong>Időpont:</strong> <span class="deadline">2026. március 12. (csütörtök) 9:30</span><br>
+          <strong>Helyszín:</strong> 1055 Budapest, Markó u. 27. I. em. 112. tárgyaló
+        </div>
+        <p><strong>Per tárgya:</strong> Jogellenes munkaviszony megszüntetés, elmaradt munkabér és végkielégítés megfizetése</p>
+        <p><strong>Kereseti érték:</strong> 4 500 000 Ft</p>
+        <div class="info">
+          <strong>Figyelmeztetés:</strong> A tárgyaláson való megjelenés kötelező! Távolmaradás esetén a bíróság az Ön távollétében is meghozhatja ítéletét (mulasztási ítélet).
+        </div>
+        <p>Kérem, hogy a tárgyalásra hozza magával:</p>
+        <ul>
+          <li>Személyi igazolványát</li>
+          <li>A munkaviszonnyal kapcsolatos összes iratot</li>
+          <li>A keresetlevelet és mellékleteit</li>
+        </ul>
+      </div>
+      <div class="signature">
+        <div class="stamp">BÍRÓSÁG<br>PECSÉT</div>
+        <div class="sig-area"><div class="sig-line">Dr. Bíró Béla<br>bíró</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+async function downloadDoc(elementId, filename) {
+  const element = document.getElementById(elementId);
+  try {
+    const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (err) { alert('Hiba: ' + err.message); }
+}
+
+async function downloadAll() {
+  const docs = [
+    { id: 'doc1', name: 'nav_adofolyoszamla.png' },
+    { id: 'doc2', name: 'onk_gepjarmuado.png' },
+    { id: 'doc3', name: 'neak_taj_igazolas.png' },
+    { id: 'doc4', name: 'nav_vegrehajtas_megszuntetes.png' },
+    { id: 'doc5', name: 'cegbirosag_vegzes.png' },
+    { id: 'doc6', name: 'rendorseg_szabalysertesi.png' },
+    { id: 'doc7', name: 'bank_hitelertesito.png' },
+    { id: 'doc8', name: 'foldhivatal_tulajdoni_lap.png' },
+    { id: 'doc9', name: 'nav_afa_visszaigenyles.png' },
+    { id: 'doc10', name: 'birosag_idezes.png' }
+  ];
+  for (let i = 0; i < docs.length; i++) {
+    await downloadDoc(docs[i].id, docs[i].name);
+    await new Promise(r => setTimeout(r, 500));
+  }
+  alert('Mind a 10 levél letöltve!');
+}
+</script>
+
+</body>
+</html>

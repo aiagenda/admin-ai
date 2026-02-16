@@ -174,6 +174,51 @@ function extractText(html: string, url: string): string {
 }
 
 /**
+ * Extract page title from HTML
+ */
+function extractPageTitle(html: string): string {
+  try {
+    const $ = load(html);
+    return $("title").first().text().trim().replace(/\s+/g, " ") || "";
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * NAV hub: extract all nav.gov.hu links from HTML (absolute URL + link text)
+ */
+function extractHubLinks(html: string, baseUrl: string): { url: string; linkText: string }[] {
+  const base = new URL(baseUrl);
+  const seen = new Set<string>();
+  const out: { url: string; linkText: string }[] = [];
+  try {
+    const $ = load(html);
+    $("a[href]").each((_, el) => {
+      const href = $(el).attr("href")?.trim();
+      if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
+      let abs: URL;
+      try {
+        abs = new URL(href, baseUrl);
+      } catch {
+        return;
+      }
+      if (abs.hostname !== base.hostname) return;
+      const url = abs.href;
+      if (seen.has(url)) return;
+      seen.add(url);
+      const linkText = $(el).text().trim().replace(/\s+/g, " ") || url;
+      out.push({ url, linkText });
+    });
+  } catch {
+    // ignore
+  }
+  return out;
+}
+
+const NAV_HUB_URL = "https://nav.gov.hu/adatbazisok";
+
+/**
  * Chunk text into smaller pieces with overlap
  */
 function chunkText(text: string, chunkSize: number = CHUNK_SIZE, overlap: number = CHUNK_OVERLAP): string[] {
@@ -243,7 +288,8 @@ async function processDocument(
   title: string,
   category: string,
   sourceType: string,
-  sourceInstitution: string
+  sourceInstitution: string,
+  options?: { useTitleFromHtml?: boolean }
 ): Promise<string | null> {
   try {
     console.log(`\n📄 Processing: ${title}`);
@@ -279,6 +325,10 @@ async function processDocument(
     // Fetch and extract content
     console.log(`   🔍 Fetching content...`);
     const html = await fetchUrl(url);
+    if (options?.useTitleFromHtml) {
+      const pageTitle = extractPageTitle(html);
+      if (pageTitle) title = pageTitle;
+    }
     const content = extractText(html, url);
 
     if (content.length < 100) {
@@ -371,26 +421,27 @@ async function processDocument(
 
 /**
  * Knowledge base sources configuration
+ * NAV: frissített, működő URL-ek (adatbazisok hub + ügyféliránytű).
  */
 const KNOWLEDGE_SOURCES = [
   // NAV (Nemzeti Adó- és Vámhivatal)
   {
-    url: "https://www.nav.gov.hu/nav/ado/adozasi_informaciok",
-    title: "NAV - Adózási információk",
+    url: "https://nav.gov.hu/adatbazisok",
+    title: "NAV - Adatbázisok (hub)",
     category: "adozas",
     sourceType: "official",
     sourceInstitution: "NAV",
   },
   {
-    url: "https://www.nav.gov.hu/nav/ado/adozasi_informaciok/adozasi_eljarasok",
-    title: "NAV - Adózási eljárások",
+    url: "https://nav.gov.hu/ugyfeliranytu",
+    title: "NAV - Ügyféliránytű",
     category: "adozas",
     sourceType: "official",
     sourceInstitution: "NAV",
   },
   {
-    url: "https://www.nav.gov.hu/nav/ado/adozasi_informaciok/adozasi_eljarasok/adozasi_eljarasok_altalanos",
-    title: "NAV - Adózási eljárások általános",
+    url: "https://nav.gov.hu/ugyfeliranytu/elethelyzetek-adozasa",
+    title: "NAV - Élethelyzetek adózása",
     category: "adozas",
     sourceType: "official",
     sourceInstitution: "NAV",
@@ -418,7 +469,6 @@ const KNOWLEDGE_SOURCES = [
     sourceType: "official",
     sourceInstitution: "EESZT",
   },
-  // Add more sources as needed
 ];
 
 /**
@@ -443,13 +493,36 @@ async function main() {
     const source = KNOWLEDGE_SOURCES[i];
     console.log(`\n[${i + 1}/${KNOWLEDGE_SOURCES.length}] Processing source...`);
 
-    await processDocument(
-      source.url,
-      source.title,
-      source.category,
-      source.sourceType,
-      source.sourceInstitution
-    );
+    if (source.url === NAV_HUB_URL) {
+      // NAV Adatbázisok hub: szedjük le az összes aloldalt
+      console.log(`   🔗 Hub crawl: ${source.title}`);
+      const hubHtml = await fetchUrl(source.url);
+      const links = extractHubLinks(hubHtml, source.url);
+      console.log(`   📎 ${links.length} aloldal található`);
+      for (let j = 0; j < links.length; j++) {
+        const link = links[j];
+        await processDocument(
+          link.url,
+          link.linkText,
+          source.category,
+          source.sourceType,
+          source.sourceInstitution,
+          { useTitleFromHtml: true }
+        );
+        if (j < links.length - 1) {
+          console.log(`\n⏳ Rate limiting (${RATE_LIMIT_DELAY}ms)...`);
+          await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY));
+        }
+      }
+    } else {
+      await processDocument(
+        source.url,
+        source.title,
+        source.category,
+        source.sourceType,
+        source.sourceInstitution
+      );
+    }
 
     // Rate limiting between sources
     if (i < KNOWLEDGE_SOURCES.length - 1) {

@@ -21,6 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { OCRCorrectionDialog } from "@/components/OCRCorrectionDialog";
 import { DocumentVersionHistory } from "@/components/DocumentVersionHistory";
 import { RelatedDocuments } from "@/components/RelatedDocuments";
+import { LegalReferencesPanel } from "@/components/LegalReferencesPanel";
 
 interface Analysis {
   id?: string;
@@ -39,6 +40,12 @@ interface Analysis {
   recipient_name: string | null;
   form_key: string | null;
   required_forms: string[] | null;
+  detected_category?: string | null;
+  detected_tags?: string[] | null;
+  // New law registry / playbook fields
+  mentioned_laws?: string[] | null;
+  doc_type?: string | null;
+  issuer?: string | null;
   // Document metadata
   document_id?: string;
 }
@@ -71,6 +78,7 @@ export default function Result() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [form, setForm] = useState<Form | null>(null);
   const [requiredForms, setRequiredForms] = useState<Form[]>([]);
+  const [paymentReliefForms, setPaymentReliefForms] = useState<Form[]>([]);
   const [loading, setLoading] = useState(true);
   const [feedbackGiven, setFeedbackGiven] = useState(false);
   const [feedbackType, setFeedbackType] = useState<"helpful" | "not_helpful" | "confusing" | null>(null);
@@ -100,6 +108,7 @@ export default function Result() {
 
         const analysisData = data as Analysis;
         setAnalysis(analysisData);
+        let docCategory: string | null = (analysisData as Analysis).detected_category ?? null;
 
         // Fetch document metadata (category and tags)
         if (analysisData.document_id) {
@@ -110,6 +119,7 @@ export default function Result() {
             .single();
           
           if (docData) {
+            docCategory = (docData as { category?: string }).category ?? docCategory;
             setDocumentCategory(docData.category);
             setDocumentTags(docData.tags as string[] | null);
           }
@@ -137,6 +147,21 @@ export default function Result() {
 
           if (!formsError && formsData) {
             setRequiredForms(formsData as Form[]);
+          }
+        }
+
+        // Részletfizetés / fizetési könnyítés: NAV nyomtatványok, ha adózás + kulcsszavak
+        const summaryText = [analysisData.simple_summary, analysisData.legal_summary].filter(Boolean).join(" ") || "";
+        const needsPaymentRelief =
+          docCategory === "adozas" &&
+          /részletfizetés|átvezetés|fizetési könnyítés|végrehajtás/i.test(summaryText);
+        if (needsPaymentRelief) {
+          const { data: reliefForms } = await supabase
+            .from("forms")
+            .select("*")
+            .in("key", ["nav_fizetesi_konnyites_kerelm", "nav_atvezetesi_kerelm"]);
+          if (reliefForms && reliefForms.length > 0) {
+            setPaymentReliefForms(reliefForms as Form[]);
           }
         }
 
@@ -245,18 +270,38 @@ export default function Result() {
         return;
       }
 
-      // For "helpful", submit immediately
-      const { error } = await (supabase.from("analysis_feedback" as any).upsert({
-        analysis_id: id,
-        user_id: user.id,
-        feedback_type: type,
-        summary_type: activeTab,
-        comment: null,
-      }, {
-        onConflict: "analysis_id,user_id"
-      }));
+      // Check if feedback already exists
+      const { data: existingFeedback } = await (supabase
+        .from("analysis_feedback" as any)
+        .select("id")
+        .eq("analysis_id", id)
+        .eq("user_id", user.id)
+        .single()) as { data: { id: string } | null };
 
-      if (error) throw error;
+      if (existingFeedback) {
+        // Update existing feedback
+        const { error } = await (supabase
+          .from("analysis_feedback" as any)
+          .update({
+            feedback_type: type,
+            summary_type: activeTab,
+            comment: null,
+          })
+          .eq("id", existingFeedback.id));
+
+        if (error) throw error;
+      } else {
+        // Insert new feedback
+        const { error } = await (supabase.from("analysis_feedback" as any).insert({
+          analysis_id: id,
+          user_id: user.id,
+          feedback_type: type,
+          summary_type: activeTab,
+          comment: null,
+        }));
+
+        if (error) throw error;
+      }
 
       setFeedbackGiven(true);
       setFeedbackType(type);
@@ -413,7 +458,7 @@ export default function Result() {
           </div>
         ` : ''}
         
-        ${(analysis.recipient_name || analysis.bank_account || analysis.amount) ? `
+        ${(analysis.bank_account || analysis.amount) ? `
           <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
             <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #1e293b;">Fizetési Adatok</h2>
             ${analysis.recipient_name ? `
@@ -523,17 +568,38 @@ export default function Result() {
         return;
       }
 
-      const { error } = await (supabase.from("analysis_feedback" as any).upsert({
-        analysis_id: id,
-        user_id: user.id,
-        feedback_type: feedbackType,
-        summary_type: activeTab,
-        comment: comment || null,
-      }, {
-        onConflict: "analysis_id,user_id"
-      }));
+      // Check if feedback already exists
+      const { data: existingFeedback } = await (supabase
+        .from("analysis_feedback" as any)
+        .select("id")
+        .eq("analysis_id", id)
+        .eq("user_id", user.id)
+        .single()) as { data: { id: string } | null };
 
-      if (error) throw error;
+      if (existingFeedback) {
+        // Update existing feedback
+        const { error } = await (supabase
+          .from("analysis_feedback" as any)
+          .update({
+            feedback_type: feedbackType,
+            summary_type: activeTab,
+            comment: comment || null,
+          })
+          .eq("id", existingFeedback.id));
+
+        if (error) throw error;
+      } else {
+        // Insert new feedback
+        const { error } = await (supabase.from("analysis_feedback" as any).insert({
+          analysis_id: id,
+          user_id: user.id,
+          feedback_type: feedbackType,
+          summary_type: activeTab,
+          comment: comment || null,
+        }));
+
+        if (error) throw error;
+      }
 
       setFeedbackGiven(true);
       toast.success("Köszönjük a visszajelzést!");
@@ -823,6 +889,20 @@ export default function Result() {
               </div>
             )}
 
+            {paymentReliefForms.length > 0 && (
+              <div className="border-t pt-6 space-y-3">
+                <h3 className="text-lg font-semibold">Részletfizetés vagy fizetési könnyítés – nyomtatványok</h3>
+                <p className="text-sm text-muted-foreground">
+                  A dokumentum alapján érdemes megfontolni az Átvezetési kérelmet vagy a Fizetési könnyítés iránti kérelmet. Letöltheti a nyomtatványokat a NAV oldaláról.
+                </p>
+                <div className="space-y-4">
+                  {paymentReliefForms.map((formItem) => (
+                    <FormCard key={formItem.id} form={formItem} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {form && (
               <div className="border-t pt-6 space-y-3">
                 <h3 className="text-lg font-semibold">Szükséges hivatalos űrlap</h3>
@@ -887,7 +967,8 @@ END:VCALENDAR`;
               </div>
             )}
 
-            {(analysis.recipient_name || analysis.bank_account || analysis.amount) && (
+            {/* Fizetési adatok csak akkor jelenik meg, ha van bankszámlaszám VAGY összeg (ténylegesen van fizetési kötelezettség) */}
+            {(analysis.bank_account || analysis.amount) && (
               <div className="border-t pt-6 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold">Fizetési adatok</h3>
@@ -897,6 +978,7 @@ END:VCALENDAR`;
                   />
                 </div>
                 
+                {/* Kedvezményezett csak akkor jelenik meg, ha van fizetési adat is mellette */}
                 {analysis.recipient_name && (
                   <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex-1">
@@ -937,6 +1019,16 @@ END:VCALENDAR`;
                 )}
               </div>
             )}
+
+            {/* Legal References & Playbook */}
+            <div className="border-t pt-6">
+              <LegalReferencesPanel
+                mentionedLaws={analysis.mentioned_laws}
+                detectedTags={documentTags || analysis.detected_tags}
+                detectedCategory={documentCategory || analysis.detected_category}
+                docType={analysis.doc_type}
+              />
+            </div>
 
             {/* Smart Suggestions */}
             <div className="border-t pt-6">

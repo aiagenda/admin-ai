@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { FileText, LogOut, User, HelpCircle, Menu, Moon, Sun } from "lucide-react";
+import { FileText, LogOut, User, HelpCircle, Menu, Moon, Sun, Receipt } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +29,7 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hasInvoiceAccess, setHasInvoiceAccess] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -60,6 +61,63 @@ export function Navbar() {
     }
 
     checkAdminRole();
+  }, [user]);
+
+  // Check if user has invoice module access (enterprise subscription OR admin)
+  useEffect(() => {
+    async function checkInvoiceAccess() {
+      if (!user) {
+        setHasInvoiceAccess(false);
+        return;
+      }
+
+      try {
+        // Check admin status directly
+        const { data: adminData, error: adminError } = await supabase.rpc('is_admin');
+        
+        if (!adminError && adminData === true) {
+          setHasInvoiceAccess(true);
+          return;
+        }
+
+        // For non-admins, check enterprise subscription
+        // Try the RPC function for enterprise check
+        try {
+          const { data, error } = await (supabase.rpc as any)('can_access_invoices', { _user_id: user.id });
+          
+          if (!error && data === true) {
+            setHasInvoiceAccess(true);
+            return;
+          }
+        } catch (e) {
+          // RPC doesn't exist yet, ignore
+        }
+        
+        // Fallback: check subscription directly
+        try {
+          const { data: subData } = await (supabase
+            .from('user_subscriptions' as any)
+            .select('plan_type')
+            .eq('user_id', user.id)
+            .single()) as { data: { plan_type: string } | null };
+          
+          if (subData?.plan_type === 'enterprise') {
+            setHasInvoiceAccess(true);
+            return;
+          }
+        } catch (e) {
+          // Table doesn't exist yet, ignore
+        }
+
+        // Default: no access for non-admins without enterprise
+        setHasInvoiceAccess(false);
+      } catch (error) {
+        console.error('Error checking invoice access:', error);
+        setHasInvoiceAccess(false);
+      }
+    }
+
+    checkInvoiceAccess();
   }, [user]);
 
   const NavLink = ({ to, children, className = "" }: { to: string; children: React.ReactNode; className?: string }) => (
@@ -103,6 +161,15 @@ export function Navbar() {
           Keresés
         </Link>
       )}
+      {user && (hasInvoiceAccess || isAdmin) && (
+        <Link 
+          to="/invoices" 
+          className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2 gap-1"
+        >
+          <Receipt className="h-4 w-4" />
+          Könyvelés
+        </Link>
+      )}
       <Link 
         to="/help" 
         className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2"
@@ -134,6 +201,7 @@ export function Navbar() {
       <NavLink to="/pricing">Árak</NavLink>
       {user && <NavLink to="/archive">Archívum</NavLink>}
       {user && <NavLink to="/search">Keresés</NavLink>}
+      {user && (hasInvoiceAccess || isAdmin) && <NavLink to="/invoices">Könyvelés</NavLink>}
       <NavLink to="/help">Segítség</NavLink>
       {user && !checkingAdmin && isAdmin && (
         <>

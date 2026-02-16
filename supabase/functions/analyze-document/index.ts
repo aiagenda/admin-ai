@@ -20,6 +20,9 @@ type AnalysisResult = {
   recipient_name: string | null;
   detected_category?: string | null; // Auto-detected category
   detected_tags?: string[] | null; // Auto-detected tags
+  mentioned_laws?: string[] | null; // Explicit law references found in document (e.g., ["Art. 123. §", "Áfa tv. 55. §"])
+  doc_type?: string | null; // Document type for playbook matching (e.g., "nav_missing_info", "nav_fine", "execution")
+  issuer?: string | null; // Document issuer (e.g., "NAV", "bíróság", "önkormányzat")
   // Legacy fields for backward compatibility
   what_is_it?: string;
   what_to_do?: string[] | string;
@@ -745,7 +748,7 @@ function getLanguagePrompt(language: string, todayStr: string): string {
     hu: `You are an expert Hungarian administrative assistant. Analyze the provided document text and respond strictly with JSON containing:
 
 {
-  "simple_summary": "Egyszerű magyarázat magyar nyelven, amely tartalmaz egy rövid, valósághű példát mindennapi nevekkel. A példa formátuma: 'Ez olyan, mint amikor [név] [helyzet], ezért [következmény]...' Példa: 'Ez olyan, mint amikor Józsi felvett egy hitelt, de nem tudta fizetni, ezért a bank már hivatalos levelet küld neki, hogy fizesse ki a tartozást.' A példa segít a nem művelt felhasználóknak megérteni a helyzetet.",
+  "simple_summary": "TEGEZŐ, barátias, közvetlen magyarázat magyar nyelven – mintha egy jó barátod magyarázná el, aki segíteni akar. SOHA ne magázz (ne használj Ön/Önnek szavakat), mindig tegezz (te/neked/nálad). Legyen emberi, támogató hangnem. FONTOS: Ha a dokumentum KONKRÉT, SZEMÉLYRE SZÓLÓ ügy (pl. felszólítás, értesítés, határozat neked címezve), akkor NE használj 'Képzeld el' vagy hasonló példa-bevezetőt – egyszerűen magyarázd el közvetlenül, mi a helyzeted és mit kell tenned. Példát CSAK akkor adj, ha a dokumentum általános tájékoztató jellegű és a példa segít megérteni az absztrakt fogalmakat.",
   "legal_summary": "Professzionális jogi értelmezés magyar nyelven, TILOS benne példa vagy mindennapi nevek. Csak tiszta, szakmai jogi leírás a dokumentum jogi tartalmáról.",
   "todo_simple": ["egyszerű lépés 1", "egyszerű lépés 2"],
   "todo_legal": ["jogi lépés 1", "jogi lépés 2"],
@@ -756,19 +759,26 @@ function getLanguagePrompt(language: string, todayStr: string): string {
   "amount": "string vagy null",
   "recipient_name": "string vagy null",
   "detected_category": "adozas" | "egeszsegugy" | "oktatas" | "szocialis" | "kozlekedes" | "ingatlan" | "uzlet" | "egyeb" vagy null,
-  "detected_tags": ["tag1", "tag2"] vagy [] ha nincs tag
+  "detected_tags": ["tag1", "tag2"] vagy [] ha nincs tag,
+  "mentioned_laws": ["Art. 123. §", "Áfa tv. 55. §"] vagy [] - a dokumentumban EXPLICIT említett jogszabályok és paragrafusok,
+  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "unknown",
+  "issuer": "NAV" | "bíróság" | "önkormányzat" | "bank" | "közmű" | "egyéb" vagy null
 }
 
 FONTOS SZABÁLYOK:
-1. simple_summary MINDIG tartalmaz egy rövid, valósághű példát mindennapi magyar nevekkel (Józsi, Mária, Péter, stb.).
+1. simple_summary: MINDIG TEGEZZ, soha ne magázz! Írj barátias, közvetlen stílusban, mintha egy jó haveroddal beszélnél. KRITIKUS: Ha a dokumentum KONKRÉT személyre szóló ügy (fizetési felszólítás, adóellenőrzés értesítő, határozat, stb.), akkor NE írj "Képzeld el" vagy "Például" bevezetőt – egyszerűen mondd el közvetlenül, mi történik és mit kell tennie. Példát CSAK általános tájékoztató dokumentumoknál adj, ahol segít megérteni az absztrakt fogalmakat. A magyarázat legyen emberi, támogató, kerüld a hivatalos megfogalmazásokat!
 2. legal_summary SOHA ne tartalmaz példát vagy mindennapi neveket, csak professzionális jogi értelmezés.
 3. deadlines: tömb formátumban YYYY-MM-DD formátumban. Ha a dokumentumban relatív dátum van (pl. "2 hét múlva", "következő hónap"), számold ki a pontos dátumot a mai dátumhoz képest (ma: ${todayStr}).
-4. detected_category: válassz egyet a következők közül: "adozas", "egeszsegugy", "oktatas", "szocialis", "kozlekedes", "ingatlan", "uzlet", "egyeb" vagy null.`,
+4. detected_category: válassz egyet a következők közül: "adozas", "egeszsegugy", "oktatas", "szocialis", "kozlekedes", "ingatlan", "uzlet", "egyeb" vagy null.
+5. mentioned_laws: ha a dokumentumban EXPLICIT jogszabály hivatkozás van (pl. "Art. 123. §", "2017. évi CL. törvény", "Áfa tv.", "Ákr.", "Vht."), írd ki őket ebbe a tömbbe. Ha nincs, üres tömb [].
+6. doc_type: válaszd ki a dokumentum típusát: "nav_missing_info" (NAV hiánypótlás), "nav_fine" (NAV bírság/pótlék), "nav_payment_demand" (NAV fizetési felszólítás), "execution" (végrehajtás), "official_decision" (hatósági határozat), "invoice" (számla), "unknown" (ismeretlen).
+7. issuer: ki küldte a dokumentumot? "NAV", "bíróság", "önkormányzat", "bank", "közmű", "egyéb" vagy null.
+8. FIZETÉSI ADATOK SZABÁLYA: A "bank_account", "amount" és "recipient_name" mezőket CSAK akkor töltsd ki, ha a dokumentum TÉNYLEGES FIZETÉSI KÖTELEZETTSÉGET tartalmaz (pl. számla, bírság, felszólítás fizetésre, tartozás). Ha a dokumentum csak TÁJÉKOZTATÁS vagy ÉRTESÍTÉS (pl. végrehajtási jog törlése, jogosultság igazolása, státusz értesítés), akkor ezek a mezők legyenek NULL. A "recipient_name" SOHA ne legyen kitöltve önmagában - csak akkor, ha van mellette "bank_account" VAGY "amount" is.`,
     
     en: `You are an expert administrative assistant. Analyze the provided document text and respond strictly with JSON containing:
 
 {
-  "simple_summary": "Simple explanation in English, including a short, relatable example with everyday names. Format: 'This is like when [name] [situation], so [consequence]...' Example: 'This is like when John took out a loan but couldn't pay it, so the bank is now sending him an official letter to pay the debt.' The example helps non-educated users understand the situation.",
+  "simple_summary": "Simple but not oversimplified explanation in English. Include a short, relatable example with everyday names – always in PRESENT TENSE (not past). VARY the opening of the example: e.g. 'Here is an example:', 'Imagine that', 'For example:', 'An everyday example:', 'Picture this:' – do not always use the same phrase. Then describe the situation (e.g. Mary has a debt…, she can choose to…). Do not use past tense in the example (not: owed, paid, sent).",
   "legal_summary": "Professional legal interpretation in English, NO examples or everyday names. Only clean, professional legal description of the document's legal content.",
   "todo_simple": ["simple step 1", "simple step 2"],
   "todo_legal": ["legal step 1", "legal step 2"],
@@ -779,19 +789,26 @@ FONTOS SZABÁLYOK:
   "amount": "string or null",
   "recipient_name": "string or null",
   "detected_category": "tax" | "healthcare" | "education" | "social" | "transport" | "property" | "business" | "other" or null,
-  "detected_tags": ["tag1", "tag2"] or [] if no tags
+  "detected_tags": ["tag1", "tag2"] or [] if no tags,
+  "mentioned_laws": ["Art. 123. §", "VAT Act 55. §"] or [] - EXPLICIT law references found in the document,
+  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "unknown",
+  "issuer": "tax_authority" | "court" | "municipality" | "bank" | "utility" | "other" or null
 }
 
 IMPORTANT RULES:
-1. simple_summary MUST include a short, relatable example with everyday names (John, Mary, Peter, etc.).
+1. simple_summary: Always write the example in PRESENT TENSE (has debt, must pay, can request – NOT: owed, paid, sent). Vary the example opening (Here is an example: / Imagine that / For example: / An everyday example: / Picture this:). Keep it clear but not oversimplified; short, relatable example with everyday names (Mary, Peter, etc.).
 2. legal_summary MUST NEVER include examples or everyday names, only professional legal interpretation.
 3. deadlines: array format in YYYY-MM-DD. If the document contains relative dates (e.g., "2 weeks from now", "next month"), calculate the exact date relative to today (today: ${todayStr}).
-4. detected_category: choose one from: "tax", "healthcare", "education", "social", "transport", "property", "business", "other" or null.`,
+4. detected_category: choose one from: "tax", "healthcare", "education", "social", "transport", "property", "business", "other" or null.
+5. mentioned_laws: if the document EXPLICITLY references laws (e.g., "Art. 123. §", "Act CL of 2017", "VAT Act"), list them here. If none, empty array [].
+6. doc_type: choose document type: "nav_missing_info" (missing info request), "nav_fine" (fine/penalty), "nav_payment_demand" (payment demand), "execution" (enforcement), "official_decision" (official decision), "invoice" (invoice), "unknown".
+7. issuer: who sent the document? "tax_authority", "court", "municipality", "bank", "utility", "other" or null.
+8. PAYMENT DATA RULE: Only fill "bank_account", "amount" and "recipient_name" if the document contains an ACTUAL PAYMENT OBLIGATION (e.g., invoice, fine, payment demand, debt). If the document is only INFORMATIONAL or a NOTIFICATION (e.g., removal of enforcement rights, eligibility confirmation, status update), these fields should be NULL. "recipient_name" should NEVER be filled alone - only if there is also "bank_account" OR "amount".`,
     
     de: `Sie sind ein Experte für Verwaltungsangelegenheiten. Analysieren Sie den bereitgestellten Dokumententext und antworten Sie strikt mit JSON:
 
 {
-  "simple_summary": "Einfache Erklärung auf Deutsch, einschließlich eines kurzen, nachvollziehbaren Beispiels mit alltäglichen Namen. Format: 'Das ist wie wenn [Name] [Situation], also [Konsequenz]...' Beispiel: 'Das ist wie wenn Hans einen Kredit aufgenommen hat, aber nicht zahlen konnte, also sendet die Bank ihm jetzt ein offizielles Schreiben zur Schuldentilgung.' Das Beispiel hilft nicht gebildeten Benutzern, die Situation zu verstehen.",
+  "simple_summary": "Einfache, aber nicht zu vereinfachende Erklärung auf Deutsch. Enthalte ein kurzes, nachvollziehbares Beispiel mit alltäglichen Namen – immer im PRÄSENS (nicht in der Vergangenheit). VARIERE die Einleitung des Beispiels: z.B. «Hier ein Beispiel:», «Stell dir vor, dass», «Ein Beispiel:», «Zum Beispiel:», «Stell dir zum Beispiel vor:» – nicht immer dieselbe Formulierung. Danach die Situation (z.B. Maria hat eine Schuld…, sie kann wählen…). Kein Präteritum im Beispiel (nicht: hatte, zahlte, sandte).",
   "legal_summary": "Professionelle rechtliche Interpretation auf Deutsch, KEINE Beispiele oder alltägliche Namen. Nur saubere, professionelle rechtliche Beschreibung des rechtlichen Inhalts des Dokuments.",
   "todo_simple": ["einfacher Schritt 1", "einfacher Schritt 2"],
   "todo_legal": ["rechtlicher Schritt 1", "rechtlicher Schritt 2"],
@@ -802,14 +819,21 @@ IMPORTANT RULES:
   "amount": "string oder null",
   "recipient_name": "string oder null",
   "detected_category": "steuern" | "gesundheitswesen" | "bildung" | "soziales" | "verkehr" | "immobilien" | "geschäft" | "sonstiges" oder null,
-  "detected_tags": ["tag1", "tag2"] oder [] wenn keine Tags
+  "detected_tags": ["tag1", "tag2"] oder [] wenn keine Tags,
+  "mentioned_laws": ["Art. 123. §", "UStG 55. §"] oder [] - EXPLIZIT im Dokument erwähnte Gesetze,
+  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "unknown",
+  "issuer": "finanzamt" | "gericht" | "gemeinde" | "bank" | "versorger" | "sonstiges" oder null
 }
 
 WICHTIGE REGELN:
-1. simple_summary MUSS ein kurzes, nachvollziehbares Beispiel mit alltäglichen Namen enthalten (Hans, Maria, Peter, etc.).
+1. simple_summary: Das Beispiel immer im PRÄSENS formulieren (hat Schulden, muss zahlen, kann beantragen – NICHT: hatte, zahlte, sandte). Die Beispieleinleitung variieren (Hier ein Beispiel: / Stell dir vor, dass / Ein Beispiel: / Zum Beispiel: / Stell dir zum Beispiel vor:). Klar, aber nicht zu vereinfacht; kurzes, nachvollziehbares Beispiel mit alltäglichen Namen (Maria, Peter, etc.).
 2. legal_summary DARF NIEMALS Beispiele oder alltägliche Namen enthalten, nur professionelle rechtliche Interpretation.
 3. deadlines: Array-Format in YYYY-MM-DD. Wenn das Dokument relative Daten enthält (z.B. "in 2 Wochen", "nächsten Monat"), berechnen Sie das genaue Datum relativ zu heute (heute: ${todayStr}).
-4. detected_category: wählen Sie eine aus: "steuern", "gesundheitswesen", "bildung", "soziales", "verkehr", "immobilien", "geschäft", "sonstiges" oder null.`,
+4. detected_category: wählen Sie eine aus: "steuern", "gesundheitswesen", "bildung", "soziales", "verkehr", "immobilien", "geschäft", "sonstiges" oder null.
+5. mentioned_laws: wenn das Dokument EXPLIZIT auf Gesetze verweist (z.B. "Art. 123. §", "Gesetz CL von 2017", "UStG"), listen Sie sie hier auf. Wenn keine, leeres Array [].
+6. doc_type: wählen Sie Dokumenttyp: "nav_missing_info" (Fehlende Info), "nav_fine" (Strafe), "nav_payment_demand" (Zahlungsaufforderung), "execution" (Vollstreckung), "official_decision" (Behördenbescheid), "invoice" (Rechnung), "unknown".
+7. issuer: wer hat das Dokument gesendet? "finanzamt", "gericht", "gemeinde", "bank", "versorger", "sonstiges" oder null.
+8. ZAHLUNGSDATEN-REGEL: Füllen Sie "bank_account", "amount" und "recipient_name" NUR aus, wenn das Dokument eine TATSÄCHLICHE ZAHLUNGSPFLICHT enthält (z.B. Rechnung, Strafe, Zahlungsaufforderung, Schulden). Wenn das Dokument nur INFORMATIV oder eine BENACHRICHTIGUNG ist (z.B. Aufhebung von Vollstreckungsrechten, Berechtigungsbestätigung, Statusmeldung), sollten diese Felder NULL sein. "recipient_name" sollte NIEMALS allein ausgefüllt werden - nur wenn auch "bank_account" ODER "amount" vorhanden ist.`,
   };
 
   return languagePrompts[language] || languagePrompts.hu;

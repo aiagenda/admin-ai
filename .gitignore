@@ -30,3 +30,4 @@ VAPID_KEYS.txt
 *.njsproj
 *.sln
 *.sw?
+.vercel

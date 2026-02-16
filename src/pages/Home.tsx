@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Sparkles, Clock, Shield, Upload, Archive } from "lucide-react";
+import { FileText, Sparkles, Clock, Shield, Upload, Archive, Receipt, TrendingUp, ChevronRight, PieChart, Search, ArrowRight, ScanLine, FileSpreadsheet } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DeadlineReminder } from "@/components/DeadlineReminder";
 import { UsageLimit } from "@/components/UsageLimit";
@@ -10,6 +10,20 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
+import { format } from "date-fns";
+import { hu } from "date-fns/locale";
+
+// Time-based greeting
+function getGreeting(): { text: string; emoji: string } {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) {
+    return { text: "Jó reggelt", emoji: "☀️" };
+  } else if (hour >= 12 && hour < 18) {
+    return { text: "Jó napot", emoji: "👋" };
+  } else {
+    return { text: "Jó estét", emoji: "🌙" };
+  }
+}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -18,6 +32,14 @@ export default function Home() {
     totalDocuments: 0,
     completedAnalyses: 0,
     urgentDeadlines: 0,
+  });
+  const [hasInvoiceAccess, setHasInvoiceAccess] = useState(false);
+  const [invoiceStats, setInvoiceStats] = useState({
+    monthlyVat: 0,
+    monthlyNet: 0,
+    monthlyGross: 0,
+    invoiceCount: 0,
+    completedCount: 0,
   });
 
   useEffect(() => {
@@ -72,24 +94,97 @@ export default function Home() {
     fetchStats();
   }, [user]);
 
+  // Check invoice access and fetch invoice stats
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchInvoiceData = async () => {
+      try {
+        // Check if admin
+        const { data: adminData } = await supabase.rpc('is_admin');
+        const isAdmin = adminData === true;
+
+        if (!isAdmin) {
+          // Check enterprise subscription
+          try {
+            const { data: subData } = await (supabase
+              .from('user_subscriptions' as any)
+              .select('plan_type')
+              .eq('user_id', user.id)
+              .single()) as { data: { plan_type: string } | null };
+            
+            if (subData?.plan_type !== 'enterprise') {
+              setHasInvoiceAccess(false);
+              return;
+            }
+          } catch {
+            setHasInvoiceAccess(false);
+            return;
+          }
+        }
+
+        setHasInvoiceAccess(true);
+
+        // Fetch invoice stats for current month
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+        const { data: invoices } = await (supabase
+          .from('invoices' as any)
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('upload_date', startOfMonth.toISOString())
+          .lte('upload_date', endOfMonth.toISOString())) as { data: any[] | null };
+
+        if (invoices) {
+          const completed = invoices.filter((inv: any) => inv.status === 'completed');
+          const totalVat = completed.reduce((sum: number, inv: any) => sum + (inv.vat_amount || 0), 0);
+          const totalNet = completed.reduce((sum: number, inv: any) => sum + (inv.net_amount || 0), 0);
+          const totalGross = completed.reduce((sum: number, inv: any) => sum + (inv.gross_amount || 0), 0);
+
+          setInvoiceStats({
+            monthlyVat: totalVat,
+            monthlyNet: totalNet,
+            monthlyGross: totalGross,
+            invoiceCount: invoices.length,
+            completedCount: completed.length,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching invoice data:", error);
+      }
+    };
+
+    fetchInvoiceData();
+  }, [user]);
+
   return (
     <div className="min-h-screen">
       {user ? (
         /* Dashboard for logged-in users */
         <div className="container mx-auto max-w-6xl py-12 px-4 space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">Üdvözöljük, {user.email?.split("@")[0]}!</h1>
-            <p className="text-muted-foreground mt-2">Itt van az Ön áttekintése</p>
+          {/* Personalized Greeting */}
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-3xl font-bold flex items-center gap-2">
+                {getGreeting().text}, {user.email?.split("@")[0]}! 
+                <span className="text-2xl">{getGreeting().emoji}</span>
+              </h1>
+              <p className="text-muted-foreground mt-1">Itt van a mai áttekintésed</p>
+            </div>
           </div>
 
-          {/* Stats Cards */}
+          {/* Stats Cards - Modernized */}
           <div className="grid md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="pt-6">
+            {/* Documents Card - Blue accent */}
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 shadow-sm hover:shadow-md transition-shadow">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <CardContent className="pt-6 relative">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Összes dokumentum</p>
-                    <p className="text-2xl font-bold">
+                    <p className="text-sm text-blue-600/70 dark:text-blue-400/70 font-medium">Összes dokumentum</p>
+                    <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">
                       <AnimatedNumber 
                         value={stats.totalDocuments} 
                         duration={2000}
@@ -97,17 +192,21 @@ export default function Home() {
                       />
                     </p>
                   </div>
-                  <FileText className="h-8 w-8 text-primary opacity-50" />
+                  <div className="h-12 w-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
+            {/* Analyses Card - Green accent */}
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/50 dark:to-emerald-900/30 shadow-sm hover:shadow-md transition-shadow">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <CardContent className="pt-6 relative">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Befejezett elemzések</p>
-                    <p className="text-2xl font-bold">
+                    <p className="text-sm text-emerald-600/70 dark:text-emerald-400/70 font-medium">Befejezett elemzések</p>
+                    <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">
                       <AnimatedNumber 
                         value={stats.completedAnalyses} 
                         duration={2000}
@@ -115,67 +214,182 @@ export default function Home() {
                       />
                     </p>
                   </div>
-                  <Sparkles className="h-8 w-8 text-primary opacity-50" />
+                  <div className="h-12 w-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                    <Sparkles className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6">
+            {/* Deadlines Card - Orange/Red accent */}
+            <Card className={`relative overflow-hidden border-0 shadow-sm hover:shadow-md transition-shadow ${
+              stats.urgentDeadlines > 0 
+                ? "bg-gradient-to-br from-red-50 to-orange-100/50 dark:from-red-950/50 dark:to-orange-900/30" 
+                : "bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/50 dark:to-amber-900/30"
+            }`}>
+              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -translate-y-1/2 translate-x-1/2 ${
+                stats.urgentDeadlines > 0 ? "bg-red-500/10" : "bg-amber-500/10"
+              }`} />
+              <CardContent className="pt-6 relative">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Sürgős határidők</p>
-                    <p className="text-2xl font-bold">
-                      <AnimatedNumber 
-                        value={stats.urgentDeadlines} 
-                        duration={2000}
-                        startDelay={500}
-                        formatter={(value) => 
-                          value > 0 ? (
-                            <Badge variant="destructive">{value}</Badge>
-                          ) : (
-                            value
-                          )
-                        }
-                      />
+                    <p className={`text-sm font-medium ${
+                      stats.urgentDeadlines > 0 
+                        ? "text-red-600/70 dark:text-red-400/70" 
+                        : "text-amber-600/70 dark:text-amber-400/70"
+                    }`}>Sürgős határidők</p>
+                    <p className={`text-3xl font-bold ${
+                      stats.urgentDeadlines > 0 
+                        ? "text-red-700 dark:text-red-300" 
+                        : "text-amber-700 dark:text-amber-300"
+                    }`}>
+                      {stats.urgentDeadlines > 0 ? (
+                        <span className="flex items-center gap-2">
+                          {stats.urgentDeadlines}
+                          <Badge variant="destructive" className="text-xs">!</Badge>
+                        </span>
+                      ) : (
+                        <AnimatedNumber 
+                          value={stats.urgentDeadlines} 
+                          duration={2000}
+                          startDelay={500}
+                        />
+                      )}
                     </p>
                   </div>
-                  <Clock className="h-8 w-8 text-primary opacity-50" />
+                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${
+                    stats.urgentDeadlines > 0 ? "bg-red-500/20" : "bg-amber-500/20"
+                  }`}>
+                    <Clock className={`h-6 w-6 ${
+                      stats.urgentDeadlines > 0 
+                        ? "text-red-600 dark:text-red-400" 
+                        : "text-amber-600 dark:text-amber-400"
+                    }`} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Enhanced */}
           <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="cursor-pointer hover:shadow-md transition-shadow touch-manipulation min-h-[44px]" onClick={() => navigate("/upload")}>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Upload className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold">Új dokumentum feltöltése</h3>
-                    <p className="text-sm text-muted-foreground">Töltse fel PDF dokumentumát elemzéshez</p>
-                  </div>
+            <div 
+              className="group relative overflow-hidden rounded-xl border bg-card p-5 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
+              onClick={() => navigate("/upload")}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex items-center gap-4">
+                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <Upload className="h-7 w-7 text-primary" />
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">Új dokumentum feltöltése</h3>
+                  <p className="text-sm text-muted-foreground">Töltsd fel PDF dokumentumod elemzéshez</p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-muted-foreground opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+              </div>
+            </div>
 
-            <Card className="cursor-pointer hover:shadow-md transition-shadow touch-manipulation min-h-[44px]" onClick={() => navigate("/archive")}>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Archive className="h-6 w-6 text-primary" />
+            <div 
+              className="group relative overflow-hidden rounded-xl border bg-card p-5 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
+              onClick={() => navigate("/archive")}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex items-center gap-4">
+                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                  <Archive className="h-7 w-7 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">Dokumentum archívum</h3>
+                  <p className="text-sm text-muted-foreground">Tekintsd meg az összes dokumentumod</p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-muted-foreground opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+              </div>
+            </div>
+          </div>
+
+          {/* Invoice/Bookkeeping Summary Widget - Only for enterprise/admin */}
+          {hasInvoiceAccess && (
+            <div 
+              className="relative overflow-hidden rounded-xl cursor-pointer group transition-all hover:scale-[1.01] hover:shadow-xl"
+              onClick={() => navigate("/invoices")}
+            >
+              {/* Gradient background with border */}
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 opacity-90" />
+              <div className="absolute inset-[1px] bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 rounded-xl" />
+              
+              {/* Content */}
+              <div className="relative p-5">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-400 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-purple-500/25">
+                      <Receipt className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-white">Könyvelési összefoglaló</h3>
+                      <p className="text-sm text-purple-200/70">
+                        {format(new Date(), "yyyy. MMMM", { locale: hu })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold">Dokumentum archívum</h3>
-                    <p className="text-sm text-muted-foreground">Tekintse meg az összes dokumentumát</p>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-purple-500/30 text-purple-200 border-purple-400/30 hover:bg-purple-500/40">
+                      PRO
+                    </Badge>
+                    <ChevronRight className="h-5 w-5 text-purple-300 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+
+                {/* Stats Row - Clean design */}
+                <div className="grid grid-cols-4 gap-3">
+                  {/* VAT - Main highlight */}
+                  <div className="col-span-4 sm:col-span-1 bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/10">
+                    <p className="text-xs text-purple-200/70 mb-1 flex items-center gap-1.5">
+                      <PieChart className="h-3.5 w-3.5" />
+                      Havi ÁFA
+                    </p>
+                    <p className="text-2xl font-bold text-white">
+                      {invoiceStats.monthlyVat.toLocaleString("hu-HU")}
+                      <span className="text-base font-normal text-purple-200/70 ml-1">Ft</span>
+                    </p>
+                  </div>
+
+                  {/* Other stats - simpler */}
+                  <div className="col-span-4 sm:col-span-3 grid grid-cols-3 gap-3">
+                    <div className="text-center sm:text-left p-3">
+                      <p className="text-xs text-purple-200/60 mb-0.5">Számlák</p>
+                      <p className="text-lg font-semibold text-white">
+                        {invoiceStats.invoiceCount}
+                        <span className="text-sm font-normal text-purple-200/60 ml-1">db</span>
+                      </p>
+                      {invoiceStats.invoiceCount > invoiceStats.completedCount && (
+                        <p className="text-xs text-amber-400">
+                          +{invoiceStats.invoiceCount - invoiceStats.completedCount} pending
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="text-center sm:text-left p-3">
+                      <p className="text-xs text-purple-200/60 mb-0.5">Nettó</p>
+                      <p className="text-lg font-semibold text-white">
+                        {invoiceStats.monthlyNet.toLocaleString("hu-HU")}
+                        <span className="text-sm font-normal text-purple-200/60 ml-1">Ft</span>
+                      </p>
+                    </div>
+
+                    <div className="text-center sm:text-left p-3">
+                      <p className="text-xs text-purple-200/60 mb-0.5">Bruttó</p>
+                      <p className="text-lg font-semibold text-white">
+                        {invoiceStats.monthlyGross.toLocaleString("hu-HU")}
+                        <span className="text-sm font-normal text-purple-200/60 ml-1">Ft</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Upcoming Deadlines Widget */}
           <DeadlineReminder />
@@ -183,20 +397,37 @@ export default function Home() {
           {/* Usage Limit Widget */}
           <UsageLimit />
 
-          {/* AI Search Widget */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
+          {/* AI Search Widget - Modernized */}
+          <div className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+            {/* Decorative gradient border effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-50 blur-xl" />
+            <div className="relative p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+                  <Search className="h-5 w-5 text-white" />
+                </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">AI Keresés</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Kérdezz bármit a dokumentumaidról természetes nyelven. Példa: "Volt-e már ilyen dokumentummal dolgunk?" vagy "Keresse meg az összes NAV-tól kapott levelet"
+                  <h3 className="text-lg font-semibold">AI Keresés</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Kérdezz bármit a dokumentumaidról természetes nyelven
                   </p>
                 </div>
-                <AISearch />
               </div>
-            </CardContent>
-          </Card>
+              <AISearch />
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="text-xs text-muted-foreground">Példák:</span>
+                <Badge variant="secondary" className="text-xs font-normal cursor-pointer hover:bg-secondary/80">
+                  "NAV levelek"
+                </Badge>
+                <Badge variant="secondary" className="text-xs font-normal cursor-pointer hover:bg-secondary/80">
+                  "fizetési határidők"
+                </Badge>
+                <Badge variant="secondary" className="text-xs font-normal cursor-pointer hover:bg-secondary/80">
+                  "adóbevallás"
+                </Badge>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         /* Public landing page */
@@ -250,7 +481,7 @@ export default function Home() {
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-3xl font-bold text-center mb-12">Hogyan működik?</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <Card>
               <CardContent className="pt-6 space-y-4">
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -286,6 +517,18 @@ export default function Home() {
                 </p>
               </CardContent>
             </Card>
+
+            <Card className="border-primary/30 bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20">
+              <CardContent className="pt-6 space-y-4">
+                <div className="h-12 w-12 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                  <Receipt className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+                </div>
+                <h3 className="text-xl font-semibold">Számlák & könyvelés</h3>
+                <p className="text-muted-foreground">
+                  Fotózd le a számlát – OCR, kategorizálás, Excel export, könyvelőnek küldés egy helyen
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -294,7 +537,7 @@ export default function Home() {
       <section className="bg-muted/50 py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-3xl font-bold text-center mb-12">Miért az AdminAI?</h2>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="flex gap-4">
               <Shield className="h-8 w-8 text-primary flex-shrink-0" />
               <div>
@@ -331,6 +574,26 @@ export default function Home() {
                 <h3 className="text-xl font-semibold mb-2">Archívum</h3>
                 <p className="text-muted-foreground">
                   Minden dokumentum és elemzés egy helyen megtalálható
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <ScanLine className="h-8 w-8 text-primary flex-shrink-0" />
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Számla felismerés (OCR)</h3>
+                <p className="text-muted-foreground">
+                  Fotózd le a számlát – az AI kiolvassa az összegeket, ÁFA-t, szállítót, kézírást is
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <FileSpreadsheet className="h-8 w-8 text-primary flex-shrink-0" />
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Excel export, könyvelőnek</h3>
+                <p className="text-muted-foreground">
+                  Számla adatok egy kattintással Excelbe vagy közvetlenül a könyvelődnek
                 </p>
               </div>
             </div>

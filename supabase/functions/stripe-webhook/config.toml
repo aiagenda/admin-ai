@@ -1,0 +1,7 @@
+[build]
+command = ""
+
+[deploy]
+import_map = ""
+# Webhook doesn't need JWT verification - uses Stripe signature instead
+verify_jwt = false

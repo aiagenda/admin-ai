@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup Számlák v3 - AdminAI Teszt</title>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #0c4a6e; color: white; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 10px; }
+    .subtitle { text-align: center; color: #7dd3fc; margin-bottom: 30px; }
+    .controls { text-align: center; margin-bottom: 30px; }
+    .controls button { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; border: none; padding: 15px 30px; font-size: 16px; border-radius: 8px; cursor: pointer; margin: 5px; }
+    .invoice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 30px; max-width: 1800px; margin: 0 auto; }
+    .invoice-wrapper { background: #075985; border-radius: 12px; padding: 15px; }
+    .invoice-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .invoice-title { font-weight: bold; color: #7dd3fc; font-size: 14px; }
+    .invoice-badge { font-size: 10px; padding: 4px 8px; border-radius: 4px; background: #0c4a6e; color: #7dd3fc; }
+    .download-btn { background: #0ea5e9; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+    
+    .invoice { width: 420px; background: white; color: #333; padding: 20px; font-size: 11px; line-height: 1.4; }
+    .inv-header { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb; }
+    .company h2 { font-size: 16px; margin-bottom: 5px; }
+    .company p { font-size: 9px; color: #6b7280; }
+    .inv-badge { padding: 10px 15px; border-radius: 4px; font-weight: bold; font-size: 14px; height: fit-content; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+    .meta-box { background: #f9fafb; padding: 8px; border-radius: 4px; }
+    .meta-box label { font-size: 8px; color: #6b7280; display: block; }
+    .meta-box span { font-weight: bold; font-size: 11px; }
+    .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+    .party h4 { font-size: 8px; color: #6b7280; margin-bottom: 5px; text-transform: uppercase; }
+    .party .name { font-weight: bold; font-size: 12px; }
+    .party p { font-size: 10px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10px; }
+    th { background: #f3f4f6; padding: 6px; text-align: left; font-size: 8px; text-transform: uppercase; }
+    td { padding: 6px; border-bottom: 1px solid #e5e7eb; }
+    .text-right { text-align: right; }
+    .totals { width: 180px; margin-left: auto; font-size: 10px; }
+    .totals .row { display: flex; justify-content: space-between; padding: 3px 0; }
+    .totals .row.total { font-weight: bold; font-size: 13px; border-top: 2px solid #333; margin-top: 5px; padding-top: 6px; }
+    .payment { background: #fef3c7; padding: 10px; border-radius: 4px; margin-top: 12px; font-size: 9px; }
+    .footer { text-align: center; color: #9ca3af; font-size: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid #e5e7eb; }
+  </style>
+</head>
+<body>
+
+<h1>Mockup Számlák v3</h1>
+<p class="subtitle">Újabb 10 változatos számla az AdminAI teszteléséhez</p>
+
+<div class="controls">
+  <button onclick="downloadAll()">Mind letöltése (10 számla)</button>
+</div>
+
+<div class="invoice-grid">
+
+  <!-- 1. Taxi számla -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">1. Taxi fuvar</span>
+      <span class="invoice-badge">Utazás</span>
+      <button class="download-btn" onclick="downloadInvoice('inv1', 'szamla_taxi.png')">Letöltés</button>
+    </div>
+    <div class="invoice" id="inv1">
+      <div class="inv-header">
+        <div class="company">
+          <h2 style="color: #eab308;">Főtaxi Zrt.</h2>
+          <p>1097 Budapest, Könyves K. krt. 12-14.</p>
+          <p>Adószám: 12820930-2-44</p>
+        </div>
+        <div class="inv-badge" style="background: #eab308; color: white;">TAXI SZÁMLA</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Számla száma</label><span>FT-2026-0045678</span></div>
+        <div class="meta-box"><label>Dátum</label><span>2026.01.28 22:15</span></div>
+        <div class="meta-box"><label>Gépkocsi</label><span>REN-456</span></div>
+        <div class="meta-box"><label>Sofőr kódja</label><span>S-1234</span></div>
+      </div>
+      <div style="background: #fef9c3; padding: 10px; border-radius: 4px; margin-bottom: 12px;">
+        <p><strong>Útvonal:</strong></p>
+        <p>Indulás: Budapest, Keleti pu.</p>
+        <p>Érkezés: Budapest, Liszt F. reptér T2</p>
+        <p>Távolság: 18.4 km</p>
+      </div>
+      <table>
+        <tr><th>Tétel</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Alapdíj</td><td class="text-right">1 100 Ft</td></tr>
+        <tr><td>Kilométerdíj (18.4 km × 440 Ft)</td><td class="text-right">8 096 Ft</td></tr>
+        <tr><td>Várakozás (5 perc)</td><td class="text-right">500 Ft</td></tr>
+        <tr><td>Reptéri pótdíj</td><td class="text-right">2 200 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>9 366 Ft</span></div>
+        <div class="row"><span>ÁFA 27%:</span><span>2 530 Ft</span></div>
+        <div class="row total"><span>Fizetendő:</span><span>11 896 Ft</span></div>
+      </div>
+      <div class="payment">
+        <strong>Fizetés:</strong> Bankkártya (VISA *4521)<br>
+        <strong>Tranzakció:</strong> 20260128-221534-789456
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Villanyszerelő -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">2. Villanyszerelés</span>
+      <span class="invoice-badge">Karbantartás</span>
+      <button class="download-btn" onclick="downloadInvoice('inv2', 'szamla_villanyszerelo.png')">Letöltés</button>
+    </div>
+    <div class="invoice" id="inv2">
+      <div class="inv-header">
+        <div class="company">
+          <h2>Elektro-Fix Bt.</h2>
+          <p>1165 Budapest, Margit u. 45.</p>
+          <p>Adószám: 22334455-1-42</p>
+          <p>Eng.szám: E-12345/2018</p>
+        </div>
+        <div class="inv-badge" style="background: #f59e0b;">SZÁMLA</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Számla száma</label><span>EF-2026/0089</span></div>
+        <div class="meta-box"><label>Kiállítás</label><span>2026.01.25</span></div>
+        <div class="meta-box"><label>Teljesítés</label><span>2026.01.25</span></div>
+        <div class="meta-box"><label>Fizetési határidő</label><span>2026.02.08</span></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Vállalkozó</h4>
+          <p class="name">Elektro-Fix Bt.</p>
+          <p>Villanyszerelő mester: Kovács István</p>
+        </div>
+        <div class="party">
+          <h4>Megrendelő</h4>
+          <p class="name">Irodaház Management Kft.</p>
+          <p>1134 Budapest, Váci út 35.</p>
+          <p>Adószám: 11223344-2-41</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Munka megnevezése</th><th class="text-right">Mennyiség</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Kapcsoló csere</td><td class="text-right">5 db</td><td class="text-right">12 500 Ft</td></tr>
+        <tr><td>Konnektor csere (földelt)</td><td class="text-right">8 db</td><td class="text-right">19 200 Ft</td></tr>
+        <tr><td>LED panel felszerelés</td><td class="text-right">4 db</td><td class="text-right">24 000 Ft</td></tr>
+        <tr><td>Kábel fektetés</td><td class="text-right">25 fm</td><td class="text-right">15 000 Ft</td></tr>
+        <tr><td>Munkadíj</td><td class="text-right">6 óra</td><td class="text-right">42 000 Ft</td></tr>
+        <tr><td>Kiszállási díj</td><td class="text-right">1</td><td class="text-right">5 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>117 700 Ft</span></div>
+        <div class="row"><span>ÁFA 27%:</span><span>31 779 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>149 479 Ft</span></div>
+      </div>
+      <div class="payment">
+        <strong>Bankszámla:</strong> 10918001-00000062-12340001<br>
+        <strong>Közlemény:</strong> EF-2026/0089
+      </div>
+      <div class="footer">Garancia: 2 év a beépített anyagokra és munkára</div>
+    </div>
+  </div>
+
+  <!-- 3. Parkolási díj -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">3. Parkolási díj</span>
+      <span class="invoice-badge">Közlekedés</span>
+      <button class="download-btn" onclick="downloadInvoice('inv3', 'szamla_parkolas.png')">Letöltés</button>
+    </div>
+    <div class="invoice" id="inv3" style="width: 320px; font-family: 'Courier New', monospace;">
+      <div style="text-align: center; border-bottom: 1px dashed #333; padding-bottom: 10px; margin-bottom: 10px;">
+        <h2 style="font-size: 14px;">APCOA PARKING</h2>
+        <p style="font-size: 9px;">1051 Budapest, Vörösmarty tér</p>
+        <p style="font-size: 9px;">Adószám: 10776153-2-44</p>
+        <p>========================</p>
+        <p><strong>PARKOLÁSI SZÁMLA</strong></p>
+      </div>
+      <p><strong>Számla sz.:</strong> APC-2026-BP-456789</p>
+      <p><strong>Dátum:</strong> 2026.01.27</p>
+      <p><strong>Rendszám:</strong> ABC-123</p>
+      <p style="border-top: 1px dashed #333; margin: 10px 0; padding-top: 10px;">
+        <strong>Érkezés:</strong> 2026.01.27 09:15<br>
+        <strong>Távozás:</strong> 2026.01.27 14:45<br>
+        <strong>Időtartam:</strong> 5 óra 30 perc
+      </p>
+      <p style="border-top: 1px dashed #333; padding-top: 10px;">
+        Parkolási díj (6 óra × 800 Ft):<br>
+        <span style="font-size: 9px;">(megkezdett óra számít)</span>
+      </p>
+      <p style="font-size: 16px; font-weight: bold; text-align: center; margin: 10px 0;">
+        4 800 Ft
+      </p>
+      <p style="font-size: 9px;">
+        Nettó: 3 780 Ft<br>
+        ÁFA 27%: 1 020 Ft
+      </p>
+      <p style="border-top: 1px dashed #333; padding-top: 10px; font-size: 9px;">
+        Fizetés: Bankkártya<br>
+        Term.ID: APC-VT-001<br>
+        Auth: 789456
+      </p>
+      <p style="text-align: center; margin-top: 15px; font-size: 8px;">
+        www.apcoa.hu<br>
+        Köszönjük!
+      </p>
+    </div>
+  </div>
+
+  <!-- 4. Szemétszállítás -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">4. Szemétszállítás (közüzem)</span>
+      <span class="invoice-badge">Közüzem</span>
+      <button class="download-btn" onclick="downloadInvoice('inv4', 'szamla_szemetszallitas.png')">Letöltés</button>
+    </div>
+    <div class="invoice" id="inv4">
+      <div class="inv-header">
+        <div class="company">
+          <h2 style="color: #16a34a;">FKF Zrt.</h2>
+          <p>1081 Budapest, Alföldi u. 7.</p>
+          <p>Adószám: 10727161-2-44</p>
+        </div>
+        <div class="inv-badge" style="background: #16a34a; color: white;">HULLADÉK</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Számlaszám</label><span>FKF-2026/01-234567</span></div>
+        <div class="meta-box"><label>Szerződésszám</label><span>SZ-BP-2020-456789</span></div>
+        <div class="meta-box"><label>Időszak</label><span>2026.01.01-01.31</span></div>
+        <div class="meta-box"><label>Fizetési határidő</label><span>2026.02.15</span></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Szolgáltató</h4>
+          <p class="name">FKF Nonprofit Zrt.</p>
+          <p>Ügyfélszolg.: 06 1 459 2900</p>
+        </div>
+        <div class="party">
+          <h4>Fizető fél</h4>
+          <p class="name">Társasház (Minta u. 10.)</p>
+          <p>1118 Budapest, Minta u. 10.</p>
+          <p>Adószám: 18765432-1-43</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Szolgáltatás</th><th class="text-right">Mennyiség</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Kommunális hulladék gyűjtés (120L)</td><td class="text-right">4 × heti</td><td class="text-right">28 400 Ft</td></tr>
+        <tr><td>Szelektív gyűjtés (papír, műanyag)</td><td class="text-right">2 × heti</td><td class="text-right">0 Ft</td></tr>
+        <tr><td>Lomtalanítás (éves díj 1/12)</td><td class="text-right">1 hó</td><td class="text-right">2 500 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>30 900 Ft</span></div>
+        <div class="row"><span>ÁFA 27%:</span><span>8 343 Ft</span></div>
+        <div class="row total"><span>Fizetendő:</span><span>39 243 Ft</span></div>
+      </div>
+      <div class="payment">
+        <strong>Bankszámla:</strong> 10032000-00286078-00000000<br>
+        <strong>Közlemény:</strong> SZ-BP-2020-456789<br>
+        <strong>Csoportos beszedés:</strong> Aktív
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Grafikus design -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">5. Grafikai tervezés</span>
+      <span class="invoice-badge">Design</span>
+      <button class="download-btn" onclick="downloadInvoice('inv5', 'szamla_grafikus.png')">Letöltés</button>
+    </div>
+    <div class="invoice" id="inv5">
+      <div class="inv-header">
+        <div class="company">
+          <h2 style="color: #ec4899;">PixelPerfect Studio</h2>
+          <p>Horváth Krisztina ev.</p>
+          <p>1137 Budapest, Szent István krt. 22.</p>
+          <p>Adószám: 66778899-1-41</p>
+        </div>
+        <div class="inv-badge" style="background: #ec4899; color: white;">DÍJBEKÉRŐ</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Díjbekérő száma</label><span>PP-2026/015</span></div>
+        <div class="meta-box"><label>Kiállítás</label><span>2026.01.26</span></div>
+        <div class="meta-box"><label>Projekt</label><span>Arculatterv - BrandX</span></div>
+        <div class="meta-box"><label>Fizetési határidő</label><span>2026.02.09</span></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Szolgáltató</h4>
+          <p class="name">Horváth Krisztina ev.</p>
+          <p>KATA adózó</p>
+        </div>
+        <div class="party">
+          <h4>Megrendelő</h4>
+          <p class="name">BrandX Marketing Kft.</p>
+          <p>1054 Budapest, Hold u. 6.</p>
+          <p>Adószám: 44556677-2-41</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Munka megnevezése</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Logo tervezés (3 változat + véglegesítés)</td><td class="text-right">150 000 Ft</td></tr>
+        <tr><td>Névjegykártya design</td><td class="text-right">35 000 Ft</td></tr>
+        <tr><td>Levélpapír + boríték design</td><td class="text-right">45 000 Ft</td></tr>
+        <tr><td>Social media sablonok (5 db)</td><td class="text-right">75 000 Ft</td></tr>
+        <tr><td>Brand manual (arculati kézikönyv)</td><td class="text-right">95 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row" style="font-size: 11px; color: #6b7280;"><span>KATA - ÁFA mentes</span><span></span></div>
+        <div class="row total"><span>Fizetendő:</span><span>400 000 Ft</span></div>
+      </div>
+      <div class="payment">
+        <strong>Bankszámla:</strong> 11773016-11223344-00000000<br>
+        <strong>Közlemény:</strong> PP-2026/015 BrandX
+      </div>
+      <div class="footer">A forrásfájlok átadása a díj beérkezését követően történik.</div>
+    </div>
+  </div>
+
+  <!-- 6. Étkezési utalvány -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">6. Étkezési utalvány (SZÉP)</span>
+      <span class="invoice-badge">Vendéglátás</span>
+      <button class="download-btn" onclick="downloadInvoice('inv6', 'szamla_szep_kartya.png')">Letöltés</button>
+    </div>
+    <div class="invoice" id="inv6" style="width: 360px;">
+      <div style="text-align: center; margin-bottom: 15px;">
+        <h2 style="color: #059669;">🍽️ Belvárosi Étterem</h2>
+        <p style="font-size: 10px;">1051 Budapest, Október 6. u. 15.</p>
+        <p style="font-size: 10px;">Adószám: 12121212-2-41</p>
+      </div>
+      <div style="border: 2px solid #059669; padding: 10px; text-align: center; margin-bottom: 15px;">
+        <p style="font-size: 18px; font-weight: bold;">SZÉP KÁRTYA SZÁMLA</p>
+        <p style="font-size: 10px;">Vendéglátás alszámla</p>
+      </div>
+      <p><strong>Számla sz.:</strong> BE-2026/01234</p>
+      <p><strong>Dátum:</strong> 2026.01.28 13:25</p>
+      <p><strong>Asztal:</strong> 12</p>
+      <table style="margin: 15px 0;">
+        <tr><th>Tétel</th><th class="text-right">Ár</th></tr>
+        <tr><td>Gulyásleves</td><td class="text-right">2 190 Ft</td></tr>
+        <tr><td>Bécsi szelet + köret</td><td class="text-right">4 290 Ft</td></tr>
+        <tr><td>Túrógombóc</td><td class="text-right">1 890 Ft</td></tr>
+        <tr><td>Ásványvíz 0.5L</td><td class="text-right">690 Ft</td></tr>
+        <tr><td>Espresso</td><td class="text-right">590 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Összesen:</span><span>9 650 Ft</span></div>
+        <div class="row" style="font-size: 9px; color: #666;"><span>Ebből ÁFA 27%:</span><span>2 052 Ft</span></div>
+        <div class="row total" style="color: #059669;"><span>SZÉP kártya:</span><span>9 650 Ft</span></div>
+      </div>
+      <div style="background: #d1fae5; padding: 10px; margin-top: 15px; border-radius: 4px; text-align: center;">
+        <p style="font-weight: bold;">✓ FIZETVE - SZÉP Kártya</p>
+        <p style="font-size: 9px;">Kártyaszám: **** 5678</p>
+        <p style="font-size: 9px;">Tranzakció: SZEP-20260128-001234</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Fordítás/tolmács -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">7. Fordítási szolgáltatás</span>
+      <span class="invoice-badge">Szolgáltatás</span>
+      <button class="download-btn" onclick="downloadInvoice('inv7', 'szamla_forditas.png')">Letöltés</button>
+    </div>
+    <div class="invoice" id="inv7">
+      <div class="inv-header">
+        <div class="company">
+          <h2>LinguaPro Fordítóiroda Kft.</h2>
+          <p>1052 Budapest, Petőfi S. u. 3.</p>
+          <p>Adószám: 33445566-2-41</p>
+          <p>OFFI eng.: 2020/HU/12345</p>
+        </div>
+        <div class="inv-badge" style="background: #6366f1; color: white;">SZÁMLA</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Számlaszám</label><span>LP-2026/00234</span></div>
+        <div class="meta-box"><label>Megrendelés</label><span>MR-2026/089</span></div>
+        <div class="meta-box"><label>Kiállítás</label><span>2026.01.27</span></div>
+        <div class="meta-box"><label>Fiz. határidő</label><span>2026.02.10</span></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Szolgáltató</h4>
+          <p class="name">LinguaPro Kft.</p>
+          <p>Hiteles fordítások</p>
+        </div>
+        <div class="party">
+          <h4>Megrendelő</h4>
+          <p class="name">Export-Import Zrt.</p>
+          <p>1095 Budapest, Soroksári út 30.</p>
+          <p>Adószám: 55443322-2-43</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Szolgáltatás</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Szerződés fordítás (EN→HU)</td><td class="text-right">4 500 szó</td><td class="text-right">18 Ft/szó</td><td class="text-right">81 000 Ft</td></tr>
+        <tr><td>Műszaki dokumentáció (DE→HU)</td><td class="text-right">2 800 szó</td><td class="text-right">22 Ft/szó</td><td class="text-right">61 600 Ft</td></tr>
+        <tr><td>Hiteles fordítás záradék</td><td class="text-right">3 db</td><td class="text-right">8 000 Ft</td><td class="text-right">24 000 Ft</td></tr>
+        <tr><td>Expressz pótdíj (48 óra)</td><td class="text-right">1</td><td class="text-right">25 000 Ft</td><td class="text-right">25 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>191 600 Ft</span></div>
+        <div class="row"><span>ÁFA 27%:</span><span>51 732 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>243 332 Ft</span></div>
+      </div>
+      <div class="payment">
+        <strong>Bankszámla:</strong> 11600006-00000000-12345678<br>
+        <strong>Közlemény:</strong> LP-2026/00234
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Oktatás/tanfolyam -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">8. Tanfolyam díj</span>
+      <span class="invoice-badge">Oktatás</span>
+      <button class="download-btn" onclick="downloadInvoice('inv8', 'szamla_tanfolyam.png')">Letöltés</button>
+    </div>
+    <div class="invoice" id="inv8">
+      <div class="inv-header">
+        <div class="company">
+          <h2 style="color: #8b5cf6;">TechEdu Academy Kft.</h2>
+          <p>1061 Budapest, Király u. 26.</p>
+          <p>Adószám: 77889900-2-42</p>
+          <p>Felnőttképzési eng.: E-001234/2022</p>
+        </div>
+        <div class="inv-badge" style="background: #8b5cf6; color: white;">OKTATÁS</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Számlaszám</label><span>TE-2026/00567</span></div>
+        <div class="meta-box"><label>Tanfolyam kód</label><span>WEB-REACT-2026/01</span></div>
+        <div class="meta-box"><label>Időszak</label><span>2026.02.01-02.28</span></div>
+        <div class="meta-box"><label>Fizetési határidő</label><span>2026.01.31</span></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Képző intézmény</h4>
+          <p class="name">TechEdu Academy Kft.</p>
+        </div>
+        <div class="party">
+          <h4>Résztvevő / Cég</h4>
+          <p class="name">FutureDev Kft.</p>
+          <p>1134 Budapest, Róbert K. krt. 59.</p>
+          <p>Adószám: 88990011-2-41</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Képzés megnevezése</th><th class="text-right">Fő</th><th class="text-right">Összeg</th></tr>
+        <tr><td>React.js fejlesztői képzés (40 óra)</td><td class="text-right">3</td><td class="text-right">450 000 Ft</td></tr>
+        <tr><td>Tananyag és jegyzet</td><td class="text-right">3</td><td class="text-right">30 000 Ft</td></tr>
+        <tr><td>Vizsga és tanúsítvány</td><td class="text-right">3</td><td class="text-right">45 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row" style="color: #666; font-size: 10px;"><span>Felnőttképzés - ÁFA mentes (Áfa tv. 85.§)</span></div>
+        <div class="row total"><span>Fizetendő:</span><span>525 000 Ft</span></div>
+      </div>
+      <div class="payment">
+        <strong>Bankszámla:</strong> 10400113-50526594-00000000<br>
+        <strong>Közlemény:</strong> TE-2026/00567 + résztvevő neve
+      </div>
+      <div class="footer">Résztvevők: Kis Péter, Nagy Anna, Szabó Gábor</div>
+    </div>
+  </div>
+
+  <!-- 9. Dropshipping/Aliexpress (külföldi) -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">9. Kínai import (AliExpress)</span>
+      <span class="invoice-badge">Import</span>
+      <button class="download-btn" onclick="downloadInvoice('inv9', 'szamla_aliexpress.png')">Letöltés</button>
+    </div>
+    <div class="invoice" id="inv9">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ff4747; padding-bottom: 10px; margin-bottom: 15px;">
+        <div>
+          <h2 style="color: #ff4747; font-size: 20px;">AliExpress</h2>
+          <p style="font-size: 9px; color: #666;">Alibaba.com Singapore E-Commerce Pte Ltd</p>
+        </div>
+        <div style="text-align: right; font-size: 9px; color: #666;">
+          <p>26/F Tower One, Times Square</p>
+          <p>1 Matheson Street, Causeway Bay</p>
+          <p>Hong Kong</p>
+        </div>
+      </div>
+      <div style="background: #fff5f5; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+        <p><strong>Invoice / Számla</strong></p>
+        <p>Order: AE8012345678901234</p>
+        <p>Date: 2026-01-20</p>
+        <p>Shipped: 2026-01-22</p>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Ship to / Szállítási cím</h4>
+          <p class="name">WebShop Hungary Kft.</p>
+          <p>1112 Budapest, Budaörsi út 123.</p>
+          <p>Hungary</p>
+        </div>
+        <div class="party">
+          <h4>Seller / Eladó</h4>
+          <p class="name">Shenzhen Tech Store</p>
+          <p>Guangdong, China</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Item</th><th class="text-right">Qty</th><th class="text-right">Price</th></tr>
+        <tr><td>Bluetooth Earbuds TWS</td><td class="text-right">50</td><td class="text-right">$8.50</td></tr>
+        <tr><td>Phone Case (mixed)</td><td class="text-right">100</td><td class="text-right">$1.20</td></tr>
+        <tr><td>USB-C Cable 1m</td><td class="text-right">200</td><td class="text-right">$0.80</td></tr>
+        <tr><td>Shipping (Air)</td><td class="text-right">1</td><td class="text-right">$45.00</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Subtotal:</span><span>$750.00</span></div>
+        <div class="row"><span>Shipping:</span><span>$45.00</span></div>
+        <div class="row total"><span>Total USD:</span><span>$795.00</span></div>
+        <div class="row" style="color: #666;"><span>~ HUF (390 Ft/$):</span><span>310 050 Ft</span></div>
+      </div>
+      <div style="background: #fef3c7; padding: 10px; margin-top: 15px; border-radius: 4px; font-size: 9px;">
+        <strong>⚠️ Vámkezelés:</strong> EU importnál 27% ÁFA + esetleges vám fizetendő.<br>
+        Tracking: LP123456789CN
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. Záloghitel törlesztés -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">10. Lízing törlesztés</span>
+      <span class="invoice-badge">Pénzügy</span>
+      <button class="download-btn" onclick="downloadInvoice('inv10', 'szamla_lizing.png')">Letöltés</button>
+    </div>
+    <div class="invoice" id="inv10">
+      <div class="inv-header">
+        <div class="company">
+          <h2 style="color: #0369a1;">Merkantil Bank Zrt.</h2>
+          <p>1051 Budapest, József nádor tér 2-4.</p>
+          <p>Adószám: 10011922-4-44</p>
+        </div>
+        <div class="inv-badge" style="background: #0369a1; color: white;">LÍZING</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Számla száma</label><span>MKB-L-2026/02-456789</span></div>
+        <div class="meta-box"><label>Szerződésszám</label><span>FL-2024-123456</span></div>
+        <div class="meta-box"><label>Lízingtárgy</label><span>Toyota Corolla (XYZ-789)</span></div>
+        <div class="meta-box"><label>Fizetési határidő</label><span>2026.02.05</span></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Lízingbeadó</h4>
+          <p class="name">Merkantil Bank Zrt.</p>
+        </div>
+        <div class="party">
+          <h4>Lízingbevevő</h4>
+          <p class="name">Futár Express Kft.</p>
+          <p>1106 Budapest, Maglódi út 8.</p>
+          <p>Adószám: 22114433-2-42</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Tétel</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Lízing törlesztőrészlet - 2026. február (24/48)</td><td class="text-right">98 500 Ft</td></tr>
+        <tr><td>- ebből tőke</td><td class="text-right">72 340 Ft</td></tr>
+        <tr><td>- ebből kamat</td><td class="text-right">26 160 Ft</td></tr>
+        <tr><td>CASCO biztosítás (havi díj)</td><td class="text-right">12 500 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó törlesztés:</span><span>98 500 Ft</span></div>
+        <div class="row"><span>ÁFA (kamat mentes):</span><span>0 Ft</span></div>
+        <div class="row"><span>CASCO:</span><span>12 500 Ft</span></div>
+        <div class="row total"><span>Fizetendő:</span><span>111 000 Ft</span></div>
+      </div>
+      <div style="background: #f0f9ff; padding: 10px; margin-top: 15px; border-radius: 4px; font-size: 10px;">
+        <strong>Hátralévő tőke:</strong> 2 456 780 Ft<br>
+        <strong>Hátralévő futamidő:</strong> 24 hónap<br>
+        <strong>Maradványérték:</strong> 1 200 000 Ft
+      </div>
+      <div class="payment">
+        <strong>Beszedés:</strong> Csoportos beszedési megbízás<br>
+        <strong>Számla:</strong> 11600006-00000000-98765432
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+async function downloadInvoice(elementId, filename) {
+  const element = document.getElementById(elementId);
+  try {
+    const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (err) { alert('Hiba: ' + err.message); }
+}
+
+async function downloadAll() {
+  const invoices = [
+    { id: 'inv1', name: 'szamla_taxi.png' },
+    { id: 'inv2', name: 'szamla_villanyszerelo.png' },
+    { id: 'inv3', name: 'szamla_parkolas.png' },
+    { id: 'inv4', name: 'szamla_szemetszallitas.png' },
+    { id: 'inv5', name: 'szamla_grafikus.png' },
+    { id: 'inv6', name: 'szamla_szep_kartya.png' },
+    { id: 'inv7', name: 'szamla_forditas.png' },
+    { id: 'inv8', name: 'szamla_tanfolyam.png' },
+    { id: 'inv9', name: 'szamla_aliexpress.png' },
+    { id: 'inv10', name: 'szamla_lizing.png' }
+  ];
+  for (let i = 0; i < invoices.length; i++) {
+    await downloadInvoice(invoices[i].id, invoices[i].name);
+    await new Promise(r => setTimeout(r, 500));
+  }
+  alert('Mind a 10 számla letöltve!');
+}
+</script>
+
+</body>
+</html>

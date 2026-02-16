@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teszt Dokumentumok - AdminAI</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Times New Roman', serif; background: #f5f5f5; }
+    .document {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 20px auto;
+      padding: 25mm 20mm;
+      background: white;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      page-break-after: always;
+    }
+    .header { 
+      display: flex; 
+      align-items: center; 
+      gap: 15px; 
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #1a365d;
+    }
+    .logo {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .logo.neak { background: linear-gradient(135deg, #276749 0%, #38a169 100%); }
+    .logo.onk { background: linear-gradient(135deg, #744210 0%, #c05621 100%); }
+    .org-name { font-size: 18px; font-weight: bold; color: #1a365d; }
+    .org-name.neak { color: #276749; }
+    .org-name.onk { color: #744210; }
+    .org-sub { font-size: 12px; color: #666; }
+    .meta { margin-bottom: 25px; font-size: 13px; }
+    .meta-row { display: flex; margin-bottom: 5px; }
+    .meta-label { width: 120px; font-weight: bold; }
+    .subject {
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      margin: 30px 0;
+      padding: 15px;
+      background: #f0f4f8;
+      border-left: 4px solid #1a365d;
+    }
+    .subject.neak { background: #f0fff4; border-left-color: #276749; }
+    .subject.onk { background: #fffaf0; border-left-color: #c05621; }
+    .body { line-height: 1.8; text-align: justify; font-size: 14px; }
+    .body p { margin-bottom: 15px; }
+    .highlight {
+      background: #fef3c7;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+    }
+    .amount { font-size: 18px; font-weight: bold; color: #c53030; }
+    .deadline { font-weight: bold; color: #1a365d; }
+    .bank-info {
+      background: #e2e8f0;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+      font-family: monospace;
+    }
+    .warning {
+      background: #fed7d7;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+      border-left: 4px solid #c53030;
+    }
+    .info {
+      background: #bee3f8;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+      border-left: 4px solid #2b6cb0;
+    }
+    .signature {
+      margin-top: 50px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .stamp {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed #999;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #666;
+      text-align: center;
+    }
+    .sig-line {
+      text-align: center;
+    }
+    .sig-line div:first-child {
+      width: 200px;
+      border-top: 1px solid #333;
+      padding-top: 5px;
+      margin-top: 60px;
+    }
+    ul { margin-left: 25px; margin-bottom: 15px; }
+    li { margin-bottom: 8px; }
+    .page-title {
+      text-align: center;
+      font-size: 24px;
+      padding: 40px;
+      background: #1a365d;
+      color: white;
+      margin-bottom: 0;
+    }
+    .instructions {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #e2e8f0;
+      border-radius: 8px;
+    }
+    @media print {
+      .instructions, .page-title { display: none; }
+      .document { box-shadow: none; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-title">AdminAI Teszt Dokumentumok</div>
+<div class="instructions">
+  <h3>Használati útmutató:</h3>
+  <ol>
+    <li>Nyomtasd ki PDF-be (Ctrl+P → Mentés PDF-ként)</li>
+    <li>Vagy készíts screenshotot minden dokumentumról</li>
+    <li>Töltsd fel az AdminAI-ba teszteléshez</li>
+  </ol>
+</div>
+
+<!-- 1. NAV Fizetési Felszólítás -->
+<div class="document">
+  <div class="header">
+    <div class="logo">NAV</div>
+    <div>
+      <div class="org-name">Nemzeti Adó- és Vámhivatal</div>
+      <div class="org-sub">Közép-magyarországi Adó- és Vámigazgatóság</div>
+    </div>
+  </div>
+  
+  <div class="meta">
+    <div class="meta-row"><span class="meta-label">Ügyiratszám:</span> NAV-2026-00234/K</div>
+    <div class="meta-row"><span class="meta-label">Ügyintéző:</span> Dr. Kovács Péter</div>
+    <div class="meta-row"><span class="meta-label">Telefon:</span> +36 1 428 5100</div>
+    <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 15.</div>
+  </div>
+
+  <div class="subject">FIZETÉSI FELSZÓLÍTÁS<br>Személyi jövedelemadó tartozás</div>
+
+  <div class="body">
+    <p>Tisztelt Adózó!</p>
+    
+    <p>Tájékoztatjuk, hogy nyilvántartásunk szerint Önnek a 2025. adóévre vonatkozó <strong>személyi jövedelemadó</strong> tartozása áll fenn.</p>
+
+    <div class="highlight">
+      <strong>Tartozás összege:</strong> <span class="amount">127 450 Ft</span><br>
+      <strong>Jogcím:</strong> Személyi jövedelemadó (SZJA) - 2025. adóév<br>
+      <strong>Fizetési határidő:</strong> <span class="deadline">2026. február 15.</span>
+    </div>
+
+    <p>Kérjük, hogy a fenti összeget a megadott határidőig szíveskedjen az alábbi számlaszámra befizetni:</p>
+
+    <div class="bank-info">
+      <strong>Kedvezményezett:</strong> NAV Személyi jövedelemadó bevételi számla<br>
+      <strong>Számlaszám:</strong> 10032000-01076019-00000000<br>
+      <strong>Közlemény:</strong> SZJA-2025-[adóazonosító jel]
+    </div>
+
+    <div class="warning">
+      <strong>Figyelmeztetés:</strong> Késedelmes fizetés esetén a tartozás után a jegybanki alapkamat kétszeresének megfelelő mértékű <strong>késedelmi pótlékot</strong> számítunk fel. Továbbá végrehajtási eljárás megindítására kerülhet sor.
+    </div>
+
+    <p>Amennyiben a tartozást már kiegyenlítette, kérjük, tekintse tárgytalannak jelen levelünket.</p>
+    
+    <p>Tisztelettel:</p>
+  </div>
+
+  <div class="signature">
+    <div class="stamp">HIVATALOS<br>PECSÉT<br>HELYE</div>
+    <div class="sig-line">
+      <div>Dr. Kovács Péter</div>
+      <div>osztályvezető</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. NAV Adóellenőrzés Értesítés -->
+<div class="document">
+  <div class="header">
+    <div class="logo">NAV</div>
+    <div>
+      <div class="org-name">Nemzeti Adó- és Vámhivatal</div>
+      <div class="org-sub">Kiemelt Adózók Adó- és Vámigazgatósága</div>
+    </div>
+  </div>
+  
+  <div class="meta">
+    <div class="meta-row"><span class="meta-label">Ügyiratszám:</span> NAV-2026-00567/E</div>
+    <div class="meta-row"><span class="meta-label">Ügyintéző:</span> Szabó Mária</div>
+    <div class="meta-row"><span class="meta-label">Telefon:</span> +36 1 428 5200</div>
+    <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 20.</div>
+  </div>
+
+  <div class="subject">ÉRTESÍTÉS ADÓELLENŐRZÉSRŐL<br>Bevallások utólagos vizsgálata</div>
+
+  <div class="body">
+    <p>Tisztelt Adózó!</p>
+    
+    <p>Értesítjük, hogy az adózás rendjéről szóló 2017. évi CL. törvény alapján társaságánál <strong>átfogó adóellenőrzést</strong> rendelünk el a 2024-2025. üzleti évekre vonatkozóan.</p>
+
+    <div class="highlight">
+      <strong>Ellenőrzés kezdete:</strong> <span class="deadline">2026. február 10. (hétfő) 10:00</span><br>
+      <strong>Helyszín:</strong> Székhely szerinti iroda, vagy NAV hivatali helyiség<br>
+      <strong>Vizsgálat tárgya:</strong> ÁFA, TAO, SZJA bevallások
+    </div>
+
+    <p>Az ellenőrzés megkezdéséig kérjük, készítse elő az alábbi dokumentumokat:</p>
+
+    <ul>
+      <li>2024-2025. évi számviteli bizonylatok, főkönyvi kivonatok</li>
+      <li>Kimenő és bejövő számlák tételes nyilvántartása</li>
+      <li>Bankkivonatok a vizsgált időszakra</li>
+      <li>Szerződések, megállapodások másolatai</li>
+      <li>Bérszámfejtési dokumentumok</li>
+    </ul>
+
+    <div class="info">
+      <strong>Fontos:</strong> Az ellenőrzésen való megjelenés kötelező. Akadályoztatás esetén haladéktalanul értesítse az ügyintézőt. A dokumentumok rendelkezésre bocsátásának elmulasztása mulasztási bírsággal járhat.
+    </div>
+
+    <p>Együttműködését előre is köszönjük.</p>
+    
+    <p>Tisztelettel:</p>
+  </div>
+
+  <div class="signature">
+    <div class="stamp">HIVATALOS<br>PECSÉT<br>HELYE</div>
+    <div class="sig-line">
+      <div>Szabó Mária</div>
+      <div>revizor</div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. NEAK/TB Levél -->
+<div class="document">
+  <div class="header">
+    <div class="logo neak">NEAK</div>
+    <div>
+      <div class="org-name neak">Nemzeti Egészségbiztosítási Alapkezelő</div>
+      <div class="org-sub">Egészségbiztosítási Pénztári Feladatok Főosztálya</div>
+    </div>
+  </div>
+  
+  <div class="meta">
+    <div class="meta-row"><span class="meta-label">Ügyiratszám:</span> NEAK-2026-TB-00891</div>
+    <div class="meta-row"><span class="meta-label">TAJ szám:</span> 123-456-789</div>
+    <div class="meta-row"><span class="meta-label">Ügyintéző:</span> Tóth Katalin</div>
+    <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 18.</div>
+  </div>
+
+  <div class="subject neak">ÉRTESÍTÉS<br>Egészségügyi szolgáltatási járulék tartozásról</div>
+
+  <div class="body">
+    <p>Tisztelt Ügyfelünk!</p>
+    
+    <p>Tájékoztatjuk, hogy nyilvántartásunk szerint Ön nem rendelkezik Tbj. szerinti biztosítási jogviszonnyal, és az <strong>egészségügyi szolgáltatási járulék</strong> fizetési kötelezettségének nem tett eleget.</p>
+
+    <div class="highlight">
+      <strong>Tartozás időszaka:</strong> 2025. november - december<br>
+      <strong>Havi járulék összege:</strong> 11 300 Ft/hó<br>
+      <strong>Összes tartozás:</strong> <span class="amount">22 600 Ft</span><br>
+      <strong>Fizetési határidő:</strong> <span class="deadline">2026. február 28.</span>
+    </div>
+
+    <p>A befizetést az alábbi számlaszámra kérjük teljesíteni:</p>
+
+    <div class="bank-info">
+      <strong>Kedvezményezett:</strong> NEAK Egészségbiztosítási Alap<br>
+      <strong>Számlaszám:</strong> 10032000-00280002-00000000<br>
+      <strong>Közlemény:</strong> TAJ: 123456789 - EÜSZJ 2025/11-12
+    </div>
+
+    <div class="warning">
+      <strong>Figyelmeztetés:</strong> A tartozás rendezésének elmulasztása esetén TAJ kártyája érvénytelenné válhat, és az egészségügyi szolgáltatásokért teljes árat kell fizetnie. Sürgős esetben a beavatkozás költségét utólag kiszámlázzuk.
+    </div>
+
+    <p>Amennyiben időközben biztosítási jogviszonyt létesített (munkaviszony, egyéni vállalkozás), kérjük jelezze irodánk felé a jogviszony igazolásával együtt.</p>
+    
+    <p>Tisztelettel:</p>
+  </div>
+
+  <div class="signature">
+    <div class="stamp">HIVATALOS<br>PECSÉT<br>HELYE</div>
+    <div class="sig-line">
+      <div>Tóth Katalin</div>
+      <div>főelőadó</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. Önkormányzat - HIPA -->
+<div class="document">
+  <div class="header">
+    <div class="logo onk">BP<br>XIII</div>
+    <div>
+      <div class="org-name onk">Budapest Főváros XIII. Kerületi Önkormányzat</div>
+      <div class="org-sub">Adóügyi Osztály</div>
+    </div>
+  </div>
+  
+  <div class="meta">
+    <div class="meta-row"><span class="meta-label">Ügyiratszám:</span> ÖNK-2026-HIPA-00345</div>
+    <div class="meta-row"><span class="meta-label">Adószám:</span> 12345678-2-41</div>
+    <div class="meta-row"><span class="meta-label">Ügyintéző:</span> Kiss János</div>
+    <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 22.</div>
+  </div>
+
+  <div class="subject onk">HATÁROZAT<br>Helyi iparűzési adó kivetése - 2026. adóév</div>
+
+  <div class="body">
+    <p>Tisztelt Adózó!</p>
+    
+    <p>A helyi adókról szóló 1990. évi C. törvény, valamint Budapest Főváros XIII. Kerület Önkormányzata Képviselő-testületének helyi iparűzési adóról szóló rendelete alapján az alábbi határozatot hozom:</p>
+
+    <div class="highlight">
+      <strong>2026. évi helyi iparűzési adó összege:</strong> <span class="amount">89 000 Ft</span><br><br>
+      <strong>Adóalap:</strong> 4 450 000 Ft (2025. évi nettó árbevétel)<br>
+      <strong>Adómérték:</strong> 2%<br>
+      <strong>Számított adó:</strong> 89 000 Ft
+    </div>
+
+    <p><strong>Fizetési ütemezés:</strong></p>
+    <ul>
+      <li>I. részlet: <strong>44 500 Ft</strong> - határidő: <span class="deadline">2026. március 15.</span></li>
+      <li>II. részlet: <strong>44 500 Ft</strong> - határidő: <span class="deadline">2026. szeptember 15.</span></li>
+    </ul>
+
+    <div class="bank-info">
+      <strong>Kedvezményezett:</strong> Budapest XIII. ker. Önkormányzat<br>
+      <strong>Számlaszám:</strong> 12001008-00156698-00100001<br>
+      <strong>Közlemény:</strong> HIPA-2026-[adószám]
+    </div>
+
+    <div class="info">
+      <strong>Jogorvoslati tájékoztató:</strong> Jelen határozat ellen a kézhezvételtől számított 15 napon belül fellebbezéssel élhet a Budapest Főváros Kormányhivatalához címzett, de az Adóügyi Osztálynál benyújtandó fellebbezéssel. A fellebbezés illetéke 5 000 Ft.
+    </div>
+
+    <p>Tisztelettel:</p>
+  </div>
+
+  <div class="signature">
+    <div class="stamp">HIVATALOS<br>PECSÉT<br>HELYE</div>
+    <div class="sig-line">
+      <div>Kiss János</div>
+      <div>adóügyi előadó</div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. NAV ÁFA Hiánypótlás -->
+<div class="document">
+  <div class="header">
+    <div class="logo">NAV</div>
+    <div>
+      <div class="org-name">Nemzeti Adó- és Vámhivatal</div>
+      <div class="org-sub">Dél-budapesti Adó- és Vámigazgatóság</div>
+    </div>
+  </div>
+  
+  <div class="meta">
+    <div class="meta-row"><span class="meta-label">Ügyiratszám:</span> NAV-2026-AFA-00123</div>
+    <div class="meta-row"><span class="meta-label">Adószám:</span> 98765432-2-43</div>
+    <div class="meta-row"><span class="meta-label">Ügyintéző:</span> Nagy Eszter</div>
+    <div class="meta-row"><span class="meta-label">Kelt:</span> Budapest, 2026. január 25.</div>
+  </div>
+
+  <div class="subject">HIÁNYPÓTLÁSI FELHÍVÁS<br>ÁFA bevallás - 2025. IV. negyedév</div>
+
+  <div class="body">
+    <p>Tisztelt Adózó!</p>
+    
+    <p>A 2025. IV. negyedévi általános forgalmi adó (ÁFA) bevallásának feldolgozása során hiányosságokat állapítottunk meg. Felhívjuk, hogy az alábbi tételeket szíveskedjen pótolni:</p>
+
+    <div class="warning">
+      <strong>Hiányzó adatok:</strong>
+      <ul style="margin-top: 10px;">
+        <li>1 000 000 Ft feletti ügyletek tételes számla-kimutatása (M-es lap)</li>
+        <li>Közösségen belüli értékesítések összesítő nyilatkozata (A60-as nyomtatvány)</li>
+        <li>Fordított adózású ügyletek részletezése</li>
+      </ul>
+    </div>
+
+    <div class="highlight">
+      <strong>Hiánypótlás határideje:</strong> <span class="deadline">2026. február 5.</span><br>
+      <strong>Benyújtás módja:</strong> Elektronikusan az eBEV rendszeren keresztül
+    </div>
+
+    <p>A hiánypótlás elmulasztása esetén:</p>
+    <ul>
+      <li>A bevallást hibásnak tekintjük</li>
+      <li>Mulasztási bírság kiszabására kerülhet sor (max. 500 000 Ft)</li>
+      <li>Az adó-visszaigénylés felfüggesztésre kerül</li>
+    </ul>
+
+    <div class="info">
+      <strong>Segítségnyújtás:</strong> Kérdés esetén keresse az ügyintézőt a fenti telefonszámon, vagy a nav.gov.hu oldalon a "Gyakori kérdések" menüpont alatt talál további információkat.
+    </div>
+
+    <p>Együttműködését köszönjük.</p>
+    
+    <p>Tisztelettel:</p>
+  </div>
+
+  <div class="signature">
+    <div class="stamp">HIVATALOS<br>PECSÉT<br>HELYE</div>
+    <div class="sig-line">
+      <div>Nagy Eszter</div>
+      <div>adótanácsos</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

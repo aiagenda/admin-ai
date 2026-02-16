@@ -3,3 +3,5 @@ command = ""
 
 [deploy]
 import_map = ""
+# Allow cron job to call without JWT
+verify_jwt = false

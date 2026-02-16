@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup Számlák - AdminAI Teszt</title>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #1a1a2e; color: white; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 30px; }
+    .controls { text-align: center; margin-bottom: 30px; }
+    .controls button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .controls button:hover { opacity: 0.9; }
+    .invoice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .invoice-wrapper {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 15px;
+    }
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .invoice-title { font-weight: bold; color: #a5b4fc; }
+    .download-btn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .download-btn:hover { background: #059669; }
+    
+    /* Invoice styling */
+    .invoice {
+      width: 400px;
+      background: white;
+      color: #333;
+      padding: 25px;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .invoice-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .company-info h2 { font-size: 16px; color: #1f2937; margin-bottom: 5px; }
+    .company-info p { color: #6b7280; font-size: 10px; }
+    .invoice-badge {
+      background: #dbeafe;
+      color: #1d4ed8;
+      padding: 8px 15px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
+      height: fit-content;
+    }
+    .invoice-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .meta-box { background: #f9fafb; padding: 10px; border-radius: 6px; }
+    .meta-box label { font-size: 9px; color: #6b7280; text-transform: uppercase; }
+    .meta-box p { font-weight: bold; color: #1f2937; margin-top: 3px; }
+    .parties {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .party { background: #f9fafb; padding: 12px; border-radius: 6px; }
+    .party h4 { font-size: 10px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase; }
+    .party p { margin-bottom: 3px; }
+    .party .name { font-weight: bold; color: #1f2937; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    th { background: #f3f4f6; text-align: left; padding: 8px; font-size: 9px; text-transform: uppercase; color: #6b7280; }
+    td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+    .text-right { text-align: right; }
+    .totals { margin-left: auto; width: 200px; }
+    .totals .row { display: flex; justify-content: space-between; padding: 5px 0; }
+    .totals .row.total { font-weight: bold; font-size: 14px; color: #1f2937; border-top: 2px solid #1f2937; margin-top: 5px; padding-top: 10px; }
+    .payment-info { background: #fef3c7; padding: 12px; border-radius: 6px; margin-top: 15px; }
+    .payment-info h4 { color: #92400e; font-size: 10px; margin-bottom: 8px; }
+    .payment-info p { color: #78350f; }
+    .footer { margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; text-align: center; color: #9ca3af; font-size: 9px; }
+  </style>
+</head>
+<body>
+
+<h1>Mockup Számlák - AdminAI Teszt</h1>
+
+<div class="controls">
+  <button onclick="downloadAll()">Összes letöltése (ZIP)</button>
+</div>
+
+<div class="invoice-grid" id="invoiceGrid">
+
+  <!-- Invoice 1: IT szolgáltatás -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">1. IT Szolgáltatás számla</span>
+      <button class="download-btn" onclick="downloadInvoice('invoice1', 'szamla_it_szolgaltatas.png')">Letöltés PNG</button>
+    </div>
+    <div class="invoice" id="invoice1">
+      <div class="invoice-top">
+        <div class="company-info">
+          <h2>TechPro Solutions Kft.</h2>
+          <p>1052 Budapest, Váci utca 12.</p>
+          <p>Adószám: 12345678-2-41</p>
+          <p>Tel: +36 1 234 5678</p>
+        </div>
+        <div class="invoice-badge">SZÁMLA</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="meta-box"><label>Számla száma</label><p>TPK-2026/0042</p></div>
+        <div class="meta-box"><label>Kiállítás</label><p>2026. január 15.</p></div>
+        <div class="meta-box"><label>Teljesítés</label><p>2026. január 15.</p></div>
+        <div class="meta-box"><label>Fizetési határidő</label><p>2026. február 14.</p></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Eladó</h4>
+          <p class="name">TechPro Solutions Kft.</p>
+          <p>1052 Budapest, Váci utca 12.</p>
+          <p>Adószám: 12345678-2-41</p>
+        </div>
+        <div class="party">
+          <h4>Vevő</h4>
+          <p class="name">Kovács János EV</p>
+          <p>1134 Budapest, Lehel u. 45.</p>
+          <p>Adószám: 67891234-1-41</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Megnevezés</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Weboldal karbantartás - havi díj</td><td class="text-right">1 hó</td><td class="text-right">45 000 Ft</td><td class="text-right">45 000 Ft</td></tr>
+        <tr><td>Domain regisztráció (1 év)</td><td class="text-right">1 db</td><td class="text-right">5 000 Ft</td><td class="text-right">5 000 Ft</td></tr>
+        <tr><td>SSL tanúsítvány</td><td class="text-right">1 db</td><td class="text-right">12 000 Ft</td><td class="text-right">12 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>62 000 Ft</span></div>
+        <div class="row"><span>ÁFA (27%):</span><span>16 740 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>78 740 Ft</span></div>
+      </div>
+      <div class="payment-info">
+        <h4>Fizetési információk</h4>
+        <p><strong>Bankszámla:</strong> 11773016-01onal819-00000000 (OTP Bank)</p>
+        <p><strong>Közlemény:</strong> TPK-2026/0042</p>
+      </div>
+      <div class="footer">Ez a számla elektronikusan készült, aláírás nélkül érvényes.</div>
+    </div>
+  </div>
+
+  <!-- Invoice 2: Építőanyag -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">2. Építőanyag számla</span>
+      <button class="download-btn" onclick="downloadInvoice('invoice2', 'szamla_epitoanyag.png')">Letöltés PNG</button>
+    </div>
+    <div class="invoice" id="invoice2">
+      <div class="invoice-top">
+        <div class="company-info">
+          <h2>MesterBau Kft.</h2>
+          <p>2030 Érd, Budai út 88.</p>
+          <p>Adószám: 23456789-2-13</p>
+          <p>Tel: +36 23 456 789</p>
+        </div>
+        <div class="invoice-badge">SZÁMLA</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="meta-box"><label>Számla száma</label><p>MB-2026/00156</p></div>
+        <div class="meta-box"><label>Kiállítás</label><p>2026. január 20.</p></div>
+        <div class="meta-box"><label>Teljesítés</label><p>2026. január 20.</p></div>
+        <div class="meta-box"><label>Fizetési határidő</label><p>2026. február 4.</p></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Eladó</h4>
+          <p class="name">MesterBau Kft.</p>
+          <p>2030 Érd, Budai út 88.</p>
+          <p>Adószám: 23456789-2-13</p>
+        </div>
+        <div class="party">
+          <h4>Vevő</h4>
+          <p class="name">Nagy Építő Bt.</p>
+          <p>1112 Budapest, Építész u. 5.</p>
+          <p>Adószám: 34567891-2-43</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Megnevezés</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Portland cement 50kg</td><td class="text-right">20 zsák</td><td class="text-right">2 800 Ft</td><td class="text-right">56 000 Ft</td></tr>
+        <tr><td>Építési homok</td><td class="text-right">5 m³</td><td class="text-right">8 500 Ft</td><td class="text-right">42 500 Ft</td></tr>
+        <tr><td>Tégla B30</td><td class="text-right">500 db</td><td class="text-right">85 Ft</td><td class="text-right">42 500 Ft</td></tr>
+        <tr><td>Szállítási költség</td><td class="text-right">1 db</td><td class="text-right">15 000 Ft</td><td class="text-right">15 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>156 000 Ft</span></div>
+        <div class="row"><span>ÁFA (27%):</span><span>42 120 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>198 120 Ft</span></div>
+      </div>
+      <div class="payment-info">
+        <h4>Fizetési információk</h4>
+        <p><strong>Bankszámla:</strong> 10300002-10508381-49020013 (MKB Bank)</p>
+        <p><strong>Közlemény:</strong> MB-2026/00156</p>
+      </div>
+      <div class="footer">Ez a számla elektronikusan készült, aláírás nélkül érvényes.</div>
+    </div>
+  </div>
+
+  <!-- Invoice 3: Irodaszer -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">3. Irodaszer számla</span>
+      <button class="download-btn" onclick="downloadInvoice('invoice3', 'szamla_irodaszer.png')">Letöltés PNG</button>
+    </div>
+    <div class="invoice" id="invoice3">
+      <div class="invoice-top">
+        <div class="company-info">
+          <h2>PapírPont Zrt.</h2>
+          <p>1138 Budapest, Váci út 178.</p>
+          <p>Adószám: 34567890-2-41</p>
+          <p>Tel: +36 1 999 8877</p>
+        </div>
+        <div class="invoice-badge">SZÁMLA</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="meta-box"><label>Számla száma</label><p>PP-2026/01234</p></div>
+        <div class="meta-box"><label>Kiállítás</label><p>2026. január 22.</p></div>
+        <div class="meta-box"><label>Teljesítés</label><p>2026. január 22.</p></div>
+        <div class="meta-box"><label>Fizetési határidő</label><p>2026. február 21.</p></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Eladó</h4>
+          <p class="name">PapírPont Zrt.</p>
+          <p>1138 Budapest, Váci út 178.</p>
+          <p>Adószám: 34567890-2-41</p>
+        </div>
+        <div class="party">
+          <h4>Vevő</h4>
+          <p class="name">ABC Consulting Kft.</p>
+          <p>1051 Budapest, Október 6. u. 12.</p>
+          <p>Adószám: 45678901-2-41</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Megnevezés</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>A4 nyomtatópapír 500 lap</td><td class="text-right">10 csomag</td><td class="text-right">1 890 Ft</td><td class="text-right">18 900 Ft</td></tr>
+        <tr><td>Toll készlet (kék/fekete)</td><td class="text-right">5 db</td><td class="text-right">990 Ft</td><td class="text-right">4 950 Ft</td></tr>
+        <tr><td>Irattartó mappa A4</td><td class="text-right">20 db</td><td class="text-right">450 Ft</td><td class="text-right">9 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>32 850 Ft</span></div>
+        <div class="row"><span>ÁFA (27%):</span><span>8 870 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>41 720 Ft</span></div>
+      </div>
+      <div class="payment-info">
+        <h4>Fizetési információk</h4>
+        <p><strong>Bankszámla:</strong> 16200010-11704030-00000000 (Magnet Bank)</p>
+        <p><strong>Közlemény:</strong> PP-2026/01234</p>
+      </div>
+      <div class="footer">Ez a számla elektronikusan készült, aláírás nélkül érvényes.</div>
+    </div>
+  </div>
+
+  <!-- Invoice 4: Autószerelő -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">4. Autószerelés számla</span>
+      <button class="download-btn" onclick="downloadInvoice('invoice4', 'szamla_autoszereles.png')">Letöltés PNG</button>
+    </div>
+    <div class="invoice" id="invoice4">
+      <div class="invoice-top">
+        <div class="company-info">
+          <h2>Gyors Autó Szerviz</h2>
+          <p>1106 Budapest, Maglódi út 47.</p>
+          <p>Adószám: 45678901-1-42</p>
+          <p>Tel: +36 70 123 4567</p>
+        </div>
+        <div class="invoice-badge">SZÁMLA</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="meta-box"><label>Számla száma</label><p>GAS-2026/0089</p></div>
+        <div class="meta-box"><label>Kiállítás</label><p>2026. január 18.</p></div>
+        <div class="meta-box"><label>Teljesítés</label><p>2026. január 18.</p></div>
+        <div class="meta-box"><label>Fizetési határidő</label><p>2026. január 25.</p></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Eladó</h4>
+          <p class="name">Gyors Autó Szerviz</p>
+          <p>1106 Budapest, Maglódi út 47.</p>
+          <p>Adószám: 45678901-1-42</p>
+        </div>
+        <div class="party">
+          <h4>Vevő</h4>
+          <p class="name">Szabó Péter</p>
+          <p>1148 Budapest, Kerepesi út 52.</p>
+          <p>Rendszám: ABC-123</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Megnevezés</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Olajcsere + szűrő</td><td class="text-right">1 db</td><td class="text-right">18 000 Ft</td><td class="text-right">18 000 Ft</td></tr>
+        <tr><td>Féktárcsa első (pár)</td><td class="text-right">1 készlet</td><td class="text-right">35 000 Ft</td><td class="text-right">35 000 Ft</td></tr>
+        <tr><td>Fékbetét első (pár)</td><td class="text-right">1 készlet</td><td class="text-right">12 000 Ft</td><td class="text-right">12 000 Ft</td></tr>
+        <tr><td>Munkadíj</td><td class="text-right">2 óra</td><td class="text-right">8 500 Ft</td><td class="text-right">17 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>82 000 Ft</span></div>
+        <div class="row"><span>ÁFA (27%):</span><span>22 140 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>104 140 Ft</span></div>
+      </div>
+      <div class="payment-info">
+        <h4>Fizetési információk</h4>
+        <p><strong>Fizetési mód:</strong> Készpénz / Bankkártya</p>
+        <p><strong>Bankszámla:</strong> 10918001-00000038-98340009</p>
+      </div>
+      <div class="footer">Garancia: 6 hónap vagy 10.000 km a beépített alkatrészekre.</div>
+    </div>
+  </div>
+
+  <!-- Invoice 5: Étterem -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">5. Étterem/catering számla</span>
+      <button class="download-btn" onclick="downloadInvoice('invoice5', 'szamla_etterem.png')">Letöltés PNG</button>
+    </div>
+    <div class="invoice" id="invoice5">
+      <div class="invoice-top">
+        <div class="company-info">
+          <h2>Ínyenc Konyha Kft.</h2>
+          <p>1056 Budapest, Belgrád rkp. 18.</p>
+          <p>Adószám: 56789012-2-41</p>
+          <p>Tel: +36 1 266 7788</p>
+        </div>
+        <div class="invoice-badge">SZÁMLA</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="meta-box"><label>Számla száma</label><p>IK-2026/00567</p></div>
+        <div class="meta-box"><label>Kiállítás</label><p>2026. január 25.</p></div>
+        <div class="meta-box"><label>Teljesítés</label><p>2026. január 24.</p></div>
+        <div class="meta-box"><label>Fizetési határidő</label><p>2026. február 8.</p></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Eladó</h4>
+          <p class="name">Ínyenc Konyha Kft.</p>
+          <p>1056 Budapest, Belgrád rkp. 18.</p>
+          <p>Adószám: 56789012-2-41</p>
+        </div>
+        <div class="party">
+          <h4>Vevő</h4>
+          <p class="name">MediaGroup Zrt.</p>
+          <p>1137 Budapest, Szent István krt. 10.</p>
+          <p>Adószám: 67890123-2-41</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Megnevezés</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Céges ebéd csomag - Prémium</td><td class="text-right">25 adag</td><td class="text-right">3 500 Ft</td><td class="text-right">87 500 Ft</td></tr>
+        <tr><td>Üdítő válogatás</td><td class="text-right">30 db</td><td class="text-right">450 Ft</td><td class="text-right">13 500 Ft</td></tr>
+        <tr><td>Kávé szolgáltatás</td><td class="text-right">1 db</td><td class="text-right">8 000 Ft</td><td class="text-right">8 000 Ft</td></tr>
+        <tr><td>Kiszállítás</td><td class="text-right">1 db</td><td class="text-right">5 000 Ft</td><td class="text-right">5 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>114 000 Ft</span></div>
+        <div class="row"><span>ÁFA (27%):</span><span>30 780 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>144 780 Ft</span></div>
+      </div>
+      <div class="payment-info">
+        <h4>Fizetési információk</h4>
+        <p><strong>Bankszámla:</strong> 10700024-43028036-51100005 (CIB Bank)</p>
+        <p><strong>Közlemény:</strong> IK-2026/00567</p>
+      </div>
+      <div class="footer">Köszönjük, hogy minket választott! www.inyenckonyha.hu</div>
+    </div>
+  </div>
+
+  <!-- Invoice 6: Marketing -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">6. Marketing szolgáltatás</span>
+      <button class="download-btn" onclick="downloadInvoice('invoice6', 'szamla_marketing.png')">Letöltés PNG</button>
+    </div>
+    <div class="invoice" id="invoice6">
+      <div class="invoice-top">
+        <div class="company-info">
+          <h2>DigiMarketing Pro Kft.</h2>
+          <p>1061 Budapest, Andrássy út 66.</p>
+          <p>Adószám: 67890123-2-42</p>
+          <p>Tel: +36 30 987 6543</p>
+        </div>
+        <div class="invoice-badge">SZÁMLA</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="meta-box"><label>Számla száma</label><p>DMP-2026/0023</p></div>
+        <div class="meta-box"><label>Kiállítás</label><p>2026. január 28.</p></div>
+        <div class="meta-box"><label>Teljesítés</label><p>2026. január 31.</p></div>
+        <div class="meta-box"><label>Fizetési határidő</label><p>2026. február 28.</p></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Eladó</h4>
+          <p class="name">DigiMarketing Pro Kft.</p>
+          <p>1061 Budapest, Andrássy út 66.</p>
+          <p>Adószám: 67890123-2-42</p>
+        </div>
+        <div class="party">
+          <h4>Vevő</h4>
+          <p class="name">Webshop Masters Kft.</p>
+          <p>1085 Budapest, József krt. 32.</p>
+          <p>Adószám: 78901234-2-42</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Megnevezés</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Social media menedzsment - havi</td><td class="text-right">1 hó</td><td class="text-right">120 000 Ft</td><td class="text-right">120 000 Ft</td></tr>
+        <tr><td>Google Ads kampány kezelés</td><td class="text-right">1 hó</td><td class="text-right">85 000 Ft</td><td class="text-right">85 000 Ft</td></tr>
+        <tr><td>SEO optimalizálás</td><td class="text-right">1 hó</td><td class="text-right">65 000 Ft</td><td class="text-right">65 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>270 000 Ft</span></div>
+        <div class="row"><span>ÁFA (27%):</span><span>72 900 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>342 900 Ft</span></div>
+      </div>
+      <div class="payment-info">
+        <h4>Fizetési információk</h4>
+        <p><strong>Bankszámla:</strong> 10400113-50526594-84491004 (K&H Bank)</p>
+        <p><strong>Közlemény:</strong> DMP-2026/0023</p>
+      </div>
+      <div class="footer">Szolgáltatási szerződés: SZ-2025/089 alapján</div>
+    </div>
+  </div>
+
+  <!-- Invoice 7: Tisztítószer -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">7. Tisztítószer számla</span>
+      <button class="download-btn" onclick="downloadInvoice('invoice7', 'szamla_tisztitoszer.png')">Letöltés PNG</button>
+    </div>
+    <div class="invoice" id="invoice7">
+      <div class="invoice-top">
+        <div class="company-info">
+          <h2>CleanMax Kft.</h2>
+          <p>2040 Budaörs, Gyár u. 2.</p>
+          <p>Adószám: 78901234-2-13</p>
+          <p>Tel: +36 23 123 456</p>
+        </div>
+        <div class="invoice-badge">SZÁMLA</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="meta-box"><label>Számla száma</label><p>CM-2026/00891</p></div>
+        <div class="meta-box"><label>Kiállítás</label><p>2026. január 10.</p></div>
+        <div class="meta-box"><label>Teljesítés</label><p>2026. január 10.</p></div>
+        <div class="meta-box"><label>Fizetési határidő</label><p>2026. január 24.</p></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Eladó</h4>
+          <p class="name">CleanMax Kft.</p>
+          <p>2040 Budaörs, Gyár u. 2.</p>
+          <p>Adószám: 78901234-2-13</p>
+        </div>
+        <div class="party">
+          <h4>Vevő</h4>
+          <p class="name">Hotel Bella Vista Kft.</p>
+          <p>8230 Balatonfüred, Petőfi u. 1.</p>
+          <p>Adószám: 89012345-2-19</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Megnevezés</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Padlótisztító konc. 5L</td><td class="text-right">10 db</td><td class="text-right">3 200 Ft</td><td class="text-right">32 000 Ft</td></tr>
+        <tr><td>Üvegtisztító 1L</td><td class="text-right">24 db</td><td class="text-right">890 Ft</td><td class="text-right">21 360 Ft</td></tr>
+        <tr><td>WC tisztító 750ml</td><td class="text-right">36 db</td><td class="text-right">650 Ft</td><td class="text-right">23 400 Ft</td></tr>
+        <tr><td>Mikroszálas törlőkendő</td><td class="text-right">50 db</td><td class="text-right">350 Ft</td><td class="text-right">17 500 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>94 260 Ft</span></div>
+        <div class="row"><span>ÁFA (27%):</span><span>25 450 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>119 710 Ft</span></div>
+      </div>
+      <div class="payment-info">
+        <h4>Fizetési információk</h4>
+        <p><strong>Bankszámla:</strong> 11991001-00000028-30060004 (Erste Bank)</p>
+        <p><strong>Közlemény:</strong> CM-2026/00891</p>
+      </div>
+      <div class="footer">Megrendelés: webshop.cleanmax.hu</div>
+    </div>
+  </div>
+
+  <!-- Invoice 8: Könyvelés -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">8. Könyvelési díj számla</span>
+      <button class="download-btn" onclick="downloadInvoice('invoice8', 'szamla_konyveles.png')">Letöltés PNG</button>
+    </div>
+    <div class="invoice" id="invoice8">
+      <div class="invoice-top">
+        <div class="company-info">
+          <h2>Précíz Könyvelés Bt.</h2>
+          <p>1132 Budapest, Victor Hugo u. 18-22.</p>
+          <p>Adószám: 89012345-1-41</p>
+          <p>Tel: +36 1 350 1234</p>
+        </div>
+        <div class="invoice-badge">SZÁMLA</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="meta-box"><label>Számla száma</label><p>PK-2026/0012</p></div>
+        <div class="meta-box"><label>Kiállítás</label><p>2026. február 1.</p></div>
+        <div class="meta-box"><label>Teljesítés</label><p>2026. január 31.</p></div>
+        <div class="meta-box"><label>Fizetési határidő</label><p>2026. február 15.</p></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Eladó</h4>
+          <p class="name">Précíz Könyvelés Bt.</p>
+          <p>1132 Budapest, Victor Hugo u. 18-22.</p>
+          <p>Adószám: 89012345-1-41</p>
+        </div>
+        <div class="party">
+          <h4>Vevő</h4>
+          <p class="name">StartUp Dreams Kft.</p>
+          <p>1074 Budapest, Dohány u. 16-18.</p>
+          <p>Adószám: 90123456-2-42</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Megnevezés</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Havi könyvelési díj - 2026. január</td><td class="text-right">1 hó</td><td class="text-right">55 000 Ft</td><td class="text-right">55 000 Ft</td></tr>
+        <tr><td>Bérszámfejtés (5 fő)</td><td class="text-right">5 fő</td><td class="text-right">3 500 Ft</td><td class="text-right">17 500 Ft</td></tr>
+        <tr><td>ÁFA bevallás készítés</td><td class="text-right">1 db</td><td class="text-right">8 000 Ft</td><td class="text-right">8 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>80 500 Ft</span></div>
+        <div class="row"><span>ÁFA (27%):</span><span>21 735 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>102 235 Ft</span></div>
+      </div>
+      <div class="payment-info">
+        <h4>Fizetési információk</h4>
+        <p><strong>Bankszámla:</strong> 11773016-01234567-00000000 (OTP Bank)</p>
+        <p><strong>Közlemény:</strong> PK-2026/0012</p>
+      </div>
+      <div class="footer">Szerződés: KV-2024/056 alapján</div>
+    </div>
+  </div>
+
+  <!-- Invoice 9: Nyomda -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">9. Nyomdai szolgáltatás</span>
+      <button class="download-btn" onclick="downloadInvoice('invoice9', 'szamla_nyomda.png')">Letöltés PNG</button>
+    </div>
+    <div class="invoice" id="invoice9">
+      <div class="invoice-top">
+        <div class="company-info">
+          <h2>PrintMaster Nyomda Kft.</h2>
+          <p>1103 Budapest, Gyömrői út 140.</p>
+          <p>Adószám: 90123456-2-42</p>
+          <p>Tel: +36 1 431 5678</p>
+        </div>
+        <div class="invoice-badge">SZÁMLA</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="meta-box"><label>Számla száma</label><p>PM-2026/00234</p></div>
+        <div class="meta-box"><label>Kiállítás</label><p>2026. január 27.</p></div>
+        <div class="meta-box"><label>Teljesítés</label><p>2026. január 26.</p></div>
+        <div class="meta-box"><label>Fizetési határidő</label><p>2026. február 10.</p></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Eladó</h4>
+          <p class="name">PrintMaster Nyomda Kft.</p>
+          <p>1103 Budapest, Gyömrői út 140.</p>
+          <p>Adószám: 90123456-2-42</p>
+        </div>
+        <div class="party">
+          <h4>Vevő</h4>
+          <p class="name">Event Pro Rendezvény Kft.</p>
+          <p>1062 Budapest, Teréz krt. 55.</p>
+          <p>Adószám: 01234567-2-42</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Megnevezés</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Szórólap A5, 4+4 szín, 135g</td><td class="text-right">5000 db</td><td class="text-right">12 Ft</td><td class="text-right">60 000 Ft</td></tr>
+        <tr><td>Roll-up 85x200cm</td><td class="text-right">3 db</td><td class="text-right">18 000 Ft</td><td class="text-right">54 000 Ft</td></tr>
+        <tr><td>Névjegykártya 90x50mm, 350g</td><td class="text-right">1000 db</td><td class="text-right">25 Ft</td><td class="text-right">25 000 Ft</td></tr>
+        <tr><td>Grafikai tervezés</td><td class="text-right">3 óra</td><td class="text-right">12 000 Ft</td><td class="text-right">36 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>175 000 Ft</span></div>
+        <div class="row"><span>ÁFA (27%):</span><span>47 250 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>222 250 Ft</span></div>
+      </div>
+      <div class="payment-info">
+        <h4>Fizetési információk</h4>
+        <p><strong>Bankszámla:</strong> 12010422-01234567-00100008 (Raiffeisen Bank)</p>
+        <p><strong>Közlemény:</strong> PM-2026/00234</p>
+      </div>
+      <div class="footer">Megrendelés száma: MR-2026/0089</div>
+    </div>
+  </div>
+
+  <!-- Invoice 10: Bérleti díj -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">10. Irodabérleti díj</span>
+      <button class="download-btn" onclick="downloadInvoice('invoice10', 'szamla_berlet.png')">Letöltés PNG</button>
+    </div>
+    <div class="invoice" id="invoice10">
+      <div class="invoice-top">
+        <div class="company-info">
+          <h2>Office Park Management Zrt.</h2>
+          <p>1117 Budapest, Infopark sétány 1.</p>
+          <p>Adószám: 01234567-2-43</p>
+          <p>Tel: +36 1 279 9999</p>
+        </div>
+        <div class="invoice-badge">SZÁMLA</div>
+      </div>
+      <div class="invoice-meta">
+        <div class="meta-box"><label>Számla száma</label><p>OPM-2026/02001</p></div>
+        <div class="meta-box"><label>Kiállítás</label><p>2026. február 1.</p></div>
+        <div class="meta-box"><label>Teljesítés</label><p>2026. február 28.</p></div>
+        <div class="meta-box"><label>Fizetési határidő</label><p>2026. február 10.</p></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Eladó</h4>
+          <p class="name">Office Park Management Zrt.</p>
+          <p>1117 Budapest, Infopark sétány 1.</p>
+          <p>Adószám: 01234567-2-43</p>
+        </div>
+        <div class="party">
+          <h4>Vevő</h4>
+          <p class="name">InnoTech Solutions Kft.</p>
+          <p>1117 Budapest, Infopark sétány 1. B ép.</p>
+          <p>Adószám: 12345670-2-43</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Megnevezés</th><th class="text-right">Mennyiség</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Irodabérleti díj - 2026. február (120m²)</td><td class="text-right">1 hó</td><td class="text-right">480 000 Ft</td><td class="text-right">480 000 Ft</td></tr>
+        <tr><td>Közös költség</td><td class="text-right">1 hó</td><td class="text-right">36 000 Ft</td><td class="text-right">36 000 Ft</td></tr>
+        <tr><td>Parkolóhely (2 db)</td><td class="text-right">2 db</td><td class="text-right">25 000 Ft</td><td class="text-right">50 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>566 000 Ft</span></div>
+        <div class="row"><span>ÁFA (27%):</span><span>152 820 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>718 820 Ft</span></div>
+      </div>
+      <div class="payment-info">
+        <h4>Fizetési információk</h4>
+        <p><strong>Bankszámla:</strong> 10101023-45678901-00000003 (Budapest Bank)</p>
+        <p><strong>Közlemény:</strong> OPM-2026/02001 - B/4.em</p>
+      </div>
+      <div class="footer">Bérleti szerződés: BSZ-2023/0156</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+async function downloadInvoice(elementId, filename) {
+  const element = document.getElementById(elementId);
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    });
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (err) {
+    alert('Hiba történt: ' + err.message);
+  }
+}
+
+async function downloadAll() {
+  const invoices = [
+    { id: 'invoice1', name: 'szamla_it_szolgaltatas.png' },
+    { id: 'invoice2', name: 'szamla_epitoanyag.png' },
+    { id: 'invoice3', name: 'szamla_irodaszer.png' },
+    { id: 'invoice4', name: 'szamla_autoszereles.png' },
+    { id: 'invoice5', name: 'szamla_etterem.png' },
+    { id: 'invoice6', name: 'szamla_marketing.png' },
+    { id: 'invoice7', name: 'szamla_tisztitoszer.png' },
+    { id: 'invoice8', name: 'szamla_konyveles.png' },
+    { id: 'invoice9', name: 'szamla_nyomda.png' },
+    { id: 'invoice10', name: 'szamla_berlet.png' }
+  ];
+  
+  for (let i = 0; i < invoices.length; i++) {
+    await downloadInvoice(invoices[i].id, invoices[i].name);
+    await new Promise(resolve => setTimeout(resolve, 500)); // Wait between downloads
+  }
+  
+  alert('Mind a 10 számla letöltve!');
+}
+</script>
+
+</body>
+</html>

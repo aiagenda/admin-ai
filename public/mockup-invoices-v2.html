@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mockup Számlák v2 - AdminAI Teszt</title>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #0f172a; color: white; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 10px; }
+    .subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; }
+    .controls { text-align: center; margin-bottom: 30px; }
+    .controls button {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .controls button:hover { opacity: 0.9; }
+    .invoice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 30px;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+    .invoice-wrapper {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 15px;
+    }
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .invoice-title { font-weight: bold; color: #6ee7b7; font-size: 14px; }
+    .invoice-badge { 
+      font-size: 10px; 
+      padding: 4px 8px; 
+      border-radius: 4px; 
+      background: #374151;
+      color: #9ca3af;
+    }
+    .download-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .download-btn:hover { background: #2563eb; }
+    
+    /* Invoice base styling */
+    .invoice {
+      width: 420px;
+      background: white;
+      color: #333;
+      padding: 20px;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    
+    /* Style 1: Modern clean */
+    .style-modern { font-family: 'Segoe UI', sans-serif; }
+    .style-modern .inv-header { display: flex; justify-content: space-between; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 15px; }
+    .style-modern .company h2 { color: #1e40af; font-size: 18px; }
+    .style-modern .inv-badge { background: #3b82f6; color: white; padding: 10px 20px; border-radius: 4px; font-size: 16px; font-weight: bold; }
+    
+    /* Style 2: Classic/Traditional */
+    .style-classic { font-family: 'Times New Roman', serif; }
+    .style-classic .inv-header { text-align: center; border: 2px solid #333; padding: 10px; margin-bottom: 15px; }
+    .style-classic .inv-header h2 { font-size: 20px; letter-spacing: 2px; }
+    
+    /* Style 3: Minimal */
+    .style-minimal { font-family: 'Helvetica', sans-serif; }
+    .style-minimal .inv-header { border-bottom: 1px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 15px; }
+    
+    /* Style 4: Handwritten style */
+    .style-handwritten { 
+      font-family: 'Comic Sans MS', cursive; 
+      background: #fffef0; 
+      transform: rotate(-0.5deg);
+    }
+    .style-handwritten .inv-header { border-bottom: 2px dashed #666; }
+    
+    /* Style 5: Receipt style */
+    .style-receipt { 
+      font-family: 'Courier New', monospace; 
+      background: #fafafa;
+      width: 320px;
+      padding: 15px;
+    }
+    .style-receipt .inv-header { text-align: center; border-bottom: 1px dashed #333; padding-bottom: 10px; }
+    
+    /* Style 6: Faded/Old */
+    .style-faded { 
+      background: #f5f0e6; 
+      color: #5a5a5a;
+      filter: contrast(0.9);
+    }
+    
+    /* Common elements */
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+    .meta-box { background: #f9fafb; padding: 8px; border-radius: 4px; }
+    .meta-box label { font-size: 9px; color: #6b7280; display: block; }
+    .meta-box span { font-weight: bold; }
+    .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    .party { font-size: 10px; }
+    .party h4 { font-size: 9px; color: #6b7280; margin-bottom: 5px; text-transform: uppercase; }
+    .party .name { font-weight: bold; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 10px; }
+    th { background: #f3f4f6; padding: 8px; text-align: left; font-size: 9px; }
+    td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
+    .text-right { text-align: right; }
+    .totals { width: 200px; margin-left: auto; }
+    .totals .row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px; }
+    .totals .row.total { font-weight: bold; font-size: 14px; border-top: 2px solid #333; margin-top: 5px; padding-top: 8px; }
+    .payment { background: #fef3c7; padding: 10px; border-radius: 4px; margin-top: 15px; font-size: 10px; }
+    .footer { text-align: center; color: #9ca3af; font-size: 8px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #e5e7eb; }
+    
+    /* Handwritten annotations */
+    .handwritten { font-family: 'Brush Script MT', cursive; color: #1e40af; transform: rotate(-2deg); display: inline-block; }
+    .stamp { border: 3px solid #dc2626; color: #dc2626; padding: 5px 10px; transform: rotate(-15deg); display: inline-block; font-weight: bold; opacity: 0.7; }
+  </style>
+</head>
+<body>
+
+<h1>Mockup Számlák v2</h1>
+<p class="subtitle">Változatos stílusok az OCR teszteléshez</p>
+
+<div class="controls">
+  <button onclick="downloadAll()">Mind letöltése (10 számla)</button>
+</div>
+
+<div class="invoice-grid">
+
+  <!-- 1. Benzinkút számla -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">1. Benzinkút számla</span>
+      <span class="invoice-badge">Üzemanyag</span>
+      <button class="download-btn" onclick="downloadInvoice('inv1', 'szamla_benzinkut.png')">Letöltés</button>
+    </div>
+    <div class="invoice style-receipt" id="inv1">
+      <div class="inv-header">
+        <h2>MOL Nyrt.</h2>
+        <p>1117 Budapest, Október 23. u. 18.</p>
+        <p>Adószám: 10625790-4-44</p>
+        <p>========================</p>
+        <p><strong>EGYSZERŰSÍTETT SZÁMLA</strong></p>
+      </div>
+      <p style="margin: 10px 0;"><strong>Töltőállomás:</strong> MOL #4521 Budapest</p>
+      <p><strong>Dátum:</strong> 2026.01.28 14:32</p>
+      <p><strong>Számla sz.:</strong> MOL-2026-4521-08842</p>
+      <p style="border-top: 1px dashed #333; margin: 10px 0; padding-top: 10px;">
+        <strong>Termék:</strong><br>
+        95-ös benzin 42.5 L<br>
+        Egységár: 615 Ft/L<br>
+        <strong>Összesen: 26 138 Ft</strong>
+      </p>
+      <p style="border-top: 1px dashed #333; padding-top: 10px;">
+        Nettó: 20 581 Ft<br>
+        ÁFA 27%: 5 557 Ft<br>
+        <strong style="font-size: 14px;">FIZETENDŐ: 26 138 Ft</strong>
+      </p>
+      <p style="margin-top: 10px; font-size: 9px;">
+        Fizetés: Bankkártya<br>
+        Kártyaszám: **** **** **** 4521
+      </p>
+      <p style="text-align: center; margin-top: 15px; font-size: 8px;">
+        Köszönjük, hogy a MOL-t választotta!<br>
+        www.mol.hu
+      </p>
+    </div>
+  </div>
+
+  <!-- 2. Telekom számla -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">2. Telekom számla</span>
+      <span class="invoice-badge">Telefon/Internet</span>
+      <button class="download-btn" onclick="downloadInvoice('inv2', 'szamla_telekom.png')">Letöltés</button>
+    </div>
+    <div class="invoice style-modern" id="inv2">
+      <div class="inv-header">
+        <div class="company">
+          <h2>Magyar Telekom Nyrt.</h2>
+          <p style="color: #6b7280; font-size: 10px;">1097 Budapest, Könyves Kálmán krt. 36.</p>
+          <p style="color: #6b7280; font-size: 10px;">Adószám: 10773381-2-44</p>
+        </div>
+        <div class="inv-badge">SZÁMLA</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Számlaszám</label><span>T-2026/01-789456</span></div>
+        <div class="meta-box"><label>Számla kelte</label><span>2026.01.25</span></div>
+        <div class="meta-box"><label>Fizetési határidő</label><span>2026.02.10</span></div>
+        <div class="meta-box"><label>Előfizető azonosító</label><span>HU-123456789</span></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Szolgáltató</h4>
+          <p class="name">Magyar Telekom Nyrt.</p>
+          <p>1097 Budapest</p>
+        </div>
+        <div class="party">
+          <h4>Előfizető</h4>
+          <p class="name">Tech Solutions Kft.</p>
+          <p>1134 Budapest, Váci út 35.</p>
+          <p>Adószám: 12345678-2-41</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Szolgáltatás</th><th class="text-right">Időszak</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Üzleti Fiber 1000 internet</td><td class="text-right">01.01-01.31</td><td class="text-right">14 990 Ft</td></tr>
+        <tr><td>Üzleti mobil csomag (3 SIM)</td><td class="text-right">01.01-01.31</td><td class="text-right">11 970 Ft</td></tr>
+        <tr><td>Vezetékes telefon alapdíj</td><td class="text-right">01.01-01.31</td><td class="text-right">2 990 Ft</td></tr>
+        <tr><td>Hívások díja</td><td class="text-right">01.01-01.31</td><td class="text-right">4 520 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>27 142 Ft</span></div>
+        <div class="row"><span>ÁFA 27%:</span><span>7 328 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>34 470 Ft</span></div>
+      </div>
+      <div class="payment">
+        <strong>Fizetési információk</strong><br>
+        Bankszámla: 11773016-00556677-00000000<br>
+        Közlemény: T-2026/01-789456
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Kézzel írt blokk stílusú -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">3. Kézi számla (kézírás)</span>
+      <span class="invoice-badge">Szolgáltatás</span>
+      <button class="download-btn" onclick="downloadInvoice('inv3', 'szamla_kezzel_irt.png')">Letöltés</button>
+    </div>
+    <div class="invoice style-handwritten" id="inv3">
+      <div class="inv-header" style="text-align: center;">
+        <h2 style="font-family: 'Brush Script MT', cursive; font-size: 24px;">Szabó Takarítás</h2>
+        <p>Szabó Mária ev.</p>
+        <p>2030 Érd, Kossuth u. 45.</p>
+        <p>Adószám: 67891234-1-13</p>
+      </div>
+      <div style="margin: 15px 0; padding: 10px; border: 1px solid #999;">
+        <p><strong>SZÁMLA</strong></p>
+        <p style="font-family: 'Brush Script MT', cursive; font-size: 14px;">
+          Sorszám: <span class="handwritten">2026/0034</span>
+        </p>
+        <p>Dátum: <span class="handwritten">2026. január 26.</span></p>
+      </div>
+      <div style="margin: 15px 0;">
+        <p><strong>Vevő:</strong></p>
+        <p class="handwritten" style="font-size: 14px;">ABC Iroda Kft.</p>
+        <p class="handwritten">1052 Budapest, Váci u. 10.</p>
+      </div>
+      <table style="font-family: 'Comic Sans MS', cursive;">
+        <tr><th>Megnevezés</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Irodatakarítás - január hó</td><td class="text-right">45 000 Ft</td></tr>
+        <tr><td>Ablaktisztítás</td><td class="text-right">15 000 Ft</td></tr>
+      </table>
+      <div class="totals" style="font-family: 'Comic Sans MS', cursive;">
+        <div class="row"><span>Nettó:</span><span>60 000 Ft</span></div>
+        <div class="row"><span>KATA - ÁFA mentes</span><span>0 Ft</span></div>
+        <div class="row total"><span>Összesen:</span><span>60 000 Ft</span></div>
+      </div>
+      <div style="margin-top: 20px; text-align: right;">
+        <span class="handwritten" style="font-size: 16px;">Szabó Mária</span>
+        <p style="font-size: 9px;">aláírás</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Szálloda számla -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">4. Szálloda számla</span>
+      <span class="invoice-badge">Szállás</span>
+      <button class="download-btn" onclick="downloadInvoice('inv4', 'szamla_szalloda.png')">Letöltés</button>
+    </div>
+    <div class="invoice style-modern" id="inv4">
+      <div class="inv-header">
+        <div class="company">
+          <h2 style="color: #7c3aed;">Grand Hotel Palace</h2>
+          <p style="color: #6b7280; font-size: 10px;">8230 Balatonfüred, Széchenyi u. 5.</p>
+          <p style="color: #6b7280; font-size: 10px;">Adószám: 11223344-2-19</p>
+        </div>
+        <div class="inv-badge" style="background: #7c3aed;">HOTEL SZÁMLA</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Számlaszám</label><span>GHP-2026/00892</span></div>
+        <div class="meta-box"><label>Kiállítás</label><span>2026.01.22</span></div>
+        <div class="meta-box"><label>Érkezés</label><span>2026.01.20</span></div>
+        <div class="meta-box"><label>Távozás</label><span>2026.01.22</span></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Szálloda</h4>
+          <p class="name">Grand Hotel Palace Kft.</p>
+          <p>8230 Balatonfüred</p>
+        </div>
+        <div class="party">
+          <h4>Vendég / Cég</h4>
+          <p class="name">Marketing Pro Kft.</p>
+          <p>1061 Budapest, Andrássy út 12.</p>
+          <p>Adószám: 55667788-2-42</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Szolgáltatás</th><th class="text-right">Éj</th><th class="text-right">Ár/éj</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Superior szoba (2 fő)</td><td class="text-right">2</td><td class="text-right">32 000 Ft</td><td class="text-right">64 000 Ft</td></tr>
+        <tr><td>Félpanzió (2 fő x 2 nap)</td><td class="text-right">4</td><td class="text-right">6 500 Ft</td><td class="text-right">26 000 Ft</td></tr>
+        <tr><td>Wellness belépő</td><td class="text-right">2</td><td class="text-right">4 500 Ft</td><td class="text-right">9 000 Ft</td></tr>
+        <tr><td>Parkolás</td><td class="text-right">2</td><td class="text-right">2 000 Ft</td><td class="text-right">4 000 Ft</td></tr>
+        <tr><td>IFA (idegenforgalmi adó)</td><td class="text-right">2</td><td class="text-right">500 Ft</td><td class="text-right">1 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Nettó:</span><span>81 890 Ft</span></div>
+        <div class="row"><span>ÁFA 18% (szálláshely):</span><span>14 740 Ft</span></div>
+        <div class="row"><span>ÁFA 27% (egyéb):</span><span>7 370 Ft</span></div>
+        <div class="row total"><span>Fizetendő:</span><span>104 000 Ft</span></div>
+      </div>
+      <div class="payment">
+        <strong>Fizetés módja:</strong> Bankkártya - FIZETVE<br>
+        Tranzakció: VIS-20260122-789456
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Gyógyszertár -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">5. Gyógyszertár számla</span>
+      <span class="invoice-badge">Egészségügy</span>
+      <button class="download-btn" onclick="downloadInvoice('inv5', 'szamla_gyogyszertar.png')">Letöltés</button>
+    </div>
+    <div class="invoice style-receipt" id="inv5">
+      <div class="inv-header">
+        <h2>BENU Gyógyszertár</h2>
+        <p>1052 Budapest, Váci u. 16.</p>
+        <p>Adószám: 10766445-2-41</p>
+        <p>Gyógyszertár eng.: 39/4567/2010</p>
+        <p>========================</p>
+        <p><strong>SZÁMLA</strong></p>
+      </div>
+      <p style="margin: 10px 0;">
+        <strong>Számlaszám:</strong> BENU-2026/012345<br>
+        <strong>Dátum:</strong> 2026.01.29 10:15
+      </p>
+      <p style="border-top: 1px dashed #333; padding-top: 10px;">
+        <strong>Vevő:</strong> Egészség Bt.<br>
+        Adószám: 22334455-1-41
+      </p>
+      <table style="font-family: monospace; font-size: 10px;">
+        <tr><td>Algoflex 400mg 30x</td><td class="text-right">2 190 Ft</td></tr>
+        <tr><td>C-vitamin 1000mg 60x</td><td class="text-right">3 490 Ft</td></tr>
+        <tr><td>Strepsils 24x</td><td class="text-right">1 890 Ft</td></tr>
+        <tr><td>Bepanthen krém 100g</td><td class="text-right">4 290 Ft</td></tr>
+        <tr><td>Orvosi maszk 50db</td><td class="text-right">2 990 Ft</td></tr>
+      </table>
+      <p style="border-top: 1px dashed #333; padding-top: 10px; font-family: monospace;">
+        Nettó összeg: 11 693 Ft<br>
+        ÁFA (vegyes): 3 157 Ft<br>
+        <strong style="font-size: 14px;">ÖSSZESEN: 14 850 Ft</strong>
+      </p>
+      <p style="margin-top: 10px; font-size: 9px;">
+        Fizetés: Bankkártya<br>
+        ========================<br>
+        Egészségére!
+      </p>
+    </div>
+  </div>
+
+  <!-- 6. Ügyvédi díj -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">6. Ügyvédi számla</span>
+      <span class="invoice-badge">Jogi szolgáltatás</span>
+      <button class="download-btn" onclick="downloadInvoice('inv6', 'szamla_ugyvedi.png')">Letöltés</button>
+    </div>
+    <div class="invoice style-classic" id="inv6">
+      <div class="inv-header">
+        <h2>Dr. Kovács és Társai Ügyvédi Iroda</h2>
+        <p style="font-size: 10px;">1055 Budapest, Kossuth tér 4. III/12.</p>
+        <p style="font-size: 10px;">Adószám: 18765432-2-41 | KASZ: 36012345</p>
+      </div>
+      <div style="text-align: center; margin: 15px 0; font-size: 18px; letter-spacing: 3px;">
+        <strong>S Z Á M L A</strong>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Sorszám</label><span>ÜI-2026/00045</span></div>
+        <div class="meta-box"><label>Kelt</label><span>2026. január 28.</span></div>
+      </div>
+      <div style="border: 1px solid #333; padding: 10px; margin: 15px 0;">
+        <p><strong>Megbízó:</strong></p>
+        <p style="font-size: 14px;">InnoTech Solutions Kft.</p>
+        <p>1117 Budapest, Infopark sétány 1.</p>
+        <p>Adószám: 99887766-2-43</p>
+      </div>
+      <table style="border: 1px solid #333;">
+        <tr style="background: #f0f0f0;"><th>Jogcím</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Szerződés véleményezés (4 óra)</td><td class="text-right">120 000 Ft</td></tr>
+        <tr><td>Cégeljárás képviselet</td><td class="text-right">85 000 Ft</td></tr>
+        <tr><td>Jogi tanácsadás (2 óra)</td><td class="text-right">60 000 Ft</td></tr>
+      </table>
+      <div class="totals" style="border: 1px solid #333; padding: 10px; margin-top: 15px;">
+        <div class="row"><span>Nettó díj:</span><span>265 000 Ft</span></div>
+        <div class="row"><span>ÁFA 27%:</span><span>71 550 Ft</span></div>
+        <div class="row total"><span>Fizetendő:</span><span>336 550 Ft</span></div>
+      </div>
+      <div class="payment" style="background: #f5f5f5; border: 1px solid #333;">
+        <strong>Fizetési határidő:</strong> 2026. február 12.<br>
+        <strong>Bankszámla:</strong> 11711034-20123456-00000000 (OTP Bank)<br>
+        <strong>Közlemény:</strong> ÜI-2026/00045
+      </div>
+      <div style="margin-top: 20px; text-align: right;">
+        <p>Budapest, 2026. január 28.</p>
+        <br>
+        <p>___________________________</p>
+        <p style="font-size: 10px;">Dr. Kovács István ügyvéd</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Amazon/Külföldi számla -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">7. Amazon számla (EU)</span>
+      <span class="invoice-badge">Import</span>
+      <button class="download-btn" onclick="downloadInvoice('inv7', 'szamla_amazon.png')">Letöltés</button>
+    </div>
+    <div class="invoice style-minimal" id="inv7">
+      <div class="inv-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 style="color: #ff9900; font-size: 24px;">amazon</h2>
+            <p style="font-size: 9px; color: #666;">Amazon EU S.à r.l.</p>
+          </div>
+          <div style="text-align: right; font-size: 10px; color: #666;">
+            <p>5, Rue Plaetis</p>
+            <p>L-2338 Luxembourg</p>
+            <p>VAT: LU20260743</p>
+          </div>
+        </div>
+      </div>
+      <div style="background: #f7f7f7; padding: 10px; margin: 15px 0;">
+        <p><strong>Invoice / Számla</strong></p>
+        <p>Number: AMZ-EU-2026-789456123</p>
+        <p>Date: 2026-01-24</p>
+        <p>Order: 403-1234567-8901234</p>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Bill to / Számlázási cím</h4>
+          <p class="name">Web Agency Kft.</p>
+          <p>1134 Budapest, Váci út 45.</p>
+          <p>Hungary</p>
+          <p>VAT: HU12345678</p>
+        </div>
+        <div class="party">
+          <h4>Ship to / Szállítási cím</h4>
+          <p class="name">Web Agency Kft.</p>
+          <p>1134 Budapest, Váci út 45.</p>
+          <p>Hungary</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Item / Termék</th><th class="text-right">Qty</th><th class="text-right">Price</th></tr>
+        <tr><td>Logitech MX Master 3S Mouse</td><td class="text-right">2</td><td class="text-right">€89.99</td></tr>
+        <tr><td>USB-C Hub 7-in-1</td><td class="text-right">3</td><td class="text-right">€34.99</td></tr>
+        <tr><td>Webcam 1080p</td><td class="text-right">1</td><td class="text-right">€59.99</td></tr>
+        <tr><td>Shipping / Szállítás</td><td class="text-right">1</td><td class="text-right">€0.00</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Subtotal:</span><span>€319.93</span></div>
+        <div class="row"><span>VAT 27% (HU):</span><span>€86.38</span></div>
+        <div class="row total"><span>Total / Összesen:</span><span>€406.31</span></div>
+        <div class="row" style="color: #666;"><span>~ HUF:</span><span>162 524 Ft</span></div>
+      </div>
+      <div style="font-size: 9px; color: #666; margin-top: 15px;">
+        Reverse charge - EU VAT registered customer<br>
+        Payment: Credit Card - PAID
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Biztosító számla -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">8. Biztosítási díj</span>
+      <span class="invoice-badge">Biztosítás</span>
+      <button class="download-btn" onclick="downloadInvoice('inv8', 'szamla_biztosito.png')">Letöltés</button>
+    </div>
+    <div class="invoice style-modern" id="inv8">
+      <div class="inv-header">
+        <div class="company">
+          <h2 style="color: #16a34a;">Generali Biztosító Zrt.</h2>
+          <p style="color: #6b7280; font-size: 10px;">1066 Budapest, Teréz krt. 42-44.</p>
+          <p style="color: #6b7280; font-size: 10px;">Adószám: 10308024-4-44</p>
+        </div>
+        <div class="inv-badge" style="background: #16a34a;">DÍJBEKÉRŐ</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Díjbekérő száma</label><span>GEN-2026/Q1-456789</span></div>
+        <div class="meta-box"><label>Kötvényszám</label><span>HU-CASCO-2024-123456</span></div>
+        <div class="meta-box"><label>Időszak</label><span>2026.01.01 - 2026.03.31</span></div>
+        <div class="meta-box"><label>Fizetési határidő</label><span>2026.02.15</span></div>
+      </div>
+      <div style="border: 1px solid #16a34a; padding: 10px; margin: 15px 0; border-radius: 4px;">
+        <p><strong>Szerződő / Biztosított:</strong></p>
+        <p style="font-size: 14px;">FuturTech Kft.</p>
+        <p>1138 Budapest, Népfürdő u. 22.</p>
+        <p>Adószám: 24681357-2-41</p>
+      </div>
+      <table>
+        <tr><th>Biztosítás típusa</th><th>Rendszám</th><th class="text-right">Negyedéves díj</th></tr>
+        <tr><td>CASCO Prémium</td><td>ABC-123</td><td class="text-right">89 000 Ft</td></tr>
+        <tr><td>CASCO Prémium</td><td>XYZ-789</td><td class="text-right">95 000 Ft</td></tr>
+        <tr><td>Flotta felelősség (5 jármű)</td><td>Flotta</td><td class="text-right">45 000 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Díj összesen:</span><span>229 000 Ft</span></div>
+        <div class="row" style="font-size: 10px; color: #666;"><span>Biztosítási díj - ÁFA mentes</span><span></span></div>
+        <div class="row total"><span>Fizetendő:</span><span>229 000 Ft</span></div>
+      </div>
+      <div class="payment">
+        <strong>Bankszámla:</strong> 10918001-00000062-89010016<br>
+        <strong>Közlemény:</strong> HU-CASCO-2024-123456 Q1/2026
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. Régi/fakult számla -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">9. Régi/fakult számla</span>
+      <span class="invoice-badge">OCR teszt</span>
+      <button class="download-btn" onclick="downloadInvoice('inv9', 'szamla_regi_fakult.png')">Letöltés</button>
+    </div>
+    <div class="invoice style-faded" id="inv9" style="transform: rotate(0.5deg);">
+      <div style="text-align: center; margin-bottom: 15px;">
+        <h2 style="font-family: 'Times New Roman', serif;">ALFA-PRINT Kft.</h2>
+        <p style="font-size: 10px;">1106 Budapest, Jászberényi út 45.</p>
+        <p style="font-size: 10px;">Adószám: 12312312-2-42</p>
+      </div>
+      <div style="border: 2px solid #8a8a8a; padding: 10px; margin: 15px 0; text-align: center;">
+        <p style="font-size: 18px; letter-spacing: 2px;"><strong>SZÁMLA</strong></p>
+        <p>Sorszám: AP-2025/08934</p>
+      </div>
+      <p><strong>Kelt:</strong> 2025. november 15.</p>
+      <p><strong>Fizetési határidő:</strong> 2025. november 30.</p>
+      <div style="margin: 15px 0; padding: 10px; background: #e8e4d9;">
+        <p><strong>Vevő:</strong></p>
+        <p>Rapid Logisztika Kft.</p>
+        <p>1239 Budapest, Ócsai út 1-3.</p>
+        <p>Adószám: 45645645-2-43</p>
+      </div>
+      <table style="border: 1px solid #8a8a8a;">
+        <tr style="background: #d5d0c3;"><th>Megnevezés</th><th class="text-right">Menny.</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Csomagolópapír tekercs</td><td class="text-right">50 db</td><td class="text-right">75 000 Ft</td></tr>
+        <tr><td>Ragasztószalag 48mm</td><td class="text-right">100 db</td><td class="text-right">35 000 Ft</td></tr>
+        <tr><td>Kartondoboz 40x30x20</td><td class="text-right">200 db</td><td class="text-right">56 000 Ft</td></tr>
+      </table>
+      <div class="totals" style="border: 1px solid #8a8a8a; padding: 10px;">
+        <div class="row"><span>Nettó:</span><span>166 000 Ft</span></div>
+        <div class="row"><span>ÁFA 27%:</span><span>44 820 Ft</span></div>
+        <div class="row total"><span>Bruttó:</span><span>210 820 Ft</span></div>
+      </div>
+      <div style="margin-top: 20px;">
+        <span class="stamp">LEJÁRT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. Közüzemi számla -->
+  <div class="invoice-wrapper">
+    <div class="invoice-header">
+      <span class="invoice-title">10. Közüzemi számla (gáz)</span>
+      <span class="invoice-badge">Közüzem</span>
+      <button class="download-btn" onclick="downloadInvoice('inv10', 'szamla_kozuzemi_gaz.png')">Letöltés</button>
+    </div>
+    <div class="invoice style-modern" id="inv10">
+      <div class="inv-header">
+        <div class="company">
+          <h2 style="color: #ea580c;">MVM Next Energiakereskedelmi Zrt.</h2>
+          <p style="color: #6b7280; font-size: 10px;">1081 Budapest, II. János Pál pápa tér 20.</p>
+          <p style="color: #6b7280; font-size: 10px;">Adószám: 27804408-2-44</p>
+        </div>
+        <div class="inv-badge" style="background: #ea580c;">FÖLDGÁZ</div>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-box"><label>Számlaszám</label><span>MVM-G-2026/01-567890</span></div>
+        <div class="meta-box"><label>Felhasználási hely</label><span>POD: HU000123456789</span></div>
+        <div class="meta-box"><label>Leolvasás időszaka</label><span>2025.12.15 - 2026.01.15</span></div>
+        <div class="meta-box"><label>Fizetési határidő</label><span>2026.02.05</span></div>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <h4>Szolgáltató</h4>
+          <p class="name">MVM Next Zrt.</p>
+          <p>Ügyfélszolgálat: 1818</p>
+        </div>
+        <div class="party">
+          <h4>Fizető fél</h4>
+          <p class="name">Műhely 2000 Kft.</p>
+          <p>2100 Gödöllő, Ipar u. 8.</p>
+          <p>Adószám: 13579246-2-13</p>
+        </div>
+      </div>
+      <table>
+        <tr><th>Tétel</th><th class="text-right">Fogyasztás</th><th class="text-right">Egységár</th><th class="text-right">Összeg</th></tr>
+        <tr><td>Földgáz energia</td><td class="text-right">845 m³</td><td class="text-right">102.50 Ft/m³</td><td class="text-right">86 613 Ft</td></tr>
+        <tr><td>Rendszerhasználati díj</td><td class="text-right">845 m³</td><td class="text-right">28.40 Ft/m³</td><td class="text-right">23 998 Ft</td></tr>
+        <tr><td>Kapacitáslekötési díj</td><td class="text-right">1 hó</td><td class="text-right">5 200 Ft</td><td class="text-right">5 200 Ft</td></tr>
+      </table>
+      <div class="totals">
+        <div class="row"><span>Energia + díjak:</span><span>115 811 Ft</span></div>
+        <div class="row"><span>ÁFA 27%:</span><span>31 269 Ft</span></div>
+        <div class="row total"><span>Fizetendő:</span><span>147 080 Ft</span></div>
+      </div>
+      <div class="payment">
+        <strong>Csoportos beszedés:</strong> 10700024-12345678-51100005<br>
+        <strong>Vagy befizetés:</strong> MVM-G-2026/01-567890 közleménnyel
+      </div>
+      <div class="footer">
+        Online ügyfélszolgálat: mvmnext.hu | Hibabejelentés: 06 1 477 1500
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+async function downloadInvoice(elementId, filename) {
+  const element = document.getElementById(elementId);
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    });
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (err) {
+    alert('Hiba: ' + err.message);
+  }
+}
+
+async function downloadAll() {
+  const invoices = [
+    { id: 'inv1', name: 'szamla_benzinkut.png' },
+    { id: 'inv2', name: 'szamla_telekom.png' },
+    { id: 'inv3', name: 'szamla_kezzel_irt.png' },
+    { id: 'inv4', name: 'szamla_szalloda.png' },
+    { id: 'inv5', name: 'szamla_gyogyszertar.png' },
+    { id: 'inv6', name: 'szamla_ugyvedi.png' },
+    { id: 'inv7', name: 'szamla_amazon.png' },
+    { id: 'inv8', name: 'szamla_biztosito.png' },
+    { id: 'inv9', name: 'szamla_regi_fakult.png' },
+    { id: 'inv10', name: 'szamla_kozuzemi_gaz.png' }
+  ];
+  
+  for (let i = 0; i < invoices.length; i++) {
+    await downloadInvoice(invoices[i].id, invoices[i].name);
+    await new Promise(r => setTimeout(r, 500));
+  }
+  alert('Mind a 10 számla letöltve!');
+}
+</script>
+
+</body>
+</html>

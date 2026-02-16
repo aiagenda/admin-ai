@@ -234,6 +234,56 @@ export default function Archive() {
     }
   };
 
+  const exportSelected = () => {
+    if (selectedDocs.length === 0) return;
+
+    try {
+      const docsToExport = documents.filter((d) => selectedDocs.includes(d.id));
+      
+      // CSV header
+      const headers = ["Fájlnév", "Feltöltés dátuma", "Státusz", "Kategória", "Súlyosság", "Határidő", "Összeg", "Bankszámla", "Kedvezményezett", "Összefoglaló"];
+      
+      // CSV rows
+      const rows = docsToExport.map((doc) => [
+        doc.filename,
+        format(new Date(doc.upload_date), "yyyy-MM-dd"),
+        doc.status,
+        doc.category || "",
+        doc.analyses?.severity || "",
+        doc.analyses?.deadline || "",
+        doc.analyses?.amount || "",
+        doc.analyses?.bank_account || "",
+        doc.analyses?.recipient_name || "",
+        (doc.analyses?.simple_summary || "").replace(/"/g, '""'), // Escape quotes
+      ]);
+      
+      // Build CSV content
+      const csvContent = [
+        headers.join(";"),
+        ...rows.map((row) => row.map((cell) => `"${cell}"`).join(";"))
+      ].join("\n");
+      
+      // Add BOM for Excel UTF-8 compatibility
+      const BOM = "\uFEFF";
+      const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+      
+      // Download
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `dokumentumok_export_${format(new Date(), "yyyy-MM-dd")}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success(`${docsToExport.length} dokumentum exportálva`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Hiba történt az exportálás során");
+    }
+  };
+
   const getSeverityBadge = (severity?: string) => {
     switch (severity) {
       case "urgent":
@@ -395,6 +445,35 @@ export default function Archive() {
     }
   };
 
+  // Assign category to selected documents
+  const assignBulkCategory = async () => {
+    if (selectedDocs.length === 0 || !bulkCategory) return;
+
+    try {
+      const { error } = await supabase
+        .from("documents")
+        .update({ category: bulkCategory })
+        .in("id", selectedDocs);
+
+      if (error) throw error;
+
+      // Update local state
+      setDocuments((prev) =>
+        prev.map((doc) =>
+          selectedDocs.includes(doc.id) ? { ...doc, category: bulkCategory } : doc
+        )
+      );
+
+      setShowBulkCategoryDialog(false);
+      setBulkCategory("");
+      setSelectedDocs([]);
+      toast.success(`${selectedDocs.length} dokumentum kategóriája frissítve`);
+    } catch (error: any) {
+      console.error("Error assigning category:", error);
+      toast.error("Hiba a kategória hozzárendelése során");
+    }
+  };
+
   // Handle compare action
   const handleCompareClick = (docId: string) => {
     if (!compareDoc1) {
@@ -429,7 +508,7 @@ export default function Archive() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <div className="container mx-auto max-w-6xl space-y-6">
+      <div className="container mx-auto max-w-6xl space-y-6 overflow-x-auto min-w-0">
         {/* fejléc */}
         <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -502,7 +581,7 @@ export default function Archive() {
 
           {/* Search and Filters */}
           {documents.length > 0 && (
-            <Card className="p-4">
+            <Card className="p-4 overflow-x-auto min-w-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
                 {/* Search */}
                 <div className="relative">

@@ -87,6 +87,7 @@ export default function Upload() {
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   // LOG
   useEffect(() => {
@@ -420,147 +421,201 @@ export default function Upload() {
   };
 
   return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="container mx-auto max-w-3xl space-y-4">
+    <div className="min-h-screen py-8 px-4">
+      <div className="container mx-auto max-w-3xl space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center justify-center">
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-500 via-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/25">
+              <UploadIcon className="h-7 w-7 text-white" />
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="text-3xl font-bold">Dokumentum feltöltése</h1>
+            <HelpTooltip 
+              content="Töltsön fel PDF dokumentumot vagy képet (JPG, PNG, HEIC). Az elemzés általában 30-60 másodpercig tart."
+              helpPageAnchor="feltoltes"
+            />
+          </div>
+          <p className="text-muted-foreground">Tölts fel PDF-et vagy képet elemzéshez - az AI azonnal elkezdi feldolgozni</p>
+        </div>
+
         {/* Usage Limit Widget */}
         <UsageLimit />
 
-        <Card className="shadow-md">
-          <CardHeader>
-            <div className="flex items-center justify-center gap-2">
-            <CardTitle className="text-2xl font-bold text-center">Dokumentum feltöltése</CardTitle>
-              <HelpTooltip 
-                content="Töltsön fel PDF dokumentumot vagy képet (JPG, PNG, HEIC). Az elemzés általában 30-60 másodpercig tart. Mobil eszközön kamerával is fényképezhet."
-                helpPageAnchor="feltoltes"
-              />
-            </div>
-            <CardDescription className="text-center">Tölts fel PDF-et vagy képet elemzéshez</CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            {filePreview ? (
-              <Card className="border-2 border-dashed">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-4">
+        {/* Upload Card */}
+        <Card className="shadow-lg border-0 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500/5 via-primary/5 to-purple-500/5">
+            <CardContent className="p-6">
+              {filePreview ? (
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between p-4 rounded-xl bg-white dark:bg-slate-900 border">
                     <div className="flex items-center gap-3">
-                      <FileText className="h-8 w-8 text-primary" />
+                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-primary/20 flex items-center justify-center">
+                        <FileText className="h-6 w-6 text-primary" />
+                      </div>
                       <div>
-                        <p className="font-medium">{file?.name}</p>
+                        <p className="font-semibold">{file?.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {(file?.size || 0) / 1024 / 1024} MB
+                          {((file?.size || 0) / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={clearFile}>
+                    <Button variant="ghost" size="icon" onClick={clearFile} className="hover:bg-red-100 hover:text-red-600">
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="border rounded-lg overflow-hidden bg-muted/50">
+                  <div className="border-2 border-dashed rounded-xl overflow-hidden bg-white dark:bg-slate-900">
                     {file?.type === "application/pdf" ? (
                       <iframe
                         src={filePreview}
-                        className="w-full h-[500px]"
+                        className="w-full h-[400px]"
                         title="PDF Preview"
                       />
-                    ) : (
+                    ) : filePreview ? (
                       <img
                         src={filePreview}
-                        alt="Preview"
-                        className="w-full h-auto max-h-[500px] object-contain mx-auto"
+                        alt="Dokumentum előnézet"
+                        className="w-full h-auto max-h-[400px] object-contain mx-auto"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          const fallback = e.currentTarget.nextElementSibling;
+                          if (fallback) fallback.classList.remove("hidden");
+                        }}
                       />
-                    )}
+                    ) : null}
+                    <div className="hidden flex-col items-center justify-center py-12 text-muted-foreground">
+                      <FileText className="h-16 w-16 mb-2" />
+                      <p>Kép előnézet nem elérhető</p>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2 text-center">
-                    {file?.type === "application/pdf" ? "PDF" : "Kép"} előnézet - Ellenőrizze, hogy ez a megfelelő dokumentum
+                  <p className="text-sm text-muted-foreground text-center">
+                    ✓ Ellenőrizd, hogy ez a megfelelő dokumentum
                   </p>
-                </CardContent>
-              </Card>
-            ) : (
-            <>
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => fileInputRef.current?.click()}
-              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && fileInputRef.current?.click()}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleFileDrop}
-              className={cn(
-                "border-2 border-dashed rounded-lg p-10 text-center outline-none",
-                "hover:border-blue-500 focus-visible:border-blue-500 transition cursor-pointer",
-              )}
-            >
-              <UploadIcon className="mx-auto h-10 w-10 text-gray-500 mb-3" />
-              {file ? (
-                <p className="font-medium">{file.name}</p>
+                </div>
               ) : (
-                <p className="text-gray-500">Húzd ide a PDF-et vagy képet, vagy kattints</p>
+              <>
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => fileInputRef.current?.click()}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && fileInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleFileDrop}
+                className={cn(
+                  "border-2 border-dashed rounded-xl p-12 text-center outline-none bg-white dark:bg-slate-900",
+                  "hover:border-primary hover:bg-primary/5 focus-visible:border-primary transition-all cursor-pointer",
               )}
-              <input
-                type="file"
-                accept="application/pdf,image/jpeg,image/jpg,image/png,image/heic"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={(e) => {
-                  const selectedFiles = e.target.files;
-                  if (!selectedFiles || selectedFiles.length === 0) return;
-                  handleFileSelect(Array.from(selectedFiles));
-                }}
-              />
-            </div>
-            <div className="mt-4 flex gap-2 justify-center">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  // Set capture attribute for camera
-                  if (fileInputRef.current) {
-                    fileInputRef.current.setAttribute("capture", "environment");
-                    fileInputRef.current.click();
-                    // Reset capture after click
-                    setTimeout(() => {
-                      if (fileInputRef.current) {
-                        fileInputRef.current.removeAttribute("capture");
-                      }
-                    }, 100);
-                  }
-                }}
-                className="w-full sm:w-auto"
               >
-                <Camera className="mr-2 h-4 w-4" />
-                Kamerával fotózás
-              </Button>
-            </div>
-            </>
-            )}
+                <div className="h-16 w-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-500/20 to-primary/20 flex items-center justify-center mb-4">
+                  <UploadIcon className="h-8 w-8 text-primary" />
+                </div>
+                <p className="text-lg font-medium mb-2">Húzd ide a dokumentumot</p>
+                <p className="text-muted-foreground mb-4">vagy kattints a tallózáshoz</p>
+                <p className="text-sm text-muted-foreground">PDF, JPG, PNG, HEIC • Max 20MB</p>
+                <input
+                  type="file"
+                  accept="application/pdf,image/jpeg,image/jpg,image/png,image/heic"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={(e) => {
+                    const selectedFiles = e.target.files;
+                    if (!selectedFiles || selectedFiles.length === 0) return;
+                    handleFileSelect(Array.from(selectedFiles));
+                  }}
+                />
+              </div>
+              <div className="mt-4 flex gap-3 justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 sm:flex-none"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Fájl kiválasztása
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setScannerOpen(true)}
+                  className="flex-1 sm:flex-none"
+                >
+                  <Scan className="mr-2 h-4 w-4" />
+                  Dokumentum szkennelése
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (fileInputRef.current) {
+                      fileInputRef.current.setAttribute("capture", "environment");
+                      fileInputRef.current.click();
+                      setTimeout(() => {
+                        if (fileInputRef.current) {
+                          fileInputRef.current.removeAttribute("capture");
+                        }
+                      }, 100);
+                    }
+                  }}
+                  className="flex-1 sm:flex-none text-muted-foreground"
+                >
+                  <Camera className="mr-2 h-4 w-4" />
+                  Egyszerű fotó
+                </Button>
+              </div>
+              <DocumentScanner
+                open={scannerOpen}
+                onClose={() => setScannerOpen(false)}
+                onCapture={async (scannedFile) => {
+                  setScannerOpen(false);
+                  await handleFileSelect(scannedFile);
+                }}
+                mode="document"
+              />
+              </>
+              )}
 
-            {processingDocId && processingStatus ? (
-              <Card className="mt-6 p-4 bg-primary/5">
-                <div className="flex items-center gap-3">
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <div className="flex-1">
-                    <p className="font-medium">Dokumentum feldolgozása...</p>
-                    <p className="text-sm text-muted-foreground">
-                      {processingStatus === "processing"
-                        ? "Az AI elemzi a dokumentumot. Ez eltarthat néhány másodpercig."
-                        : processingStatus === "completed"
-                          ? "Befejezve! Átirányítás..."
-                          : "Hiba történt"}
-                    </p>
+              {processingDocId && processingStatus ? (
+                <div className="mt-6 p-5 rounded-xl bg-gradient-to-r from-blue-500/10 via-primary/10 to-purple-500/10 border border-primary/20">
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">
+                        {processingStatus === "completed" ? "✓ Elemzés kész!" : "Dokumentum feldolgozása..."}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {processingStatus === "processing"
+                          ? "Az AI elemzi a dokumentumot. Ez eltarthat néhány másodpercig."
+                          : processingStatus === "completed"
+                            ? "Átirányítás az eredményhez..."
+                            : "Hiba történt a feldolgozás során"}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </Card>
-            ) : (
-              <Button className="w-full mt-6" onClick={handleSubmit} disabled={loading || !file}>
-              {loading ? (
-                <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Feltöltés...
-                </>
               ) : (
-                <>Elemzés indítása</>
+                <Button 
+                  className="w-full mt-6 h-12 text-base bg-gradient-to-r from-blue-600 to-primary hover:from-blue-700 hover:to-primary/90 shadow-lg shadow-primary/25" 
+                  onClick={handleSubmit} 
+                  disabled={loading || !file}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Feltöltés...
+                    </>
+                  ) : (
+                    <>
+                      <UploadIcon className="mr-2 h-5 w-5" /> Elemzés indítása
+                    </>
+                  )}
+                </Button>
               )}
-            </Button>
-            )}
-          </CardContent>
+            </CardContent>
+          </div>
         </Card>
       </div>
     </div>
