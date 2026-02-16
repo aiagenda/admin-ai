@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { DocumentScanner } from "@/components/DocumentScanner";
 
 function sanitizeFilename(name: string) {
   return name
