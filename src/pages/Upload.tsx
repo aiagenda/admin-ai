@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload as UploadIcon, Loader2, X, FileText, Camera } from "lucide-react";
+import { Upload as UploadIcon, Loader2, X, FileText, Camera, Scan } from "lucide-react";
 import { HelpTooltip } from "@/components/HelpTooltip";
 import { UsageLimit } from "@/components/UsageLimit";
 import { useAuth } from "@/contexts/AuthContext";
