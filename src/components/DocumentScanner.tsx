@@ -91,6 +91,7 @@ export function DocumentScanner({
   const [capturedUrl, setCapturedUrl] = useState<string | null>(null);
   const [crop, setCrop] = useState<Crop>();
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraStarted, setCameraStarted] = useState(false);
   const [loading, setLoading] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -99,16 +100,31 @@ export function DocumentScanner({
   const startCamera = useCallback(async () => {
     setCameraError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false,
-      });
+      // PWA/standalone: try simple constraints first (user gesture required on many mobile browsers)
+      const tryConstraints = [
+        { video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+        { video: { facingMode: "environment" }, audio: false },
+        { video: true, audio: false },
+      ];
+      let stream: MediaStream | null = null;
+      for (const constraints of tryConstraints) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          break;
+        } catch {
+          continue;
+        }
+      }
+      if (!stream) throw new Error("No camera");
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
+      setCameraStarted(true);
     } catch (err: any) {
-      setCameraError(err?.message?.includes("Permission") ? "Kamera hozzáférés megtagadva." : "Kamera nem elérhető.");
+      setCameraError(err?.message?.includes("Permission") || err?.name === "NotAllowedError"
+        ? "Kamera hozzáférés megtagadva. Engedélyezd a böngészőben, vagy használd a fájl feltöltést."
+        : "Kamera nem elérhető (pl. PWA mód). Használd a „Fájl kiválasztása” lehetőséget.");
     }
   }, []);
 
@@ -123,13 +139,10 @@ export function DocumentScanner({
   }, []);
 
   useEffect(() => {
-    if (open && step === "camera") {
-      startCamera();
-    }
     return () => {
       if (!open) stopCamera();
     };
-  }, [open, step, startCamera, stopCamera]);
+  }, [open, stopCamera]);
 
   useEffect(() => {
     if (!open) {
@@ -137,6 +150,7 @@ export function DocumentScanner({
       setCapturedUrl(null);
       setCrop(undefined);
       setCameraError(null);
+      setCameraStarted(false);
       if (capturedUrl) URL.revokeObjectURL(capturedUrl);
     }
   }, [open]);
@@ -171,6 +185,10 @@ export function DocumentScanner({
     setLoading(true);
     try {
       const blob = await getCroppedImage(capturedUrl, crop);
+      if (!blob || blob.size === 0) {
+        setLoading(false);
+        return;
+      }
       const file = new File([blob], `scan_${Date.now()}.jpg`, {
         type: "image/jpeg",
         lastModified: Date.now(),
@@ -206,7 +224,20 @@ export function DocumentScanner({
 
         {step === "camera" && (
           <div className="relative bg-black">
-            {cameraError ? (
+            {!cameraStarted && !cameraError ? (
+              <div className="aspect-[4/3] flex flex-col items-center justify-center text-white p-6 text-center">
+                <Camera className="h-12 w-12 mb-4 opacity-70" />
+                <p className="font-medium mb-1">Kamera használata</p>
+                <p className="text-sm text-white/70 mb-4">PWA és mobil böngészőkben a kamera csak kattintásra indul.</p>
+                <Button size="lg" className="gap-2" onClick={startCamera}>
+                  <Camera className="h-5 w-5" />
+                  Kamera indítása
+                </Button>
+                <Button variant="ghost" className="mt-3 text-white/80" onClick={onClose}>
+                  Mégse
+                </Button>
+              </div>
+            ) : cameraError ? (
               <div className="aspect-[4/3] flex flex-col items-center justify-center text-white p-6 text-center">
                 <Camera className="h-12 w-12 mb-2 opacity-50" />
                 <p className="font-medium">{cameraError}</p>
@@ -225,7 +256,7 @@ export function DocumentScanner({
                   className="w-full aspect-[4/3] object-cover"
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-[85%] max-w-sm aspect-[3/4] border-2 border-white/80 rounded-xl shadow-lg" />
+                  <div className="w-[90%] min-w-[200px] max-w-[340px] aspect-[3/4] rounded-xl border-4 border-white shadow-[0_0_0_2px_rgba(0,0,0,0.3)]" />
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                   <p className="text-white/90 text-center text-sm mb-3">{copy.frame}</p>

@@ -129,16 +129,16 @@ export default function Auth() {
           <div className="space-y-4">
             <Button 
               variant="outline" 
-              className="w-full" 
+              className="w-full min-h-[48px] touch-manipulation" 
               onClick={handleGoogleSignIn}
               disabled={loading}
             >
               {loading ? "Betöltés..." : "Bejelentkezés Google-lel"}
             </Button>
             <Tabs defaultValue="signin">
-              <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Bejelentkezés</TabsTrigger>
-              <TabsTrigger value="signup">Regisztráció</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 h-12">
+              <TabsTrigger value="signin" className="min-h-[44px]">Bejelentkezés</TabsTrigger>
+              <TabsTrigger value="signup" className="min-h-[44px]">Regisztráció</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">

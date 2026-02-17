@@ -719,9 +719,9 @@ export default function Result() {
                   value={activeTab}
                   onValueChange={(value) => setActiveTab(value as "simple" | "detailed")}
                 >
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="simple">Egyszerű magyarázat</TabsTrigger>
-                    <TabsTrigger value="legal">Részletes magyarázat</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 h-12">
+                    <TabsTrigger value="simple" className="min-h-[44px] touch-manipulation">Egyszerű magyarázat</TabsTrigger>
+                    <TabsTrigger value="legal" className="min-h-[44px] touch-manipulation">Részletes magyarázat</TabsTrigger>
                   </TabsList>
                   <TabsContent value="simple" className="mt-4">
                     <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{simpleSummary}</p>

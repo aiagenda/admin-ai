@@ -436,7 +436,7 @@ export default function Home() {
       <section className="bg-gradient-to-br from-primary/5 via-background to-accent/5 py-20 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center space-y-6">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
               Hivatalos dokumentumok{" "}
               <span className="text-primary">egyszerűen</span>
             </h1>
@@ -450,11 +450,11 @@ export default function Home() {
             </p>
             {/* --- VÉGE --- */}
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-4">
               <Button
                 size="lg"
                 onClick={() => navigate(user ? "/upload" : "/auth")}
-                className="text-lg px-8"
+                className="w-full sm:w-auto text-lg px-8 min-h-[48px] touch-manipulation"
               >
                 <FileText className="mr-2 h-5 w-5" />
                 Dokumentum feltöltése
@@ -464,7 +464,7 @@ export default function Home() {
                 size="lg"
                 variant="outline"
                 onClick={() => navigate("/pricing")}
-                className="text-lg px-8"
+                className="w-full sm:w-auto text-lg px-8 min-h-[48px] touch-manipulation"
               >
                 Árak megtekintése
               </Button>

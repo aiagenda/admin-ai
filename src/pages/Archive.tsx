@@ -590,7 +590,7 @@ export default function Archive() {
                     placeholder="Keresés fájlnév alapján..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 min-h-[44px]"
                   />
                   {searchQuery && (
                     <Button
@@ -606,7 +606,7 @@ export default function Archive() {
 
                 {/* Status Filter */}
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="min-h-[44px]">
                     <Filter className="mr-2 h-4 w-4" />
                     <SelectValue placeholder="Státusz" />
                   </SelectTrigger>
@@ -620,7 +620,7 @@ export default function Archive() {
 
                 {/* Category Filter */}
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="min-h-[44px]">
                     <SelectValue placeholder="Kategória" />
                   </SelectTrigger>
                   <SelectContent>
@@ -638,7 +638,7 @@ export default function Archive() {
 
                 {/* Severity Filter */}
                 <Select value={severityFilter} onValueChange={setSeverityFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="min-h-[44px]">
                     <SelectValue placeholder="Sürgősség" />
                   </SelectTrigger>
                   <SelectContent>
@@ -651,7 +651,7 @@ export default function Archive() {
 
                 {/* Tag Filter */}
                 <Select value={tagFilter} onValueChange={setTagFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="min-h-[44px]">
                     <SelectValue placeholder="Címke" />
                   </SelectTrigger>
                   <SelectContent>
@@ -666,7 +666,7 @@ export default function Archive() {
 
                 {/* Sort */}
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger>
+                  <SelectTrigger className="min-h-[44px]">
                     <SelectValue placeholder="Rendezés" />
                   </SelectTrigger>
                   <SelectContent>
@@ -906,7 +906,7 @@ export default function Archive() {
               <div>
                 <label className="text-sm font-medium mb-2 block">Kategória</label>
                 <Select value={bulkCategory} onValueChange={setBulkCategory}>
-                  <SelectTrigger>
+                  <SelectTrigger className="min-h-[44px]">
                     <SelectValue placeholder="Válassz kategóriát" />
                   </SelectTrigger>
                   <SelectContent>

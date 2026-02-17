@@ -44,7 +44,7 @@ const App = () => (
             <div className="min-h-screen flex flex-col">
               <Navbar />
               <PWAInstallBanner />
-              <main className="flex-1">
+              <main className="flex-1 pb-[env(safe-area-inset-bottom)]">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/auth" element={<Auth />} />

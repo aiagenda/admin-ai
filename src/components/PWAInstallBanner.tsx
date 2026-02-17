@@ -71,7 +71,7 @@ export function PWAInstallBanner() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
-      <div className="pointer-events-auto mx-auto max-w-lg rounded-xl border bg-card shadow-lg p-4 flex items-center gap-3">
+      <div className="pointer-events-auto mx-auto max-w-lg rounded-2xl border bg-card shadow-lg p-4 flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
           <Smartphone className="h-5 w-5 text-primary" />
         </div>

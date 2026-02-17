@@ -174,6 +174,10 @@ export default function Upload() {
       toast.error("Válassz fájlt");
       return;
     }
+    if (file.size === 0) {
+      toast.error("A fájl üres. Készíts új fényképet vagy válassz másik fájlt.");
+      return;
+    }
 
     // Check quota before upload (only if function exists)
     try {
@@ -422,7 +426,7 @@ export default function Upload() {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-6 sm:py-8 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="container mx-auto max-w-3xl space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
@@ -431,8 +435,8 @@ export default function Upload() {
               <UploadIcon className="h-7 w-7 text-white" />
             </div>
           </div>
-          <div className="flex items-center justify-center gap-2">
-            <h1 className="text-3xl font-bold">Dokumentum feltöltése</h1>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold">Dokumentum feltöltése</h1>
             <HelpTooltip 
               content="Töltsön fel PDF dokumentumot vagy képet (JPG, PNG, HEIC). Az elemzés általában 30-60 másodpercig tart."
               helpPageAnchor="feltoltes"
@@ -445,18 +449,18 @@ export default function Upload() {
         <UsageLimit />
 
         {/* Upload Card */}
-        <Card className="shadow-lg border-0 overflow-hidden">
+        <Card className="shadow-md sm:shadow-lg border-0 overflow-hidden">
           <div className="bg-gradient-to-r from-blue-500/5 via-primary/5 to-purple-500/5">
             <CardContent className="p-6">
               {filePreview ? (
                 <div className="space-y-4">
                   <div className="flex items-start justify-between p-4 rounded-xl bg-white dark:bg-slate-900 border">
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-primary/20 flex items-center justify-center">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="h-12 w-12 shrink-0 rounded-xl bg-gradient-to-br from-blue-500/20 to-primary/20 flex items-center justify-center">
                         <FileText className="h-6 w-6 text-primary" />
                       </div>
-                      <div>
-                        <p className="font-semibold">{file?.name}</p>
+                      <div className="min-w-0">
+                        <p className="font-semibold truncate" title={file?.name}>{file?.name}</p>
                         <p className="text-sm text-muted-foreground">
                           {((file?.size || 0) / 1024 / 1024).toFixed(2)} MB
                         </p>
@@ -470,14 +474,14 @@ export default function Upload() {
                     {file?.type === "application/pdf" ? (
                       <iframe
                         src={filePreview}
-                        className="w-full h-[400px]"
+                        className="w-full min-h-[200px] max-h-[50vh] sm:max-h-[400px]"
                         title="PDF Preview"
                       />
                     ) : filePreview ? (
                       <img
                         src={filePreview}
                         alt="Dokumentum előnézet"
-                        className="w-full h-auto max-h-[400px] object-contain mx-auto"
+                        className="w-full h-auto max-h-[50vh] sm:max-h-[400px] object-contain mx-auto"
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
                           const fallback = e.currentTarget.nextElementSibling;
@@ -504,7 +508,7 @@ export default function Upload() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={handleFileDrop}
                 className={cn(
-                  "border-2 border-dashed rounded-xl p-12 text-center outline-none bg-white dark:bg-slate-900",
+                  "border-2 border-dashed rounded-xl p-6 sm:p-12 text-center outline-none bg-white dark:bg-slate-900",
                   "hover:border-primary hover:bg-primary/5 focus-visible:border-primary transition-all cursor-pointer",
               )}
               >
@@ -526,29 +530,28 @@ export default function Upload() {
                   }}
                 />
               </div>
-              <div className="mt-4 flex gap-3 justify-center">
+              <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 sm:flex-none"
+                  className="w-full sm:flex-none shrink-0 min-h-[44px] touch-manipulation"
                 >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Fájl kiválasztása
+                  <FileText className="mr-2 h-4 w-4 shrink-0" />
+                  <span className="truncate">Fájl kiválasztása</span>
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setScannerOpen(true)}
-                  className="flex-1 sm:flex-none"
+                  className="w-full sm:flex-none shrink-0 min-h-[44px] touch-manipulation"
                 >
-                  <Scan className="mr-2 h-4 w-4" />
-                  Dokumentum szkennelése
+                  <Scan className="mr-2 h-4 w-4 shrink-0" />
+                  <span className="truncate">Dokumentum szkennelése</span>
                 </Button>
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
                   onClick={() => {
                     if (fileInputRef.current) {
                       fileInputRef.current.setAttribute("capture", "environment");
@@ -560,10 +563,10 @@ export default function Upload() {
                       }, 100);
                     }
                   }}
-                  className="flex-1 sm:flex-none text-muted-foreground"
+                  className="w-full sm:flex-none shrink-0 text-muted-foreground min-h-[44px] touch-manipulation"
                 >
-                  <Camera className="mr-2 h-4 w-4" />
-                  Egyszerű fotó
+                  <Camera className="mr-2 h-4 w-4 shrink-0" />
+                  <span className="truncate">Egyszerű fotó</span>
                 </Button>
               </div>
               <DocumentScanner
