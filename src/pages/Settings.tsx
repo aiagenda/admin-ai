@@ -15,6 +15,8 @@ import { usePushNotification } from "@/hooks/use-push-notification";
 import { getHomeCardOrder, setHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
 import { SortableHomeCardList } from "@/components/SortableHomeCardList";
 
+const SendIcon = typeof Send !== "undefined" ? Send : Mail;
+
 interface UserProfile {
   id: string;
   user_id: string;
@@ -305,7 +307,7 @@ export default function Settings() {
                   {sendingTest ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Send className="h-4 w-4" />
+                    <SendIcon className="h-4 w-4" />
                   )}
                 </Button>
               </div>
