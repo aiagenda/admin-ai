@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles, Upload, ChevronRight, ChevronLeft, Home, LayoutGrid, FileText, Archive, Clock, Search, Receipt, Settings, CheckCircle2 } from "lucide-react";
@@ -73,6 +73,9 @@ export function OnboardingWizard() {
                   </motion.span>
                 </AnimatePresence>
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                Segítő: {current?.title}. Lépés {step + 1} a {totalSteps}-ból.
+              </DialogDescription>
             </DialogHeader>
             <Button variant="ghost" size="sm" onClick={() => handleClose(true)} className="shrink-0 text-muted-foreground">Átugrom</Button>
           </div>
