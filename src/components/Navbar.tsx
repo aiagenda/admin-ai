@@ -2,8 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTutorial } from "@/contexts/TutorialContext";
-import { FileText, LogOut, User, HelpCircle, Menu, Moon, Sun, Receipt, Sparkles } from "lucide-react";
+import { FileText, LogOut, User, HelpCircle, Menu, Moon, Sun, Receipt } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +23,6 @@ import { useTheme } from "next-themes";
 
 export function Navbar() {
   const { user, signOut } = useAuth();
-  const { setOpenTutorial } = useTutorial();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -205,18 +203,6 @@ export function Navbar() {
       {user && <NavLink to="/search">Keresés</NavLink>}
       {user && (hasInvoiceAccess || isAdmin) && <NavLink to="/invoices">Könyvelés</NavLink>}
       {user && <NavLink to="/settings">Beállítások</NavLink>}
-      {user && (
-        <SheetClose asChild>
-          <button
-            type="button"
-            onClick={() => setOpenTutorial(true)}
-            className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2 w-full gap-2"
-          >
-            <Sparkles className="h-4 w-4" />
-            Segítő
-          </button>
-        </SheetClose>
-      )}
       <NavLink to="/help">Segítség</NavLink>
       {user && !checkingAdmin && isAdmin && (
         <>
@@ -273,10 +259,6 @@ export function Navbar() {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     Beállítások
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setOpenTutorial(true)}>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Segítő
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut} className="text-destructive">
                     <LogOut className="h-4 w-4 mr-2" />

@@ -47,8 +47,19 @@ export function OnboardingWizard() {
   const current = steps[step];
   const StepIcon = current?.icon ?? Sparkles;
 
-  useEffect(() => { if (!user) return; if (getDone(user.id)) return; setOpen(true); }, [user?.id]);
-  useEffect(() => { if (openTutorial) setOpen(true); }, [openTutorial]);
+  useEffect(() => {
+    if (!user) return;
+    if (getDone(user.id)) return;
+    const t = setTimeout(() => setOpen(true), 400);
+    return () => clearTimeout(t);
+  }, [user?.id]);
+  useEffect(() => {
+    if (openTutorial) {
+      setStep(0);
+      const t = setTimeout(() => setOpen(true), 150);
+      return () => clearTimeout(t);
+    }
+  }, [openTutorial]);
 
   const handleClose = (markDone) => { setOpen(false); setOpenTutorial(false); if (user && markDone) setDone(user.id); };
   const handleNext = () => { if (step < totalSteps - 1) setStep((s) => s + 1); else handleClose(true); };
@@ -59,7 +70,7 @@ export function OnboardingWizard() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose(false)}>
-      <DialogContent className="w-[95vw] max-w-lg max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 sm:rounded-xl rounded-t-2xl fixed bottom-0 sm:bottom-[50%] sm:translate-y-[50%]">
+      <DialogContent className="z-[100] w-[95vw] max-w-lg max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 sm:rounded-xl rounded-t-2xl fixed bottom-0 sm:bottom-[50%] sm:translate-y-[50%]">
         <div className="px-6 pt-6 pb-2">
           <div className="flex items-center justify-between gap-2 mb-2">
             <DialogHeader className="p-0 flex-1">

@@ -66,78 +66,55 @@ export default function Settings() {
 
     const fetchProfile = async () => {
       try {
-        // Try to get or create profile using the function
-        const { data, error } = await supabase.rpc("get_user_profile", {
-          _user_id: user.id,
-        });
+        // Load user_profiles directly (no RPC – avoids 400)
+        const { data: directData, error: directError } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
 
-        if (error) {
-          // If function doesn't exist yet, try direct query
-          const { data: directData, error: directError } = await supabase
+        if (directError) {
+          const { data: newProfile, error: createError } = await supabase
             .from("user_profiles")
-            .select("*")
-            .eq("user_id", user.id)
+            .insert({ user_id: user.id, accountant_export_format: "csv" })
+            .select()
             .single();
-
-          if (directError) {
-            // Profile doesn't exist, create default one
-            const { data: newProfile, error: createError } = await supabase
-              .from("user_profiles")
-              .insert({
-                user_id: user.id,
-                accountant_export_format: "csv",
-              })
-              .select()
-              .single();
-
-            if (createError) {
-              console.error("Error creating profile:", createError);
-              toast.error("Hiba a profil létrehozása során");
-              return;
-            }
-
-            setProfile(newProfile);
-            setAccountantEmail(newProfile.accountant_email || "");
-            setAutoSendEnabled(newProfile.accountant_auto_send_enabled || false);
-            setAutoSendDay(String(newProfile.accountant_auto_send_day || 1));
-            setExportFormat(newProfile.accountant_export_format || "csv");
-          } else {
-            setProfile(directData);
-            setAccountantEmail(directData.accountant_email || "");
-            setAutoSendEnabled(directData.accountant_auto_send_enabled || false);
-            setAutoSendDay(String(directData.accountant_auto_send_day || 1));
-            setExportFormat(directData.accountant_export_format || "csv");
+          if (createError) {
+            console.error("Error creating profile:", createError);
+            toast.error("Hiba a profil létrehozása során");
+            setLoading(false);
+            return;
           }
+          setProfile(newProfile);
+          setAccountantEmail(newProfile.accountant_email || "");
+          setAutoSendEnabled(newProfile.accountant_auto_send_enabled || false);
+          setAutoSendDay(String(newProfile.accountant_auto_send_day || 1));
+          setExportFormat(newProfile.accountant_export_format || "csv");
         } else {
-          // Function returned data (it's an array from the function)
-          const profileData = Array.isArray(data) ? data[0] : data;
-          setProfile(profileData);
-          setAccountantEmail(profileData?.accountant_email || "");
-          setAutoSendEnabled(profileData?.accountant_auto_send_enabled || false);
-          setAutoSendDay(String(profileData?.accountant_auto_send_day || 1));
-          setExportFormat(profileData?.accountant_export_format || "csv");
+          setProfile(directData);
+          setAccountantEmail(directData.accountant_email || "");
+          setAutoSendEnabled(directData.accountant_auto_send_enabled || false);
+          setAutoSendDay(String(directData.accountant_auto_send_day || 1));
+          setExportFormat(directData.accountant_export_format || "csv");
         }
 
-        // Fetch notification preferences
-        const { data: notifData, error: notifError } = await supabase.rpc("get_notification_preferences", {
-          _user_id: user.id,
-        });
-
-        if (!notifError && notifData) {
-          const prefs = Array.isArray(notifData) ? notifData[0] : notifData;
-          if (prefs) {
-            setEmailEnabled(prefs.email_enabled ?? true);
-            setEmail7Days(prefs.email_7_days_before ?? true);
-            setEmail3Days(prefs.email_3_days_before ?? true);
-            setEmail1Day(prefs.email_1_day_before ?? true);
-            setEmailOnDeadline(prefs.email_on_deadline ?? false);
-            
-            setPushEnabled(prefs.push_enabled ?? false);
-            setPush7Days(prefs.push_7_days_before ?? false);
-            setPush3Days(prefs.push_3_days_before ?? false);
-            setPush1Day(prefs.push_1_day_before ?? true);
-            setPushOnDeadline(prefs.push_on_deadline ?? false);
-          }
+        // Load notification_preferences directly (no RPC – avoids 400)
+        const { data: notifRow, error: notifError } = await supabase
+          .from("notification_preferences")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+        if (!notifError && notifRow) {
+          setEmailEnabled(notifRow.email_enabled ?? true);
+          setEmail7Days(notifRow.email_7_days_before ?? true);
+          setEmail3Days(notifRow.email_3_days_before ?? true);
+          setEmail1Day(notifRow.email_1_day_before ?? true);
+          setEmailOnDeadline(notifRow.email_on_deadline ?? false);
+          setPushEnabled(notifRow.push_enabled ?? false);
+          setPush7Days(notifRow.push_7_days_before ?? false);
+          setPush3Days(notifRow.push_3_days_before ?? false);
+          setPush1Day(notifRow.push_1_day_before ?? true);
+          setPushOnDeadline(notifRow.push_on_deadline ?? false);
         }
       } catch (error: any) {
         console.error("Error fetching profile:", error);
@@ -200,7 +177,8 @@ export default function Settings() {
         accountant_export_format: exportFormat,
       });
     } catch (error: any) {
-      console.error("Error saving settings:", error);
+      console.error("Error saving settings:", error?.message ?? error);
+      if (error?.code) console.error("Supabase code:", error.code, "details:", error.details);
       toast.error("Hiba a beállítások mentése során");
     } finally {
       setSaving(false);
@@ -394,25 +372,6 @@ export default function Settings() {
                 A jelentések ebben a formátumban lesznek generálva
               </p>
             </div>
-
-            <Separator />
-
-            {/* Save Button */}
-            <div className="flex justify-end">
-              <Button onClick={handleSave} disabled={saving}>
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Mentés...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Beállítások mentése
-                  </>
-                )}
-              </Button>
-            </div>
           </CardContent>
         </Card>
 
@@ -555,25 +514,6 @@ export default function Settings() {
                 </div>
               )}
             </div>
-
-            <Separator />
-
-            {/* Save Button */}
-            <div className="flex justify-end">
-              <Button onClick={handleSave} disabled={saving}>
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Mentés...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Beállítások mentése
-                  </>
-                )}
-              </Button>
-            </div>
           </CardContent>
         </Card>
 
@@ -603,6 +543,23 @@ export default function Settings() {
             </p>
           </CardContent>
         </Card>
+
+        {/* Egyetlen mentés gomb a lap alján */}
+        <div className="flex justify-end pt-4 pb-6">
+          <Button onClick={handleSave} disabled={saving} size="lg">
+            {saving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Mentés...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Beállítások mentése
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

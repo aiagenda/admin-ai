@@ -60,29 +60,26 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request).then((response) => {
-          // Don't cache if not a valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
+        if (response) return response;
+        return fetch(event.request).then((networkResponse) => {
+          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+            return networkResponse;
           }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+          return networkResponse;
+        }).catch(() => {
+          if (event.request.destination === 'document') {
+            return caches.match('/').then((r) => r || new Response('Offline', { status: 503, statusText: 'Offline' }));
+          }
+          return new Response('', { status: 503, statusText: 'Offline' });
         });
       })
       .catch(() => {
-        // If both cache and network fail, return offline page if available
         if (event.request.destination === 'document') {
-          return caches.match('/');
+          return caches.match('/').then((r) => r || new Response('Offline', { status: 503, statusText: 'Offline' }));
         }
+        return Promise.resolve(new Response('', { status: 503, statusText: 'Offline' }));
       })
   );
 });

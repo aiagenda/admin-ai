@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8082,
+    hmr: { port: 8082, host: "localhost", protocol: "ws" },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
