@@ -24,6 +24,12 @@ export function UsageLimit() {
   useEffect(() => {
     if (!user) return;
 
+    const STORAGE_KEY = "usage_limit_rpc_available";
+    if (sessionStorage.getItem(STORAGE_KEY) === "false") {
+      setLoading(false);
+      return;
+    }
+
     const fetchUsage = async () => {
       try {
         const { data, error } = await supabase.rpc("can_user_upload", {
@@ -33,7 +39,7 @@ export function UsageLimit() {
         if (error) {
           // If function doesn't exist (migration not run), silently fail
           if (error.code === "PGRST202" || error.message?.includes("Could not find the function")) {
-            console.warn("Usage limit functions not available. Migration may not be run yet.");
+            sessionStorage.setItem(STORAGE_KEY, "false");
             setLoading(false);
             return;
           }
@@ -44,11 +50,13 @@ export function UsageLimit() {
           setUsage(data[0] as UsageData);
         }
       } catch (error: any) {
-        // Only show error if it's not a missing function error
-        if (error.code !== "PGRST202" && !error.message?.includes("Could not find the function")) {
-          console.error("Error fetching usage:", error);
-          toast.error("Hiba a használati adatok betöltése során");
+        if (error?.code === "PGRST202" || error?.message?.includes("Could not find the function") || error?.status === 404) {
+          sessionStorage.setItem(STORAGE_KEY, "false");
+          setLoading(false);
+          return;
         }
+        console.error("Error fetching usage:", error);
+        toast.error("Hiba a használati adatok betöltése során");
       } finally {
         setLoading(false);
       }
