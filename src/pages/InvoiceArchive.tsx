@@ -28,11 +28,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
 import { hu } from "date-fns/locale";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 interface Invoice {
   id: string;
   filename: string;
+  file_url?: string | null;
   upload_date: string;
   invoice_number: string | null;
   invoice_date: string | null;
@@ -45,6 +46,14 @@ interface Invoice {
   item_description: string | null;
   status: string;
 }
+
+const IMAGE_EXTENSIONS = /\.(jpe?g|png|webp)$/i;
+const IMAGE_EXT_MAP: Record<string, "jpeg" | "png"> = {
+  jpg: "jpeg",
+  jpeg: "jpeg",
+  png: "png",
+  webp: "png", // Excel doesn't support webp; treat as png for embedding attempt
+};
 
 interface ExpenseCategory {
   name: string;
@@ -76,6 +85,7 @@ export default function InvoiceArchive() {
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const [reprocessingId, setReprocessingId] = useState<string | null>(null);
+  const [exportingExcel, setExportingExcel] = useState(false);
   
   // Revenue VAT (manual entry from billing software)
   const [revenueVat, setRevenueVat] = useState<string>("");
@@ -315,32 +325,100 @@ export default function InvoiceArchive() {
     return true;
   });
 
-  // Export to Excel
-  const exportToExcel = () => {
+  // Export to Excel with embedded invoice images
+  const exportToExcel = async () => {
     if (filteredInvoices.length === 0) {
       toast.error("Nincs exportálható számla");
       return;
     }
+    setExportingExcel(true);
+    try {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("Számlák", { views: [{ state: "frozen", ySplit: 1 }] });
 
-    const data = filteredInvoices.map((inv) => ({
-      "Dátum": inv.invoice_date || inv.upload_date.split("T")[0],
-      "Számlaszám": inv.invoice_number || "",
-      "Kibocsátó": inv.vendor_name || "",
-      "Tétel": inv.item_description || "",
-      "Nettó": inv.net_amount || "",
-      "ÁFA%": inv.vat_rate || "",
-      "ÁFA": inv.vat_amount || "",
-      "Bruttó": inv.gross_amount || "",
-      "Kategória": categoryLabels[inv.expense_category || "other"] || inv.expense_category,
-      "Fájlnév": inv.filename,
-    }));
+      const headers = [
+        "Dátum",
+        "Számlaszám",
+        "Kibocsátó",
+        "Tétel",
+        "Nettó",
+        "ÁFA%",
+        "ÁFA",
+        "Bruttó",
+        "Kategória",
+        "Fájlnév",
+        "Számla",
+      ];
+      const headerRow = ws.getRow(1);
+      headers.forEach((h, i) => headerRow.getCell(i + 1).value = h);
+      headerRow.font = { bold: true };
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Számlák");
-    
-    XLSX.writeFile(wb, `szamlak_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`);
-    toast.success("Excel exportálás sikeres!");
+      const IMG_COL = 11;
+      const IMG_WIDTH = 160;
+      const IMG_HEIGHT = 100;
+      const ROW_HEIGHT_WITH_IMG = 78;
+
+      for (let i = 0; i < filteredInvoices.length; i++) {
+        const inv = filteredInvoices[i];
+        const rowIndex = i + 2;
+        const row = ws.getRow(rowIndex);
+        row.getCell(1).value = inv.invoice_date || inv.upload_date.split("T")[0];
+        row.getCell(2).value = inv.invoice_number ?? "";
+        row.getCell(3).value = inv.vendor_name ?? "";
+        row.getCell(4).value = inv.item_description ?? "";
+        row.getCell(5).value = inv.net_amount ?? "";
+        row.getCell(6).value = inv.vat_rate ?? "";
+        row.getCell(7).value = inv.vat_amount ?? "";
+        row.getCell(8).value = inv.gross_amount ?? "";
+        row.getCell(9).value = (categoryLabels[inv.expense_category || "other"] || inv.expense_category) ?? "";
+        row.getCell(10).value = inv.filename;
+
+        const fileUrl = inv.file_url;
+        const isImage = fileUrl && IMAGE_EXTENSIONS.test(inv.filename);
+        if (isImage && fileUrl) {
+          try {
+            const { data: urlData } = await supabase.storage
+              .from("documents")
+              .createSignedUrl(fileUrl, 3600);
+            if (urlData?.signedUrl) {
+              const res = await fetch(urlData.signedUrl);
+              if (res.ok) {
+                const buffer = await res.arrayBuffer();
+                const ext = (inv.filename.split(".").pop() || "").toLowerCase();
+                const excelExt = IMAGE_EXT_MAP[ext] ?? "jpeg";
+                const imageId = wb.addImage({
+                  buffer: new Uint8Array(buffer),
+                  extension: excelExt,
+                });
+                ws.addImage(imageId, {
+                  tl: { col: IMG_COL - 1, row: rowIndex - 1 },
+                  ext: { width: IMG_WIDTH, height: IMG_HEIGHT },
+                });
+                row.height = ROW_HEIGHT_WITH_IMG;
+              }
+            }
+          } catch {
+            // skip image on error (e.g. PDF or missing file)
+          }
+        }
+      }
+
+      ws.getColumn(IMG_COL).width = 22;
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `szamlak_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Excel exportálás sikeres! A számlaképek beágyazva.");
+    } catch (e) {
+      console.error("Excel export error:", e);
+      toast.error("Hiba az exportálás során");
+    } finally {
+      setExportingExcel(false);
+    }
   };
 
   // Calculate totals
@@ -428,8 +506,8 @@ export default function InvoiceArchive() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={exportToExcel}>
-              <Download className="h-4 w-4 mr-2" />
+            <Button variant="outline" onClick={exportToExcel} disabled={exportingExcel}>
+              {exportingExcel ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
               Export Excel
             </Button>
             <Button onClick={() => navigate("/invoices/upload")}>

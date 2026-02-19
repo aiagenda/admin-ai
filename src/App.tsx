@@ -5,10 +5,12 @@ import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { TutorialProvider } from "@/contexts/TutorialContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { Navbar } from "@/components/Navbar";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
+import { OnboardingWizard } from "@/components/OnboardingWizard";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
@@ -41,9 +43,11 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <TutorialProvider>
             <div className="min-h-screen flex flex-col">
               <Navbar />
               <PWAInstallBanner />
+              <OnboardingWizard />
               <main className="flex-1 pb-[env(safe-area-inset-bottom)]">
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -176,6 +180,7 @@ const App = () => (
               </Routes>
             </main>
           </div>
+            </TutorialProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

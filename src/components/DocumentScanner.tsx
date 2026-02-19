@@ -117,8 +117,10 @@ export function DocumentScanner({
       }
       if (!stream) throw new Error("No camera");
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+      const video = videoRef.current;
+      if (video) {
+        video.srcObject = stream;
+        video.play().catch(() => {});
       }
       setCameraStarted(true);
     } catch (err: any) {
@@ -253,10 +255,20 @@ export function DocumentScanner({
                   autoPlay
                   playsInline
                   muted
-                  className="w-full aspect-[4/3] object-cover"
+                  className="w-full aspect-[4/3] object-cover bg-black"
+                  onLoadedMetadata={() => videoRef.current?.play().catch(() => {})}
+                  onCanPlay={() => videoRef.current?.play().catch(() => {})}
                 />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-[90%] min-w-[200px] max-w-[340px] aspect-[3/4] rounded-xl border-4 border-white shadow-[0_0_0_2px_rgba(0,0,0,0.3)]" />
+                {/* Scrim overlay with cutout + clean frame */}
+                <div
+                  className="absolute inset-0 grid pointer-events-none"
+                  style={{ gridTemplateRows: "1fr auto 1fr", gridTemplateColumns: "1fr auto 1fr" }}
+                >
+                  <div className="bg-black/55 col-span-3" />
+                  <div className="bg-black/55" />
+                  <div className="w-[88%] min-w-[200px] max-w-[320px] aspect-[3/4] rounded-2xl border-2 border-white/95 shadow-[0_0_0_1px_rgba(255,255,255,0.3),inset_0_0_20px_rgba(0,0,0,0.15)]" />
+                  <div className="bg-black/55" />
+                  <div className="bg-black/55 col-span-3" />
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                   <p className="text-white/90 text-center text-sm mb-3">{copy.frame}</p>

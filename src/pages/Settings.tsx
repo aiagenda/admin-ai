@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Save, Send, Loader2, Bell } from "lucide-react";
+import { Mail, Save, Loader2, Bell, LayoutGrid } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { HelpTooltip } from "@/components/HelpTooltip";
 import { usePushNotification } from "@/hooks/use-push-notification";
+import { getHomeCardOrder, setHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
+import { SortableHomeCardList } from "@/components/SortableHomeCardList";
 
 interface UserProfile {
   id: string;
@@ -51,6 +53,13 @@ export default function Settings() {
 
   // Push notification hook
   const { isSupported: pushSupported, isSubscribed: pushSubscribed, isLoading: pushLoading, subscribe: subscribePush, unsubscribe: unsubscribePush } = usePushNotification();
+
+  const [homeCardOrder, setHomeCardOrderState] = useState<HomeCardId[]>(() => getHomeCardOrder());
+
+  const handleCardOrderChange = (newOrder: HomeCardId[]) => {
+    setHomeCardOrder(newOrder);
+    setHomeCardOrderState(newOrder);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -265,7 +274,23 @@ export default function Settings() {
           </p>
         </div>
 
-        {/* Könyvelő Export Beállítások */}
+        {/* Főoldal kártyák sorrendje */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <LayoutGrid className="h-5 w-5" />
+              <CardTitle>Kártyák sorrendje (főoldal)</CardTitle>
+            </div>
+            <CardDescription>
+              Állítsd be, milyen sorrendben jelenjenek meg a blokkok a főoldalon. Különösen mobilon hasznos.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SortableHomeCardList order={homeCardOrder} onOrderChange={handleCardOrderChange} />
+          </CardContent>
+        </Card>
+
+                {/* Könyvelő Export Beállítások */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">

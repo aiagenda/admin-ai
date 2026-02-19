@@ -6,12 +6,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DeadlineReminder } from "@/components/DeadlineReminder";
 import { UsageLimit } from "@/components/UsageLimit";
 import { AISearch } from "@/components/AISearch";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { format } from "date-fns";
 import { hu } from "date-fns/locale";
+import { getHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
 
 // Time-based greeting
 function getGreeting(): { text: string; emoji: string } {
@@ -159,11 +160,22 @@ export default function Home() {
     fetchInvoiceData();
   }, [user]);
 
+  const visibleCardOrder = useMemo(() => {
+    const order = getHomeCardOrder();
+    return order.filter((id) => id !== "invoices" || hasInvoiceAccess);
+  }, [hasInvoiceAccess]);
+
+  const cardOrderMap = useMemo(() => {
+    const map = {};
+    visibleCardOrder.forEach((id, i) => { map[id] = i; });
+    return map;
+  }, [visibleCardOrder]);
+
   return (
     <div className="min-h-screen">
       {user ? (
         /* Dashboard for logged-in users */
-        <div className="container mx-auto max-w-6xl py-12 px-4 space-y-6">
+        <div className="container mx-auto max-w-6xl py-12 px-4 flex flex-col gap-6">
           {/* Personalized Greeting */}
           <div className="flex items-center gap-3">
             <div>
@@ -176,6 +188,7 @@ export default function Home() {
           </div>
 
           {/* Stats Cards - Modernized */}
+          <div className="flex flex-col" style={{ order: cardOrderMap["stats"] ?? 0 }}>
           <div className="grid md:grid-cols-3 gap-4">
             {/* Documents Card - Blue accent */}
             <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 shadow-sm hover:shadow-md transition-shadow">
@@ -270,9 +283,10 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
+          </div>
 
           {/* Quick Actions - Enhanced */}
-          <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col" style={{ order: cardOrderMap["upload"] ?? 1 }}>
             <div 
               className="group relative overflow-hidden rounded-xl border bg-card p-5 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
               onClick={() => navigate("/upload")}
@@ -289,7 +303,8 @@ export default function Home() {
                 <ArrowRight className="h-5 w-5 text-muted-foreground opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
               </div>
             </div>
-
+          </div>
+          <div className="flex flex-col" style={{ order: cardOrderMap["archive"] ?? 2 }}>
             <div 
               className="group relative overflow-hidden rounded-xl border bg-card p-5 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
               onClick={() => navigate("/archive")}
@@ -309,6 +324,7 @@ export default function Home() {
           </div>
 
           {/* Invoice/Bookkeeping Summary Widget - Only for enterprise/admin */}
+          <div className="flex flex-col" style={{ order: cardOrderMap["invoices"] ?? 3 }}>
           {hasInvoiceAccess && (
             <div 
               className="relative overflow-hidden rounded-xl cursor-pointer group transition-all hover:scale-[1.01] hover:shadow-xl"
@@ -390,14 +406,20 @@ export default function Home() {
               </div>
             </div>
           )}
+          </div>
 
           {/* Upcoming Deadlines Widget */}
+          <div className="flex flex-col" style={{ order: cardOrderMap["deadlines"] ?? 4 }}>
           <DeadlineReminder />
+          </div>
 
           {/* Usage Limit Widget */}
+          <div className="flex flex-col" style={{ order: cardOrderMap["usage"] ?? 5 }}>
           <UsageLimit />
+          </div>
 
           {/* AI Search Widget - Modernized */}
+          <div className="flex flex-col" style={{ order: cardOrderMap["search"] ?? 6 }}>
           <div className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
             {/* Decorative gradient border effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-50 blur-xl" />
@@ -427,6 +449,7 @@ export default function Home() {
                 </Badge>
               </div>
             </div>
+          </div>
           </div>
         </div>
       ) : (

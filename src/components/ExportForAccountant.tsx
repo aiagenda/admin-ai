@@ -63,40 +63,53 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
     return true;
   });
 
+  const severityToMegjegyzes = (severity: string) => {
+    switch (severity) {
+      case "urgent": return "Sürgős";
+      case "action_needed": return "Teendő";
+      default: return "Információ";
+    }
+  };
+
+  const parseAmountToNumber = (amount: string | null | undefined): number | "" => {
+    if (amount == null || amount === "") return "";
+    const cleaned = String(amount).replace(/\s/g, "").replace(/ Ft$|Ft$/i, "").replace(",", ".");
+    const num = parseFloat(cleaned.replace(/[^\d.-]/g, ""));
+    return isNaN(num) ? "" : num;
+  };
+
   const exportToCSV = () => {
     try {
-      // Prepare CSV data
       const csvRows: string[][] = [];
-      
-      // Header row
       csvRows.push([
+        "Sorszám",
         "Dátum",
         "Határidő",
         "Típus",
-        "Összeg",
+        "Összeg (Ft)",
         "Bankszámlaszám",
         "Kedvezményezett",
         "Fájlnév",
         "Leírás",
-        "Súlyosság",
+        "Megjegyzés",
       ]);
 
-      // Data rows
-      filteredDocuments.forEach((doc) => {
+      filteredDocuments.forEach((doc, index) => {
         const analysis = doc.analyses;
-        const uploadDate = new Date(doc.upload_date).toISOString().split("T")[0]; // YYYY-MM-DD
+        const uploadDate = new Date(doc.upload_date).toISOString().split("T")[0];
         const deadline = analysis?.deadline ? new Date(analysis.deadline).toISOString().split("T")[0] : "";
         const category = doc.category || "Egyéb";
         const amount = analysis?.amount || "";
         const bankAccount = analysis?.bank_account || "";
         const recipient = analysis?.recipient_name || "";
         const filename = doc.filename;
-        const description = analysis?.simple_summary 
+        const description = analysis?.simple_summary
           ? analysis.simple_summary.substring(0, 100) + (analysis.simple_summary.length > 100 ? "..." : "")
           : "";
-        const severity = analysis?.severity || "info";
+        const megjegyzes = severityToMegjegyzes(analysis?.severity || "info");
 
         csvRows.push([
+          String(index + 1),
           uploadDate,
           deadline,
           category,
@@ -105,7 +118,7 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
           recipient,
           filename,
           description,
-          severity,
+          megjegyzes,
         ]);
       });
 
@@ -144,66 +157,52 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
 
   const exportToExcel = () => {
     try {
-      // Prepare data for Excel
-      const excelData: any[] = [];
+      const excelData: Record<string, string | number>[] = [];
 
-      // Header row
-      excelData.push({
-        "Dátum": "Dátum",
-        "Határidő": "Határidő",
-        "Típus": "Típus",
-        "Összeg": "Összeg",
-        "Bankszámlaszám": "Bankszámlaszám",
-        "Kedvezményezett": "Kedvezményezett",
-        "Fájlnév": "Fájlnév",
-        "Leírás": "Leírás",
-        "Súlyosság": "Súlyosság",
-      });
-
-      // Data rows
-      filteredDocuments.forEach((doc) => {
+      filteredDocuments.forEach((doc, index) => {
         const analysis = doc.analyses;
-        const uploadDate = new Date(doc.upload_date).toISOString().split("T")[0]; // YYYY-MM-DD
+        const uploadDate = new Date(doc.upload_date).toISOString().split("T")[0];
         const deadline = analysis?.deadline ? new Date(analysis.deadline).toISOString().split("T")[0] : "";
         const category = doc.category || "Egyéb";
-        const amount = analysis?.amount || "";
+        const amountRaw = analysis?.amount || "";
+        const amountNum = parseAmountToNumber(amountRaw);
         const bankAccount = analysis?.bank_account || "";
         const recipient = analysis?.recipient_name || "";
         const filename = doc.filename;
-        const description = analysis?.simple_summary 
+        const description = analysis?.simple_summary
           ? analysis.simple_summary.substring(0, 100) + (analysis.simple_summary.length > 100 ? "..." : "")
           : "";
-        const severity = analysis?.severity || "info";
+        const megjegyzes = severityToMegjegyzes(analysis?.severity || "info");
 
         excelData.push({
+          "Sorszám": index + 1,
           "Dátum": uploadDate,
           "Határidő": deadline,
           "Típus": category,
-          "Összeg": amount,
+          "Összeg (Ft)": amountNum !== "" ? amountNum : amountRaw,
           "Bankszámlaszám": bankAccount,
           "Kedvezményezett": recipient,
           "Fájlnév": filename,
           "Leírás": description,
-          "Súlyosság": severity,
+          "Megjegyzés": megjegyzes,
         });
       });
 
-      // Create workbook and worksheet
       const ws = XLSX.utils.json_to_sheet(excelData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Dokumentumok");
 
-      // Set column widths
       const colWidths = [
+        { wch: 8 },  // Sorszám
         { wch: 12 }, // Dátum
         { wch: 12 }, // Határidő
         { wch: 15 }, // Típus
-        { wch: 15 }, // Összeg
+        { wch: 14 }, // Összeg (Ft)
         { wch: 25 }, // Bankszámlaszám
         { wch: 20 }, // Kedvezményezett
         { wch: 30 }, // Fájlnév
         { wch: 50 }, // Leírás
-        { wch: 12 }, // Súlyosság
+        { wch: 12 }, // Megjegyzés
       ];
       ws["!cols"] = colWidths;
 
