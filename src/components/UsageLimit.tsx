@@ -23,6 +23,10 @@ export function UsageLimit() {
 
   useEffect(() => {
     if (!user) return;
+    if (import.meta.env.VITE_USAGE_LIMIT_ENABLED !== "true") {
+      setLoading(false);
+      return;
+    }
 
     const STORAGE_KEY = "usage_limit_rpc_available";
     if (sessionStorage.getItem(STORAGE_KEY) === "false") {

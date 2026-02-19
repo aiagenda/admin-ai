@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Camera, Scan, Check, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -222,6 +223,9 @@ export function DocumentScanner({
             <Scan className="h-5 w-5 text-primary" />
             {title || (mode === "invoice" ? "Számla szkennelése" : "Dokumentum szkennelése")}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {mode === "invoice" ? "Számla fotózása kamerával vagy fájlból, majd vágás." : "Dokumentum fotózása kamerával vagy fájlból, majd vágás."}
+          </DialogDescription>
         </DialogHeader>
 
         {step === "camera" && (
