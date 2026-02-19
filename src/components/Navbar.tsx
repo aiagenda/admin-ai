@@ -204,6 +204,19 @@ export function Navbar() {
       {user && <NavLink to="/archive">Archívum</NavLink>}
       {user && <NavLink to="/search">Keresés</NavLink>}
       {user && (hasInvoiceAccess || isAdmin) && <NavLink to="/invoices">Könyvelés</NavLink>}
+      {user && <NavLink to="/settings">Beállítások</NavLink>}
+      {user && (
+        <SheetClose asChild>
+          <button
+            type="button"
+            onClick={() => setOpenTutorial(true)}
+            className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2 w-full gap-2"
+          >
+            <Sparkles className="h-4 w-4" />
+            Segítő
+          </button>
+        </SheetClose>
+      )}
       <NavLink to="/help">Segítség</NavLink>
       {user && !checkingAdmin && isAdmin && (
         <>
