@@ -10,9 +10,10 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import { hu } from "date-fns/locale";
 import { getHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
+import { runHomeTour, isHomeTourDone } from "@/lib/home-tour";
 
 // Time-based greeting
 function getGreeting(): { text: string; emoji: string } {
@@ -126,39 +127,80 @@ export default function Home() {
 
         setHasInvoiceAccess(true);
 
-        // Fetch invoice stats for current month
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-
-        const { data: invoices } = await (supabase
+        // Fetch all invoices for user (same as InvoiceArchive), then filter by current month
+        const { data: allInvoices, error } = await (supabase
           .from('invoices' as any)
           .select('*')
           .eq('user_id', user.id)
-          .gte('upload_date', startOfMonth.toISOString())
-          .lte('upload_date', endOfMonth.toISOString())) as { data: any[] | null };
+          .order('upload_date', { ascending: false })) as { data: any[] | null; error: any };
 
-        if (invoices) {
-          const completed = invoices.filter((inv: any) => inv.status === 'completed');
-          const totalVat = completed.reduce((sum: number, inv: any) => sum + (inv.vat_amount || 0), 0);
-          const totalNet = completed.reduce((sum: number, inv: any) => sum + (inv.net_amount || 0), 0);
-          const totalGross = completed.reduce((sum: number, inv: any) => sum + (inv.gross_amount || 0), 0);
-
+        if (error) {
+          console.error("Error fetching invoice stats:", error);
           setInvoiceStats({
-            monthlyVat: totalVat,
-            monthlyNet: totalNet,
-            monthlyGross: totalGross,
-            invoiceCount: invoices.length,
-            completedCount: completed.length,
+            monthlyVat: 0,
+            monthlyNet: 0,
+            monthlyGross: 0,
+            invoiceCount: 0,
+            completedCount: 0,
           });
+          return;
         }
+
+        const raw = allInvoices ?? [];
+        const now = new Date();
+        const start = startOfMonth(now);
+        const end = endOfMonth(now);
+        // Same month logic as InvoiceArchive: invoice_date || upload_date in [start, end]
+        const list = raw.filter((inv: any) => {
+          const dateStr = inv.invoice_date || inv.upload_date;
+          if (!dateStr) return false;
+          const d = new Date(dateStr);
+          if (isNaN(d.getTime())) return false;
+          return d >= start && d <= end;
+        });
+        const completed = list.filter((inv: any) => inv.status === 'completed');
+        setInvoiceStats({
+          monthlyVat: completed.reduce((sum: number, inv: any) => sum + (inv.vat_amount || 0), 0),
+          monthlyNet: completed.reduce((sum: number, inv: any) => sum + (inv.net_amount || 0), 0),
+          monthlyGross: completed.reduce((sum: number, inv: any) => sum + (inv.gross_amount || 0), 0),
+          invoiceCount: list.length,
+          completedCount: completed.length,
+        });
       } catch (error) {
         console.error("Error fetching invoice data:", error);
+        setInvoiceStats({
+          monthlyVat: 0,
+          monthlyNet: 0,
+          monthlyGross: 0,
+          invoiceCount: 0,
+          completedCount: 0,
+        });
       }
     };
 
     fetchInvoiceData();
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (isHomeTourDone(user.id)) return;
+    if (sessionStorage.getItem("adminai_tour_requested")) return;
+    const t = setTimeout(() => { runHomeTour({ hasInvoiceAccess, userId: user.id }); }, 600);
+    return () => clearTimeout(t);
+  }, [user?.id, hasInvoiceAccess]);
+
+  useEffect(() => {
+    if (!user) return;
+    const requested = sessionStorage.getItem("adminai_tour_requested");
+    if (requested) {
+      sessionStorage.removeItem("adminai_tour_requested");
+      const t = setTimeout(() => { runHomeTour({ hasInvoiceAccess, userId: user.id }); }, 400);
+      return () => clearTimeout(t);
+    }
+    const handler = () => { runHomeTour({ hasInvoiceAccess, userId: user.id }); };
+    window.addEventListener("adminai-start-home-tour", handler);
+    return () => window.removeEventListener("adminai-start-home-tour", handler);
+  }, [user?.id, hasInvoiceAccess]);
 
   const visibleCardOrder = useMemo(() => {
     const order = getHomeCardOrder();
@@ -177,7 +219,7 @@ export default function Home() {
         /* Dashboard for logged-in users */
         <div className="container mx-auto max-w-6xl py-12 px-4 flex flex-col gap-6">
           {/* Personalized Greeting */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" data-tour="welcome">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-2">
                 {getGreeting().text}, {user.email?.split("@")[0]}! 
@@ -188,7 +230,7 @@ export default function Home() {
           </div>
 
           {/* Stats Cards - Modernized */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["stats"] ?? 0 }}>
+          <div className="flex flex-col" style={{ order: cardOrderMap["stats"] ?? 0 }} data-tour="stats">
           <div className="grid md:grid-cols-3 gap-4">
             {/* Documents Card - Blue accent */}
             <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 shadow-sm hover:shadow-md transition-shadow">
@@ -286,7 +328,7 @@ export default function Home() {
           </div>
 
           {/* Quick Actions - Enhanced */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["upload"] ?? 1 }}>
+          <div className="flex flex-col" style={{ order: cardOrderMap["upload"] ?? 1 }} data-tour="upload">
             <div 
               className="group relative overflow-hidden rounded-xl border bg-card p-5 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
               onClick={() => navigate("/upload")}
@@ -304,7 +346,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="flex flex-col" style={{ order: cardOrderMap["archive"] ?? 2 }}>
+          <div className="flex flex-col" style={{ order: cardOrderMap["archive"] ?? 2 }} data-tour="archive">
             <div 
               className="group relative overflow-hidden rounded-xl border bg-card p-5 cursor-pointer transition-all hover:shadow-lg hover:border-primary/50"
               onClick={() => navigate("/archive")}
@@ -324,7 +366,7 @@ export default function Home() {
           </div>
 
           {/* Invoice/Bookkeeping Summary Widget - Only for enterprise/admin */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["invoices"] ?? 3 }}>
+          <div className="flex flex-col" style={{ order: cardOrderMap["invoices"] ?? 3 }} data-tour="invoices">
           {hasInvoiceAccess && (
             <div 
               className="relative overflow-hidden rounded-xl cursor-pointer group transition-all hover:scale-[1.01] hover:shadow-xl"
@@ -334,8 +376,8 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 opacity-90" />
               <div className="absolute inset-[1px] bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 rounded-xl" />
               
-              {/* Content */}
-              <div className="relative p-5">
+              {/* Content - z-10 so numbers render above gradient layers */}
+              <div className="relative z-10 p-5">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
@@ -365,9 +407,9 @@ export default function Home() {
                       <PieChart className="h-3.5 w-3.5" />
                       Havi ÁFA
                     </p>
-                    <p className="text-2xl font-bold text-white">
+                    <p className="text-2xl font-bold text-white" style={{ color: "#fff" }}>
                       {invoiceStats.monthlyVat.toLocaleString("hu-HU")}
-                      <span className="text-base font-normal text-purple-200/70 ml-1">Ft</span>
+                      <span className="text-base font-normal text-white/90 ml-1">Ft</span>
                     </p>
                   </div>
 
@@ -375,9 +417,9 @@ export default function Home() {
                   <div className="col-span-4 sm:col-span-3 grid grid-cols-3 gap-3">
                     <div className="text-center sm:text-left p-3">
                       <p className="text-xs text-purple-200/60 mb-0.5">Számlák</p>
-                      <p className="text-lg font-semibold text-white">
+                      <p className="text-lg font-semibold text-white" style={{ color: "#fff" }}>
                         {invoiceStats.invoiceCount}
-                        <span className="text-sm font-normal text-purple-200/60 ml-1">db</span>
+                        <span className="text-sm font-normal text-white/90 ml-1">db</span>
                       </p>
                       {invoiceStats.invoiceCount > invoiceStats.completedCount && (
                         <p className="text-xs text-amber-400">
@@ -388,17 +430,17 @@ export default function Home() {
 
                     <div className="text-center sm:text-left p-3">
                       <p className="text-xs text-purple-200/60 mb-0.5">Nettó</p>
-                      <p className="text-lg font-semibold text-white">
+                      <p className="text-lg font-semibold text-white" style={{ color: "#fff" }}>
                         {invoiceStats.monthlyNet.toLocaleString("hu-HU")}
-                        <span className="text-sm font-normal text-purple-200/60 ml-1">Ft</span>
+                        <span className="text-sm font-normal text-white/90 ml-1">Ft</span>
                       </p>
                     </div>
 
                     <div className="text-center sm:text-left p-3">
                       <p className="text-xs text-purple-200/60 mb-0.5">Bruttó</p>
-                      <p className="text-lg font-semibold text-white">
+                      <p className="text-lg font-semibold text-white" style={{ color: "#fff" }}>
                         {invoiceStats.monthlyGross.toLocaleString("hu-HU")}
-                        <span className="text-sm font-normal text-purple-200/60 ml-1">Ft</span>
+                        <span className="text-sm font-normal text-white/90 ml-1">Ft</span>
                       </p>
                     </div>
                   </div>
@@ -409,17 +451,17 @@ export default function Home() {
           </div>
 
           {/* Upcoming Deadlines Widget */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["deadlines"] ?? 4 }}>
+          <div className="flex flex-col" style={{ order: cardOrderMap["deadlines"] ?? 4 }} data-tour="deadlines">
           <DeadlineReminder />
           </div>
 
           {/* Usage Limit Widget */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["usage"] ?? 5 }}>
+          <div className="flex flex-col" style={{ order: cardOrderMap["usage"] ?? 5 }} data-tour="usage">
           <UsageLimit />
           </div>
 
           {/* AI Search Widget - Modernized */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["search"] ?? 6 }}>
+          <div className="flex flex-col" style={{ order: cardOrderMap["search"] ?? 6 }} data-tour="search">
           <div className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
             {/* Decorative gradient border effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-50 blur-xl" />
