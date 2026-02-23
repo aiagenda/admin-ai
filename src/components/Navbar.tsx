@@ -1,8 +1,8 @@
 import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { FileText, LogOut, User, HelpCircle, Menu, Moon, Sun, Receipt, Sparkles } from "lucide-react";
+import { FileText, LogOut, User, HelpCircle, Menu, Moon, Sun, Receipt } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,15 +24,6 @@ import { useTheme } from "next-themes";
 export function Navbar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const startHomeTour = () => {
-    if (location.pathname !== "/") {
-      sessionStorage.setItem("adminai_tour_requested", "1");
-      navigate("/");
-    } else {
-      window.dispatchEvent(new CustomEvent("adminai-start-home-tour"));
-    }
-  };
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -270,8 +261,8 @@ export function Navbar() {
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     Beállítások
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={startHomeTour}>
-                    <Sparkles className="h-4 w-4 mr-2" />
+                  <DropdownMenuItem onClick={() => navigate("/help")}>
+                    <HelpCircle className="h-4 w-4 mr-2" />
                     Segítő
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut} className="text-destructive">
@@ -323,8 +314,8 @@ export function Navbar() {
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     Beállítások
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={startHomeTour}>
-                    <Sparkles className="h-4 w-4 mr-2" />
+                  <DropdownMenuItem onClick={() => navigate("/help")}>
+                    <HelpCircle className="h-4 w-4 mr-2" />
                     Segítő
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut} className="text-destructive">

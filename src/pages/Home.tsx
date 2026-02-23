@@ -13,8 +13,7 @@ import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { hu } from "date-fns/locale";
 import { getHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
-import { getHomeTourSteps, isHomeTourDone, setHomeTourDone } from "@/lib/home-tour-steps";
-import { SpotlightTour } from "@/components/SpotlightTour";
+import { Link } from "react-router-dom";
 
 // Time-based greeting
 function getGreeting(): { text: string; emoji: string } {
@@ -28,6 +27,8 @@ function getGreeting(): { text: string; emoji: string } {
   }
 }
 
+const WELCOME_DISMISS_KEY = "adminai_welcome_dismissed";
+
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -37,7 +38,7 @@ export default function Home() {
     urgentDeadlines: 0,
   });
   const [hasInvoiceAccess, setHasInvoiceAccess] = useState(false);
-  const [tourOpen, setTourOpen] = useState(false);
+  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const [invoiceStats, setInvoiceStats] = useState({
     monthlyVat: 0,
     monthlyNet: 0,
@@ -185,24 +186,8 @@ export default function Home() {
 
   useEffect(() => {
     if (!user) return;
-    if (isHomeTourDone(user.id)) return;
-    if (sessionStorage.getItem("adminai_tour_requested")) return;
-    const t = setTimeout(() => setTourOpen(true), 600);
-    return () => clearTimeout(t);
-  }, [user?.id, hasInvoiceAccess]);
-
-  useEffect(() => {
-    if (!user) return;
-    const requested = sessionStorage.getItem("adminai_tour_requested");
-    if (requested) {
-      sessionStorage.removeItem("adminai_tour_requested");
-      const t = setTimeout(() => setTourOpen(true), 400);
-      return () => clearTimeout(t);
-    }
-    const handler = () => setTourOpen(true);
-    window.addEventListener("adminai-start-home-tour", handler);
-    return () => window.removeEventListener("adminai-start-home-tour", handler);
-  }, [user?.id, hasInvoiceAccess]);
+    setWelcomeDismissed(localStorage.getItem(`${WELCOME_DISMISS_KEY}_${user.id}`) === "1");
+  }, [user?.id]);
 
   const visibleCardOrder = useMemo(() => {
     const order = getHomeCardOrder();
@@ -217,14 +202,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {user && (
-        <SpotlightTour
-          isOpen={tourOpen}
-          onClose={() => setTourOpen(false)}
-          onDone={() => user && setHomeTourDone(user.id)}
-          steps={getHomeTourSteps(hasInvoiceAccess)}
-        />
-      )}
       {user ? (
         /* Dashboard for logged-in users */
         <div className="container mx-auto max-w-6xl py-12 px-4 flex flex-col gap-6">
@@ -238,6 +215,29 @@ export default function Home() {
               <p className="text-muted-foreground mt-1">Itt van a mai áttekintésed</p>
             </div>
           </div>
+
+          {!welcomeDismissed && (
+            <div className="rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <p className="text-sm text-muted-foreground">
+                Itt láthatja a mai áttekintését. A kártyákon a dokumentumok, elemzések és a közelgő határidők összesítése jelenik meg. Részletek:{" "}
+                <Link to="/help" className="text-primary font-medium underline underline-offset-2 hover:no-underline">Segítő oldal</Link>.
+              </p>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    if (user) {
+                      localStorage.setItem(`${WELCOME_DISMISS_KEY}_${user.id}`, "1");
+                      setWelcomeDismissed(true);
+                    }
+                  }}
+                >
+                  Megértettem
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Stats Cards - Modernized */}
           <div className="flex flex-col" style={{ order: cardOrderMap["stats"] ?? 0 }} data-tour="stats">
