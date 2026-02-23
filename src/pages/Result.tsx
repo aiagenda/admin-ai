@@ -690,9 +690,9 @@ export default function Result() {
 
         <Card>
           <CardHeader>
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                <CardTitle className="text-2xl">Elemzés eredménye</CardTitle>
+            <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-4">
+              <div className="space-y-2 min-w-0">
+                <CardTitle className="text-xl sm:text-2xl">Elemzés eredménye</CardTitle>
                 <CardDescription>A dokumentum részletes elemzése és teendők</CardDescription>
               </div>
               <Badge className={severityConfig.className}>
@@ -705,8 +705,8 @@ export default function Result() {
           <CardContent className="space-y-6">
             {/* Summary Section with Tabs */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold">Miről szól ez a dokumentum?</h3>
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                <h3 className="text-lg font-semibold break-words">Miről szól ez a dokumentum?</h3>
                 <HelpTooltip 
                   content="Az 'Egyszerű magyarázat' mindennapi nyelven, példákkal segít megérteni. A 'Részletes magyarázat' professzionális, pontosabb értelmezés."
                   helpPageAnchor="eredmenyek"
@@ -719,9 +719,15 @@ export default function Result() {
                   value={activeTab}
                   onValueChange={(value) => setActiveTab(value as "simple" | "detailed")}
                 >
-                  <TabsList className="grid w-full grid-cols-2 h-12">
-                    <TabsTrigger value="simple" className="min-h-[44px] touch-manipulation">Egyszerű magyarázat</TabsTrigger>
-                    <TabsTrigger value="legal" className="min-h-[44px] touch-manipulation">Részletes magyarázat</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-2 min-h-[44px] h-auto">
+                    <TabsTrigger value="simple" className="min-h-[44px] touch-manipulation whitespace-normal text-center text-xs sm:text-sm px-2 py-2">
+                      <span className="hidden sm:inline">Egyszerű magyarázat</span>
+                      <span className="sm:hidden">Egyszerű</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="legal" className="min-h-[44px] touch-manipulation whitespace-normal text-center text-xs sm:text-sm px-2 py-2">
+                      <span className="hidden sm:inline">Részletes magyarázat</span>
+                      <span className="sm:hidden">Részletes</span>
+                    </TabsTrigger>
                   </TabsList>
                   <TabsContent value="simple" className="mt-4">
                     <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{simpleSummary}</p>
@@ -736,7 +742,7 @@ export default function Result() {
 
               {/* Feedback Section */}
               {legalSummary && (
-                <div className="flex items-center gap-2 pt-4 border-t">
+                <div className="flex flex-wrap items-center gap-2 pt-4 border-t">
                   <span className="text-sm text-muted-foreground">Hasznos volt ez az információ?</span>
                   <div className="flex items-center gap-2">
                     {!feedbackGiven ? (
@@ -825,7 +831,7 @@ export default function Result() {
 
             {/* Todo Section - Only Simple Steps */}
             <div className="border-t pt-6 space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-semibold">Mit kell tennie?</h3>
                   <HelpTooltip 
@@ -1055,11 +1061,11 @@ END:VCALENDAR`;
         </div>
 
         <div className="space-y-4">
-        <div className="flex gap-4">
-          <Button onClick={() => navigate("/upload")} className="flex-1">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          <Button onClick={() => navigate("/upload")} className="flex-1 min-h-[44px] touch-manipulation">
             Új dokumentum feltöltése
           </Button>
-          <Button onClick={() => navigate("/archive")} variant="outline" className="flex-1">
+          <Button onClick={() => navigate("/archive")} variant="outline" className="flex-1 min-h-[44px] touch-manipulation">
             Archívum megtekintése
           </Button>
         </div>

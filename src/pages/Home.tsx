@@ -13,7 +13,8 @@ import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { hu } from "date-fns/locale";
 import { getHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
-import { runHomeTour, isHomeTourDone } from "@/lib/home-tour";
+import { getHomeTourSteps, isHomeTourDone, setHomeTourDone } from "@/lib/home-tour-steps";
+import { SpotlightTour } from "@/components/SpotlightTour";
 
 // Time-based greeting
 function getGreeting(): { text: string; emoji: string } {
@@ -36,6 +37,7 @@ export default function Home() {
     urgentDeadlines: 0,
   });
   const [hasInvoiceAccess, setHasInvoiceAccess] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
   const [invoiceStats, setInvoiceStats] = useState({
     monthlyVat: 0,
     monthlyNet: 0,
@@ -185,7 +187,7 @@ export default function Home() {
     if (!user) return;
     if (isHomeTourDone(user.id)) return;
     if (sessionStorage.getItem("adminai_tour_requested")) return;
-    const t = setTimeout(() => { runHomeTour({ hasInvoiceAccess, userId: user.id }); }, 600);
+    const t = setTimeout(() => setTourOpen(true), 600);
     return () => clearTimeout(t);
   }, [user?.id, hasInvoiceAccess]);
 
@@ -194,10 +196,10 @@ export default function Home() {
     const requested = sessionStorage.getItem("adminai_tour_requested");
     if (requested) {
       sessionStorage.removeItem("adminai_tour_requested");
-      const t = setTimeout(() => { runHomeTour({ hasInvoiceAccess, userId: user.id }); }, 400);
+      const t = setTimeout(() => setTourOpen(true), 400);
       return () => clearTimeout(t);
     }
-    const handler = () => { runHomeTour({ hasInvoiceAccess, userId: user.id }); };
+    const handler = () => setTourOpen(true);
     window.addEventListener("adminai-start-home-tour", handler);
     return () => window.removeEventListener("adminai-start-home-tour", handler);
   }, [user?.id, hasInvoiceAccess]);
@@ -215,6 +217,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      {user && (
+        <SpotlightTour
+          isOpen={tourOpen}
+          onClose={() => setTourOpen(false)}
+          onDone={() => user && setHomeTourDone(user.id)}
+          steps={getHomeTourSteps(hasInvoiceAccess)}
+        />
+      )}
       {user ? (
         /* Dashboard for logged-in users */
         <div className="container mx-auto max-w-6xl py-12 px-4 flex flex-col gap-6">
