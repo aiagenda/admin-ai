@@ -60,23 +60,14 @@ export default function Analytics() {
         ? subDays(new Date(), 7).toISOString()
         : subDays(new Date(), 30).toISOString();
 
-      // Total users
-      const { count: totalUsers } = await supabase
-        .from("documents")
-        .select("*", { count: "exact", head: true });
-
-      // Active users (users with documents in date range)
-      const activeUsersQuery = startDate
-        ? supabase
-            .from("documents")
-            .select("user_id", { count: "exact", head: false })
-            .gte("upload_date", startDate)
-        : supabase
-            .from("documents")
-            .select("user_id", { count: "exact", head: false });
-
-      const { data: activeUsersData } = await activeUsersQuery;
-      const activeUsers = new Set(activeUsersData?.map((d: any) => d.user_id) || []).size;
+      // Regisztrált és aktív felhasználók (admin RPC – auth.users)
+      let totalUsers = 0;
+      let activeUsers = 0;
+      const { data: userStats } = await supabase.rpc('get_admin_user_stats');
+      if (userStats && !(userStats as any).error) {
+        totalUsers = Number((userStats as any).registered) || 0;
+        activeUsers = Number((userStats as any).active_30d) || 0;
+      }
 
       // Total documents
       const totalDocsQuery = startDate
@@ -326,7 +317,7 @@ export default function Analytics() {
                 <div>
                   <p className="text-2xl font-bold">{data.totalUsers}</p>
                   <p className="text-xs text-muted-foreground">
-                    {data.activeUsers} aktív ({dateRange === "all" ? "összes" : dateRange})
+                    {data.activeUsers} aktív (elmúlt 30 nap)
                   </p>
                 </div>
               </div>

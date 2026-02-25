@@ -507,8 +507,8 @@ export default function Archive() {
   }
 
   return (
-    <div className="min-h-screen py-12 px-4">
-      <div className="container mx-auto max-w-6xl space-y-6 overflow-x-auto min-w-0">
+    <div className="min-h-screen py-12 px-4 overflow-x-hidden">
+      <div className="container mx-auto max-w-6xl space-y-6 min-w-0">
         {/* fejléc */}
         <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -581,8 +581,8 @@ export default function Archive() {
 
           {/* Search and Filters */}
           {documents.length > 0 && (
-            <Card className="p-4 overflow-x-auto min-w-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+            <Card className="p-4 min-w-0 w-full">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
                 {/* Search */}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -731,93 +731,98 @@ export default function Archive() {
                     isCompareSelected ? "ring-2 ring-primary" : ""
                   }`}
                 >
-                  <CardContent className="py-4 flex items-center justify-between gap-4">
-                    {/* checkbox */}
-                    <div className="cursor-pointer flex-shrink-0" onClick={() => toggleSelect(doc.id)}>
-                      {selected ? (
-                        <CheckSquare className="h-6 w-6 text-primary" />
-                      ) : (
-                        <Square className="h-6 w-6 text-muted-foreground" />
-                      )}
-                    </div>
-
-                    {/* fő tartalom */}
-                    <div
-                      className="flex items-center gap-4 flex-1 min-w-0 cursor-pointer"
-                      onClick={() => navigate(`/result/${doc.analyses?.id ?? doc.id}`)}
-                    >
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <FileText className="h-5 w-5 text-primary" />
+                  <CardContent className="py-3 sm:py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 overflow-hidden">
+                    <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+                      <div className="cursor-pointer flex-shrink-0" onClick={() => toggleSelect(doc.id)}>
+                        {selected ? (
+                          <CheckSquare className="h-6 w-6 text-primary" />
+                        ) : (
+                          <Square className="h-6 w-6 text-muted-foreground" />
+                        )}
                       </div>
-
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{doc.filename}</h3>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>{format(new Date(doc.upload_date), "yyyy. MM. dd. HH:mm", { locale: hu })}</span>
+                      <div
+                        className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                        onClick={() => navigate(`/result/${doc.analyses?.id ?? doc.id}`)}
+                      >
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate">{doc.filename}</h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                            <Calendar className="h-3 w-3 flex-shrink-0" />
+                            <span className="whitespace-nowrap">{format(new Date(doc.upload_date), "yyyy. MM. dd. HH:mm", { locale: hu })}</span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <Button
+                          variant={isCompareSelected ? "default" : "ghost"}
+                          size="icon"
+                          className="h-9 w-9 sm:h-11 sm:w-11 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] touch-manipulation"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (doc.analyses) {
+                              handleCompareClick(doc.id);
+                            } else {
+                              toast.error("Ez a dokumentum még nincs elemzve");
+                            }
+                          }}
+                          title="Összehasonlításhoz hozzáadás"
+                          disabled={!doc.analyses}
+                        >
+                          <GitCompare className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 sm:h-11 sm:w-11 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] touch-manipulation"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openTagDialog(doc.id, doc.tags);
+                          }}
+                          title="Címkék szerkesztése"
+                        >
+                          <Tag className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-shrink-0 w-full sm:w-auto min-w-0">
                       {doc.category && (
-                        <Badge variant="outline" className="bg-primary/10">
+                        <Badge variant="outline" className="bg-primary/10 shrink-0">
                           {getCategoryLabel(doc.category)}
                         </Badge>
                       )}
                       {doc.tags && doc.tags.length > 0 && (
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {doc.tags.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              <Tag className="h-3 w-3 mr-1" />
-                              {tag}
+                        <div className="flex items-center gap-1 flex-wrap min-w-0">
+                          {doc.tags.slice(0, 3).map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs max-w-[140px] truncate shrink-0">
+                              <Tag className="h-3 w-3 mr-1 flex-shrink-0" />
+                              <span className="truncate">{tag}</span>
                             </Badge>
                           ))}
+                          {doc.tags.length > 3 && (
+                            <Badge variant="outline" className="text-xs shrink-0 cursor-pointer" onClick={(e) => { e.stopPropagation(); openTagDialog(doc.id, doc.tags); }}>
+                              +{doc.tags.length - 3}
+                            </Badge>
+                          )}
                         </div>
                       )}
                       {doc.analyses && getSeverityBadge(doc.analyses.severity)}
                       {doc.analyses?.deadline && getDeadlineBadge(doc.analyses.deadline)}
                       {doc.status === "processing" && <Badge variant="outline">Feldolgozás alatt</Badge>}
                       {doc.related_documents_count && doc.related_documents_count > 0 && (
-                        <Badge variant="outline" className="bg-primary/10">
+                        <Badge variant="outline" className="bg-primary/10 shrink-0">
                           <Link2 className="h-3 w-3 mr-1" />
                           {doc.related_documents_count} kapcsolat
                         </Badge>
                       )}
                       {isCompareSelected && (
-                        <Badge variant="default" className="bg-primary">
+                        <Badge variant="default" className="bg-primary shrink-0">
                           Összehasonlításhoz kiválasztva
                         </Badge>
                       )}
-                      <Button
-                        variant={isCompareSelected ? "default" : "ghost"}
-                        size="icon"
-                        className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (doc.analyses) {
-                            handleCompareClick(doc.id);
-                          } else {
-                            toast.error("Ez a dokumentum még nincs elemzve");
-                          }
-                        }}
-                        title="Összehasonlításhoz hozzáadás"
-                        disabled={!doc.analyses}
-                      >
-                        <GitCompare className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-11 w-11 min-h-[44px] min-w-[44px] touch-manipulation"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openTagDialog(doc.id, doc.tags);
-                        }}
-                        title="Címkék szerkesztése"
-                      >
-                        <Tag className="h-4 w-4" />
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>

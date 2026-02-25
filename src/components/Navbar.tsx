@@ -64,13 +64,18 @@ export function Navbar() {
   }, [user]);
 
   // Check if user has invoice module access (enterprise subscription OR admin)
+  // Tesztelés: minden bejelentkezett user elérheti a könyvelést (VITE_INVOICE_ACCESS_FOR_ALL=false kikapcsolja)
+  const invoiceAccessForAll = import.meta.env.VITE_INVOICE_ACCESS_FOR_ALL !== 'false';
   useEffect(() => {
     async function checkInvoiceAccess() {
       if (!user) {
         setHasInvoiceAccess(false);
         return;
       }
-
+      if (invoiceAccessForAll) {
+        setHasInvoiceAccess(true);
+        return;
+      }
       try {
         // Check admin status directly
         const { data: adminData, error: adminError } = await supabase.rpc('is_admin');
@@ -118,7 +123,7 @@ export function Navbar() {
     }
 
     checkInvoiceAccess();
-  }, [user]);
+  }, [user, invoiceAccessForAll]);
 
   const NavLink = ({ to, children, className = "" }: { to: string; children: React.ReactNode; className?: string }) => (
     <SheetClose asChild>

@@ -234,7 +234,8 @@ export default function InvoiceArchive() {
     return stats;
   }, [periodInvoices]);
 
-  // Check access (enterprise OR admin)
+  // Check access (enterprise OR admin). Tesztelés: VITE_INVOICE_ACCESS_FOR_ALL !== 'false' → mindenki látja
+  const invoiceAccessForAll = import.meta.env.VITE_INVOICE_ACCESS_FOR_ALL !== 'false';
   useEffect(() => {
     async function checkAccess() {
       if (!user) {
@@ -242,7 +243,10 @@ export default function InvoiceArchive() {
         setLoading(false);
         return;
       }
-
+      if (invoiceAccessForAll) {
+        setHasAccess(true);
+        return;
+      }
       try {
         // Check if admin
         const { data: adminData } = await supabase.rpc('is_admin');
@@ -265,7 +269,7 @@ export default function InvoiceArchive() {
     }
 
     checkAccess();
-  }, [user]);
+  }, [user, invoiceAccessForAll]);
 
   // Fetch invoices
   useEffect(() => {
