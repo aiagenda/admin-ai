@@ -806,8 +806,7 @@ async function getDynamicFieldInstructions(
     return `
 
 DYNAMIC FIELD REQUIREMENTS:
-${rows.join("
-")}`;
+${rows.join("\n")}`;
   } catch (error) {
     console.warn("Failed to load AI field definitions:", error);
     return "";
