@@ -37,7 +37,21 @@ CREATE TABLE IF NOT EXISTS public.document_relations (
 ALTER TABLE public.document_versions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.document_relations ENABLE ROW LEVEL SECURITY;
 
+-- Instrumentation: inspect existing policy state before recreation
+DO $$
+DECLARE
+  existing_policies integer;
+BEGIN
+  SELECT COUNT(*) INTO existing_policies
+  FROM pg_policies
+  WHERE schemaname = 'public'
+    AND tablename IN ('document_versions', 'document_relations');
+
+  RAISE NOTICE 'debug_h_new: existing policies on document_versions/document_relations before recreate = %', existing_policies;
+END $$;
+
 -- RLS policies for document_versions
+DROP POLICY IF EXISTS "Users can view versions of their documents" ON public.document_versions;
 CREATE POLICY "Users can view versions of their documents"
   ON public.document_versions FOR SELECT
   USING (
@@ -48,6 +62,7 @@ CREATE POLICY "Users can view versions of their documents"
     )
   );
 
+DROP POLICY IF EXISTS "Users can create versions of their documents" ON public.document_versions;
 CREATE POLICY "Users can create versions of their documents"
   ON public.document_versions FOR INSERT
   WITH CHECK (
@@ -58,6 +73,7 @@ CREATE POLICY "Users can create versions of their documents"
     )
   );
 
+DROP POLICY IF EXISTS "Users can update versions of their documents" ON public.document_versions;
 CREATE POLICY "Users can update versions of their documents"
   ON public.document_versions FOR UPDATE
   USING (
@@ -68,6 +84,7 @@ CREATE POLICY "Users can update versions of their documents"
     )
   );
 
+DROP POLICY IF EXISTS "Users can delete versions of their documents" ON public.document_versions;
 CREATE POLICY "Users can delete versions of their documents"
   ON public.document_versions FOR DELETE
   USING (
@@ -79,6 +96,7 @@ CREATE POLICY "Users can delete versions of their documents"
   );
 
 -- RLS policies for document_relations
+DROP POLICY IF EXISTS "Users can view relations of their documents" ON public.document_relations;
 CREATE POLICY "Users can view relations of their documents"
   ON public.document_relations FOR SELECT
   USING (
@@ -94,6 +112,7 @@ CREATE POLICY "Users can view relations of their documents"
     )
   );
 
+DROP POLICY IF EXISTS "Users can create relations between their documents" ON public.document_relations;
 CREATE POLICY "Users can create relations between their documents"
   ON public.document_relations FOR INSERT
   WITH CHECK (
@@ -109,6 +128,7 @@ CREATE POLICY "Users can create relations between their documents"
     )
   );
 
+DROP POLICY IF EXISTS "Users can update relations of their documents" ON public.document_relations;
 CREATE POLICY "Users can update relations of their documents"
   ON public.document_relations FOR UPDATE
   USING (
@@ -124,6 +144,7 @@ CREATE POLICY "Users can update relations of their documents"
     )
   );
 
+DROP POLICY IF EXISTS "Users can delete relations of their documents" ON public.document_relations;
 CREATE POLICY "Users can delete relations of their documents"
   ON public.document_relations FOR DELETE
   USING (

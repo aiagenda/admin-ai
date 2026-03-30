@@ -42,11 +42,13 @@ ALTER TABLE public.knowledge_chunks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.knowledge_searches ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for knowledge_documents
+DROP POLICY IF EXISTS "Knowledge documents are viewable by everyone" ON public.knowledge_documents;
 CREATE POLICY "Knowledge documents are viewable by everyone"
   ON public.knowledge_documents
   FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Only admins can insert knowledge documents" ON public.knowledge_documents;
 CREATE POLICY "Only admins can insert knowledge documents"
   ON public.knowledge_documents
   FOR INSERT
@@ -59,6 +61,7 @@ CREATE POLICY "Only admins can insert knowledge documents"
     )
   );
 
+DROP POLICY IF EXISTS "Only admins can update knowledge documents" ON public.knowledge_documents;
 CREATE POLICY "Only admins can update knowledge documents"
   ON public.knowledge_documents
   FOR UPDATE
@@ -71,6 +74,7 @@ CREATE POLICY "Only admins can update knowledge documents"
     )
   );
 
+DROP POLICY IF EXISTS "Only admins can delete knowledge documents" ON public.knowledge_documents;
 CREATE POLICY "Only admins can delete knowledge documents"
   ON public.knowledge_documents
   FOR DELETE
@@ -84,11 +88,13 @@ CREATE POLICY "Only admins can delete knowledge documents"
   );
 
 -- RLS Policies for knowledge_chunks
+DROP POLICY IF EXISTS "Knowledge chunks are viewable by everyone" ON public.knowledge_chunks;
 CREATE POLICY "Knowledge chunks are viewable by everyone"
   ON public.knowledge_chunks
   FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Only admins can insert knowledge chunks" ON public.knowledge_chunks;
 CREATE POLICY "Only admins can insert knowledge chunks"
   ON public.knowledge_chunks
   FOR INSERT
@@ -102,18 +108,21 @@ CREATE POLICY "Only admins can insert knowledge chunks"
   );
 
 -- RLS Policies for knowledge_searches
+DROP POLICY IF EXISTS "Users can insert their own searches" ON public.knowledge_searches;
 CREATE POLICY "Users can insert their own searches"
   ON public.knowledge_searches
   FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can view their own searches" ON public.knowledge_searches;
 CREATE POLICY "Users can view their own searches"
   ON public.knowledge_searches
   FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Admins can view all searches" ON public.knowledge_searches;
 CREATE POLICY "Admins can view all searches"
   ON public.knowledge_searches
   FOR SELECT

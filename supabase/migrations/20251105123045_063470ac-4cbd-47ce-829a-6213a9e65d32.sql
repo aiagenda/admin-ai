@@ -1,8 +1,12 @@
 -- Create app_role enum for role-based access control
-CREATE TYPE public.app_role AS ENUM ('admin', 'user');
+DO $$ BEGIN
+  CREATE TYPE public.app_role AS ENUM ('admin', 'user');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Create user_roles table
-CREATE TABLE public.user_roles (
+CREATE TABLE IF NOT EXISTS public.user_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   role public.app_role NOT NULL,
@@ -31,6 +35,7 @@ $$;
 
 -- RLS Policies for user_roles table
 -- Everyone can view their own roles
+DROP POLICY IF EXISTS "Users can view their own roles" ON public.user_roles;
 CREATE POLICY "Users can view their own roles"
 ON public.user_roles
 FOR SELECT
@@ -38,6 +43,7 @@ TO authenticated
 USING (auth.uid() = user_id);
 
 -- Only admins can insert new roles
+DROP POLICY IF EXISTS "Only admins can assign roles" ON public.user_roles;
 CREATE POLICY "Only admins can assign roles"
 ON public.user_roles
 FOR INSERT
@@ -45,6 +51,7 @@ TO authenticated
 WITH CHECK (public.has_role(auth.uid(), 'admin'));
 
 -- Only admins can delete roles
+DROP POLICY IF EXISTS "Only admins can remove roles" ON public.user_roles;
 CREATE POLICY "Only admins can remove roles"
 ON public.user_roles
 FOR DELETE
@@ -53,6 +60,7 @@ USING (public.has_role(auth.uid(), 'admin'));
 
 -- Fix analyses table policies - restrict INSERT to service_role only
 DROP POLICY IF EXISTS "System can create analyses" ON public.analyses;
+DROP POLICY IF EXISTS "Service role can create analyses" ON public.analyses;
 CREATE POLICY "Service role can create analyses"
 ON public.analyses
 FOR INSERT
@@ -61,6 +69,7 @@ WITH CHECK (true);
 
 -- Fix analyses UPDATE policy - verify document ownership
 DROP POLICY IF EXISTS "System can update analyses" ON public.analyses;
+DROP POLICY IF EXISTS "Users can update analyses of their documents" ON public.analyses;
 CREATE POLICY "Users can update analyses of their documents"
 ON public.analyses
 FOR UPDATE
@@ -74,6 +83,7 @@ USING (
 );
 
 -- Add DELETE policy for analyses
+DROP POLICY IF EXISTS "Users can delete analyses of their documents" ON public.analyses;
 CREATE POLICY "Users can delete analyses of their documents"
 ON public.analyses
 FOR DELETE
@@ -87,18 +97,21 @@ USING (
 );
 
 -- Add RLS policies for forms table (admin-only write access)
+DROP POLICY IF EXISTS "Only admins can insert forms" ON public.forms;
 CREATE POLICY "Only admins can insert forms"
 ON public.forms
 FOR INSERT
 TO authenticated
 WITH CHECK (public.has_role(auth.uid(), 'admin'));
 
+DROP POLICY IF EXISTS "Only admins can update forms" ON public.forms;
 CREATE POLICY "Only admins can update forms"
 ON public.forms
 FOR UPDATE
 TO authenticated
 USING (public.has_role(auth.uid(), 'admin'));
 
+DROP POLICY IF EXISTS "Only admins can delete forms" ON public.forms;
 CREATE POLICY "Only admins can delete forms"
 ON public.forms
 FOR DELETE

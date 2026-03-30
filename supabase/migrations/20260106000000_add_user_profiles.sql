@@ -14,14 +14,17 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
 ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies
+DROP POLICY IF EXISTS "Users can view their own profile" ON public.user_profiles;
 CREATE POLICY "Users can view their own profile"
   ON public.user_profiles FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.user_profiles;
 CREATE POLICY "Users can update their own profile"
   ON public.user_profiles FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own profile" ON public.user_profiles;
 CREATE POLICY "Users can insert their own profile"
   ON public.user_profiles FOR INSERT
   WITH CHECK (auth.uid() = user_id);
@@ -86,6 +89,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS user_profiles_updated_at ON public.user_profiles;
 CREATE TRIGGER user_profiles_updated_at
   BEFORE UPDATE ON public.user_profiles
   FOR EACH ROW

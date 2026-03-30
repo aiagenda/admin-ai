@@ -29,21 +29,25 @@ CREATE INDEX IF NOT EXISTS idx_playbooks_trigger_keywords ON public.playbooks US
 -- RLS
 ALTER TABLE public.playbooks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Playbooks are viewable by everyone" ON public.playbooks;
 CREATE POLICY "Playbooks are viewable by everyone"
   ON public.playbooks FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Only admins can insert playbooks" ON public.playbooks;
 CREATE POLICY "Only admins can insert playbooks"
   ON public.playbooks FOR INSERT TO authenticated
   WITH CHECK (
     EXISTS (SELECT 1 FROM public.user_roles WHERE user_roles.user_id = auth.uid() AND user_roles.role = 'admin')
   );
 
+DROP POLICY IF EXISTS "Only admins can update playbooks" ON public.playbooks;
 CREATE POLICY "Only admins can update playbooks"
   ON public.playbooks FOR UPDATE TO authenticated
   USING (
     EXISTS (SELECT 1 FROM public.user_roles WHERE user_roles.user_id = auth.uid() AND user_roles.role = 'admin')
   );
 
+DROP POLICY IF EXISTS "Only admins can delete playbooks" ON public.playbooks;
 CREATE POLICY "Only admins can delete playbooks"
   ON public.playbooks FOR DELETE TO authenticated
   USING (

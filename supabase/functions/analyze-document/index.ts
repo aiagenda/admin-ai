@@ -9,6 +9,7 @@ const corsHeaders = {
 
 type AnalysisResult = {
   simple_summary: string; // Includes real-life example (e.g., "Ez olyan, mint amikor Józsi...")
+  confidence?: number; // Optional model confidence (0-1)
   legal_summary: string; // Professional legal interpretation, NO examples
   todo_simple: string[]; // Simple, everyday language steps
   todo_legal: string[]; // Professional legal action items
@@ -743,6 +744,76 @@ async function getFeedbackImprovements(
 /**
  * Get language-specific prompt instructions
  */
+
+
+type PromptConfig = {
+  id: string;
+  system_prompt: string;
+  schema_prompt: string | null;
+};
+
+async function getActivePromptConfig(
+  supabase: ReturnType<typeof createClient>,
+  languageCode: string,
+  docType: string = "general",
+): Promise<PromptConfig | null> {
+  try {
+    const { data } = await supabase
+      .from("ai_prompt_versions")
+      .select("id, system_prompt, schema_prompt")
+      .eq("doc_type", docType)
+      .eq("language_code", languageCode)
+      .eq("is_active", true)
+      .order("version", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    return (data as PromptConfig | null) ?? null;
+  } catch (error) {
+    console.warn("Failed to load active AI prompt config:", error);
+    return null;
+  }
+}
+
+async function getDynamicFieldInstructions(
+  supabase: ReturnType<typeof createClient>,
+  docType: string = "general",
+): Promise<string> {
+  try {
+    const { data } = await supabase
+      .from("ai_field_definitions")
+      .select("field_key, display_name, data_type, is_required, prompt_snippet")
+      .eq("doc_type", docType)
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+
+    if (!data || data.length === 0) {
+      return "";
+    }
+
+    const rows = (data as Array<{
+      field_key: string;
+      display_name: string;
+      data_type: string;
+      is_required: boolean;
+      prompt_snippet: string | null;
+    }>).map((f) => {
+      const req = f.is_required ? "required" : "optional";
+      const hint = f.prompt_snippet ? `; hint: ${f.prompt_snippet}` : "";
+      return `- ${f.field_key} (${f.data_type}, ${req}) - ${f.display_name}${hint}`;
+    });
+
+    return `
+
+DYNAMIC FIELD REQUIREMENTS:
+${rows.join("
+")}`;
+  } catch (error) {
+    console.warn("Failed to load AI field definitions:", error);
+    return "";
+  }
+}
+
 function getLanguagePrompt(language: string, todayStr: string): string {
   const languagePrompts: Record<string, string> = {
     hu: `You are an expert Hungarian administrative assistant. Analyze the provided document text and respond strictly with JSON containing:
@@ -847,7 +918,7 @@ async function analyzeWithOpenAI(
   openaiApiKey: string,
   supabase?: ReturnType<typeof createClient>,
   category?: string | null
-): Promise<AnalysisResult> {
+): Promise<{ analysis: AnalysisResult; promptVersionId: string | null; detectedLanguage: string }> {
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
   
@@ -858,6 +929,24 @@ async function analyzeWithOpenAI(
   
   // Get language-specific prompt
   let systemPrompt = getLanguagePrompt(detectedLanguage, todayStr);
+  let activePromptVersionId: string | null = null;
+
+  // Apply admin-managed prompt config if available
+  if (supabase) {
+    const promptConfig = await getActivePromptConfig(supabase, detectedLanguage, "general");
+    if (promptConfig) {
+      activePromptVersionId = promptConfig.id;
+      const mergedPrompt = [promptConfig.system_prompt, systemPrompt, promptConfig.schema_prompt || ""]
+        .filter(Boolean)
+        .join("\n\n");
+      systemPrompt = mergedPrompt;
+    }
+
+    const dynamicFieldInstructions = await getDynamicFieldInstructions(supabase, "general");
+    if (dynamicFieldInstructions) {
+      systemPrompt += dynamicFieldInstructions;
+    }
+  }
   
   // Get relevant context from knowledge base
   let kbContext = "";
@@ -915,13 +1004,22 @@ async function analyzeWithOpenAI(
   }
   
   const result: AnalysisResult = JSON.parse(content);
+
+  // Keep confidence in valid range if model returned it
+  if (typeof result.confidence === "number") {
+    result.confidence = Math.max(0, Math.min(1, result.confidence));
+  }
   
   // Normalize deadlines - convert relative dates to absolute dates
   if (result.deadlines && result.deadlines.length > 0) {
     result.deadlines = normalizeDeadlines(result.deadlines);
   }
   
-  return result;
+  return {
+    analysis: result,
+    promptVersionId: activePromptVersionId,
+    detectedLanguage,
+  };
 }
 
 Deno.serve(async (req) => {
@@ -1070,7 +1168,8 @@ Deno.serve(async (req) => {
     
     // Analyze the extracted text with OpenAI
     console.log("Analyzing text with OpenAI GPT-4o...");
-    const analysis = await analyzeWithOpenAI(extractedText, openaiApiKey, supabase, documentCategory);
+    const analysisResponse = await analyzeWithOpenAI(extractedText, openaiApiKey, supabase, documentCategory);
+    const analysis = analysisResponse.analysis;
     
     // Prepare todo arrays as JSON strings
     const todoSimpleString = JSON.stringify(analysis.todo_simple || []);
@@ -1124,6 +1223,35 @@ Deno.serve(async (req) => {
         tags: analysis.detected_tags || [],
       })
       .eq("id", document_id);
+
+
+    // Log extraction run for admin quality analytics
+    try {
+      await supabase
+        .from("ai_extraction_runs")
+        .insert({
+          document_id,
+          analysis_id: insertedAnalysis.id,
+          user_id: null,
+          prompt_version_id: analysisResponse.promptVersionId,
+          model: "gpt-4o",
+          language_code: analysisResponse.detectedLanguage,
+          doc_type: analysis.doc_type || "general",
+          status: "success",
+          confidence: typeof analysis.confidence === "number" ? analysis.confidence : null,
+          extracted_fields: {
+            simple_summary: analysis.simple_summary,
+            legal_summary: analysis.legal_summary,
+            todo_simple: analysis.todo_simple,
+            todo_legal: analysis.todo_legal,
+            deadlines: analysis.deadlines,
+            severity: analysis.severity,
+          },
+          raw_output: JSON.stringify(analysis),
+        });
+    } catch (runLogError) {
+      console.warn("Failed to log ai_extraction_run:", runLogError);
+    }
 
   return new Response(
     JSON.stringify({

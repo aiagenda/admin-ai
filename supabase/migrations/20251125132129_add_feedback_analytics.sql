@@ -24,12 +24,14 @@ ALTER TABLE public.analysis_feedback ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tab_view_analytics ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for analysis_feedback
+DROP POLICY IF EXISTS "Users can insert their own feedback" ON public.analysis_feedback;
 CREATE POLICY "Users can insert their own feedback"
   ON public.analysis_feedback
   FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can view their own feedback" ON public.analysis_feedback;
 CREATE POLICY "Users can view their own feedback"
   ON public.analysis_feedback
   FOR SELECT
@@ -37,12 +39,14 @@ CREATE POLICY "Users can view their own feedback"
   USING (auth.uid() = user_id);
 
 -- RLS Policies for tab_view_analytics
+DROP POLICY IF EXISTS "Users can insert their own tab views" ON public.tab_view_analytics;
 CREATE POLICY "Users can insert their own tab views"
   ON public.tab_view_analytics
   FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
 
+DROP POLICY IF EXISTS "Users can view their own tab views" ON public.tab_view_analytics;
 CREATE POLICY "Users can view their own tab views"
   ON public.tab_view_analytics
   FOR SELECT
@@ -50,29 +54,19 @@ CREATE POLICY "Users can view their own tab views"
   USING (auth.uid() = user_id OR user_id IS NULL);
 
 -- Admin can view all feedback and analytics
+DROP POLICY IF EXISTS "Admins can view all feedback" ON public.analysis_feedback;
 CREATE POLICY "Admins can view all feedback"
   ON public.analysis_feedback
   FOR SELECT
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.user_profiles
-      WHERE user_profiles.user_id = auth.uid()
-      AND user_profiles.is_admin = true
-    )
-  );
+  USING (public.has_role(auth.uid(), 'admin'));
 
+DROP POLICY IF EXISTS "Admins can view all tab analytics" ON public.tab_view_analytics;
 CREATE POLICY "Admins can view all tab analytics"
   ON public.tab_view_analytics
   FOR SELECT
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.user_profiles
-      WHERE user_profiles.user_id = auth.uid()
-      AND user_profiles.is_admin = true
-    )
-  );
+  USING (public.has_role(auth.uid(), 'admin'));
 
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_analysis_feedback_analysis_id ON public.analysis_feedback(analysis_id);

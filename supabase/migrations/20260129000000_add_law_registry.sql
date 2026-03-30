@@ -23,21 +23,25 @@ CREATE INDEX IF NOT EXISTS idx_law_registry_short_name ON public.law_registry (s
 -- RLS
 ALTER TABLE public.law_registry ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Law registry is viewable by everyone" ON public.law_registry;
 CREATE POLICY "Law registry is viewable by everyone"
   ON public.law_registry FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Only admins can insert law registry" ON public.law_registry;
 CREATE POLICY "Only admins can insert law registry"
   ON public.law_registry FOR INSERT TO authenticated
   WITH CHECK (
     EXISTS (SELECT 1 FROM public.user_roles WHERE user_roles.user_id = auth.uid() AND user_roles.role = 'admin')
   );
 
+DROP POLICY IF EXISTS "Only admins can update law registry" ON public.law_registry;
 CREATE POLICY "Only admins can update law registry"
   ON public.law_registry FOR UPDATE TO authenticated
   USING (
     EXISTS (SELECT 1 FROM public.user_roles WHERE user_roles.user_id = auth.uid() AND user_roles.role = 'admin')
   );
 
+DROP POLICY IF EXISTS "Only admins can delete law registry" ON public.law_registry;
 CREATE POLICY "Only admins can delete law registry"
   ON public.law_registry FOR DELETE TO authenticated
   USING (

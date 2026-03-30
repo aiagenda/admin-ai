@@ -14,18 +14,21 @@ CREATE TABLE IF NOT EXISTS public.todo_progress (
 ALTER TABLE public.todo_progress ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
+DROP POLICY IF EXISTS "Users can view their own todo progress" ON public.todo_progress;
 CREATE POLICY "Users can view their own todo progress"
   ON public.todo_progress
   FOR SELECT
   TO authenticated
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own todo progress" ON public.todo_progress;
 CREATE POLICY "Users can insert their own todo progress"
   ON public.todo_progress
   FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own todo progress" ON public.todo_progress;
 CREATE POLICY "Users can update their own todo progress"
   ON public.todo_progress
   FOR UPDATE

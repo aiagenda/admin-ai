@@ -86,18 +86,21 @@ END;
 $$;
 
 -- RLS Policies for user_roles
+DROP POLICY IF EXISTS "Users can view their own roles" ON public.user_roles;
 CREATE POLICY "Users can view their own roles"
 ON public.user_roles
 FOR SELECT
 TO authenticated
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Only admins can assign roles" ON public.user_roles;
 CREATE POLICY "Only admins can assign roles"
 ON public.user_roles
 FOR INSERT
 TO authenticated
 WITH CHECK (public.has_role(auth.uid(), 'admin'::public.app_role));
 
+DROP POLICY IF EXISTS "Only admins can remove roles" ON public.user_roles;
 CREATE POLICY "Only admins can remove roles"
 ON public.user_roles
 FOR DELETE
@@ -110,23 +113,27 @@ DROP POLICY IF EXISTS "Only admins can insert forms" ON public.forms;
 DROP POLICY IF EXISTS "Only admins can update forms" ON public.forms;
 DROP POLICY IF EXISTS "Only admins can delete forms" ON public.forms;
 
+DROP POLICY IF EXISTS "Forms are viewable by everyone" ON public.forms;
 CREATE POLICY "Forms are viewable by everyone"
 ON public.forms
 FOR SELECT
 USING (true);
 
+DROP POLICY IF EXISTS "Only admins can insert forms" ON public.forms;
 CREATE POLICY "Only admins can insert forms"
 ON public.forms
 FOR INSERT
 TO authenticated
 WITH CHECK (public.has_role(auth.uid(), 'admin'::public.app_role));
 
+DROP POLICY IF EXISTS "Only admins can update forms" ON public.forms;
 CREATE POLICY "Only admins can update forms"
 ON public.forms
 FOR UPDATE
 TO authenticated
 USING (public.has_role(auth.uid(), 'admin'::public.app_role));
 
+DROP POLICY IF EXISTS "Only admins can delete forms" ON public.forms;
 CREATE POLICY "Only admins can delete forms"
 ON public.forms
 FOR DELETE
@@ -139,6 +146,7 @@ DROP POLICY IF EXISTS "Service role can create analyses" ON public.analyses;
 DROP POLICY IF EXISTS "Users can update analyses of their documents" ON public.analyses;
 DROP POLICY IF EXISTS "Users can delete analyses of their documents" ON public.analyses;
 
+DROP POLICY IF EXISTS "Users can view analyses of their documents" ON public.analyses;
 CREATE POLICY "Users can view analyses of their documents"
 ON public.analyses
 FOR SELECT
@@ -151,12 +159,14 @@ USING (
   )
 );
 
+DROP POLICY IF EXISTS "Service role can create analyses" ON public.analyses;
 CREATE POLICY "Service role can create analyses"
 ON public.analyses
 FOR INSERT
 TO service_role
 WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can update analyses of their documents" ON public.analyses;
 CREATE POLICY "Users can update analyses of their documents"
 ON public.analyses
 FOR UPDATE
@@ -169,6 +179,7 @@ USING (
   )
 );
 
+DROP POLICY IF EXISTS "Users can delete analyses of their documents" ON public.analyses;
 CREATE POLICY "Users can delete analyses of their documents"
 ON public.analyses
 FOR DELETE

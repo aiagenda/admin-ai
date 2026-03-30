@@ -2,7 +2,8 @@
 -- The previous migration only had INSERT and SELECT policies
 
 -- Add UPDATE policy for users to update their own feedback
-CREATE POLICY IF NOT EXISTS "Users can update their own feedback"
+DROP POLICY IF EXISTS "Users can update their own feedback" ON public.analysis_feedback;
+CREATE POLICY "Users can update their own feedback"
   ON public.analysis_feedback
   FOR UPDATE
   TO authenticated
@@ -10,7 +11,8 @@ CREATE POLICY IF NOT EXISTS "Users can update their own feedback"
   WITH CHECK (auth.uid() = user_id);
 
 -- Also add DELETE policy in case user wants to remove their feedback
-CREATE POLICY IF NOT EXISTS "Users can delete their own feedback"
+DROP POLICY IF EXISTS "Users can delete their own feedback" ON public.analysis_feedback;
+CREATE POLICY "Users can delete their own feedback"
   ON public.analysis_feedback
   FOR DELETE
   TO authenticated

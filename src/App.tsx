@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { EnterpriseRoute } from "@/components/EnterpriseRoute";
 import { Navbar } from "@/components/Navbar";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import Home from "./pages/Home";
@@ -24,6 +25,7 @@ import NotFound from "./pages/NotFound";
 import FormAdmin from "./pages/admin/FormAdmin";
 import Analytics from "./pages/admin/Analytics";
 import KnowledgeBaseAdmin from "./pages/admin/KnowledgeBaseAdmin";
+import AIStudio from "./pages/admin/AIStudio";
 import Settings from "./pages/Settings";
 import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
@@ -161,6 +163,16 @@ const App = () => (
                   element={
                     <AdminRoute>
                       <Analytics />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/ai-studio"
+                  element={
+                    <AdminRoute>
+                      <EnterpriseRoute featureName="AI Studio">
+                        <AIStudio />
+                      </EnterpriseRoute>
                     </AdminRoute>
                   }
                 />

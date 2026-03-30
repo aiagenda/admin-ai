@@ -50,18 +50,22 @@ CREATE TABLE IF NOT EXISTS public.invoices (
 -- RLS
 ALTER TABLE public.invoices ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own invoices" ON public.invoices;
 CREATE POLICY "Users can view their own invoices"
   ON public.invoices FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own invoices" ON public.invoices;
 CREATE POLICY "Users can insert their own invoices"
   ON public.invoices FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own invoices" ON public.invoices;
 CREATE POLICY "Users can update their own invoices"
   ON public.invoices FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own invoices" ON public.invoices;
 CREATE POLICY "Users can delete their own invoices"
   ON public.invoices FOR DELETE
   USING (auth.uid() = user_id);
@@ -82,6 +86,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS invoices_updated_at ON public.invoices;
 CREATE TRIGGER invoices_updated_at
   BEFORE UPDATE ON public.invoices
   FOR EACH ROW
@@ -106,10 +111,12 @@ CREATE TABLE IF NOT EXISTS public.expense_categories (
 -- RLS
 ALTER TABLE public.expense_categories ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Anyone can view default categories" ON public.expense_categories;
 CREATE POLICY "Anyone can view default categories"
   ON public.expense_categories FOR SELECT
   USING (user_id IS NULL OR auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can manage their own categories" ON public.expense_categories;
 CREATE POLICY "Users can manage their own categories"
   ON public.expense_categories FOR ALL
   USING (auth.uid() = user_id);
@@ -222,10 +229,12 @@ CREATE TABLE IF NOT EXISTS public.invoice_usage_stats (
 
 ALTER TABLE public.invoice_usage_stats ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own invoice usage" ON public.invoice_usage_stats;
 CREATE POLICY "Users can view their own invoice usage"
   ON public.invoice_usage_stats FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "System can manage invoice usage" ON public.invoice_usage_stats;
 CREATE POLICY "System can manage invoice usage"
   ON public.invoice_usage_stats FOR ALL
   USING (true);

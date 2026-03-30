@@ -25,23 +25,28 @@ ALTER TABLE public.user_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_usage_stats ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for user_subscriptions
+DROP POLICY IF EXISTS "Users can view their own subscription" ON public.user_subscriptions;
 CREATE POLICY "Users can view their own subscription"
   ON public.user_subscriptions FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own subscription" ON public.user_subscriptions;
 CREATE POLICY "Users can update their own subscription"
   ON public.user_subscriptions FOR UPDATE
   USING (auth.uid() = user_id);
 
 -- RLS Policies for user_usage_stats
+DROP POLICY IF EXISTS "Users can view their own usage stats" ON public.user_usage_stats;
 CREATE POLICY "Users can view their own usage stats"
   ON public.user_usage_stats FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "System can insert usage stats" ON public.user_usage_stats;
 CREATE POLICY "System can insert usage stats"
   ON public.user_usage_stats FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "System can update usage stats" ON public.user_usage_stats;
 CREATE POLICY "System can update usage stats"
   ON public.user_usage_stats FOR UPDATE
   USING (true);

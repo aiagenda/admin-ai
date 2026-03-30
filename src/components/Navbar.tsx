@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { usePlanType } from "@/hooks/usePlanType";
 
 export function Navbar() {
   const { user, signOut } = useAuth();
@@ -30,6 +31,7 @@ export function Navbar() {
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hasInvoiceAccess, setHasInvoiceAccess] = useState(false);
+  const { planType, loading: planLoading } = usePlanType(user);
 
   useEffect(() => {
     setMounted(true);
@@ -196,6 +198,14 @@ export function Navbar() {
           >
             Analitika
           </Link>
+          {!planLoading && planType === "enterprise" && (
+            <Link 
+              to="/admin/ai-studio" 
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2"
+            >
+              AI Studio
+            </Link>
+          )}
         </>
       )}
     </>
@@ -214,6 +224,7 @@ export function Navbar() {
         <>
           <NavLink to="/admin/forms">Űrlapkezelő</NavLink>
           <NavLink to="/admin/analytics">Analitika</NavLink>
+          {!planLoading && planType === "enterprise" && <NavLink to="/admin/ai-studio">AI Studio</NavLink>}
           <NavLink to="/admin/knowledge-base">Knowledge Base</NavLink>
         </>
       )}

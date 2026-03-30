@@ -28,11 +28,13 @@ CREATE TABLE IF NOT EXISTS public.deadline_reminders (
 ALTER TABLE public.deadline_reminders ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies
+DROP POLICY IF EXISTS "Users can view their own deadline reminders" ON public.deadline_reminders;
 CREATE POLICY "Users can view their own deadline reminders"
   ON public.deadline_reminders FOR SELECT
   USING (auth.uid() = user_id);
 
 -- System can manage all reminders (for scheduled jobs)
+DROP POLICY IF EXISTS "System can manage deadline reminders" ON public.deadline_reminders;
 CREATE POLICY "System can manage deadline reminders"
   ON public.deadline_reminders FOR ALL
   USING (true)
@@ -74,20 +76,44 @@ CREATE TABLE IF NOT EXISTS public.notification_preferences (
 ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies
+DROP POLICY IF EXISTS "Users can view their own notification preferences" ON public.notification_preferences;
 CREATE POLICY "Users can view their own notification preferences"
   ON public.notification_preferences FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own notification preferences" ON public.notification_preferences;
 CREATE POLICY "Users can update their own notification preferences"
   ON public.notification_preferences FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own notification preferences" ON public.notification_preferences;
 CREATE POLICY "Users can insert their own notification preferences"
   ON public.notification_preferences FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
 -- Index
 CREATE INDEX IF NOT EXISTS idx_notification_preferences_user_id ON public.notification_preferences(user_id);
+
+
+-- Instrumentation: inspect existing function signature before recreation
+DO $$
+DECLARE
+  fn_exists boolean;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname = 'get_notification_preferences'
+      AND pg_get_function_identity_arguments(p.oid) = '_user_id uuid'
+  ) INTO fn_exists;
+
+  RAISE NOTICE 'debug_h1: get_notification_preferences(_user_id uuid) exists before recreate = %', fn_exists;
+END $$;
+
+-- Ensure replace is possible even if return type changed historically
+DROP FUNCTION IF EXISTS public.get_notification_preferences(UUID);
 
 -- Function to get or create notification preferences
 CREATE OR REPLACE FUNCTION public.get_notification_preferences(_user_id UUID)
@@ -160,11 +186,13 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS notification_preferences_updated_at ON public.notification_preferences;
 CREATE TRIGGER notification_preferences_updated_at
   BEFORE UPDATE ON public.notification_preferences
   FOR EACH ROW
   EXECUTE FUNCTION public.update_notification_preferences_updated_at();
 
+DROP TRIGGER IF EXISTS deadline_reminders_updated_at ON public.deadline_reminders;
 CREATE TRIGGER deadline_reminders_updated_at
   BEFORE UPDATE ON public.deadline_reminders
   FOR EACH ROW
