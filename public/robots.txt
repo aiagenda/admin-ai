@@ -1,14 +1,15 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+
+# Private/authenticated routes should not be indexed
+Disallow: /admin/
+Disallow: /auth
+Disallow: /upload
+Disallow: /archive
+Disallow: /result/
+Disallow: /settings
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /invoices/
+
+Sitemap: https://adminai.hu/sitemap.xml

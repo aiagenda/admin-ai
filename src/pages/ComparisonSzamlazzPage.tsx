@@ -1,0 +1,47 @@
+import { SEOHead } from "@/components/SEOHead";
+import { Button } from "@/components/ui/button";
+import { useNavigate, Link } from "react-router-dom";
+
+export default function ComparisonSzamlazzPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen py-12 px-4">
+      <SEOHead
+        title="AdminAI vs Számlázz.hu - dokumentum értelmezés összehasonlítás"
+        description="AdminAI vs Számlázz.hu: Számlázz.hu számlázási motor, AdminAI pedig a bejövő hivatalos dokumentumok AI-értelmező rendszere."
+        path="/adminai-vs-szamlazz"
+        keywords="AdminAI vs Számlázz.hu, Számlázz.hu alternatíva, hivatalos dokumentum értelmezés"
+      />
+      <div className="container mx-auto max-w-4xl space-y-6">
+        <h1 className="text-4xl font-bold">AdminAI vs Számlázz.hu</h1>
+        <p className="text-lg text-muted-foreground">
+          A Számlázz.hu piacvezető számlázó platform. Az AdminAI ezzel nem versenyez direktben a számlakiállításban,
+          hanem a bejövő dokumentumok értelmezését és teendőkezelését oldja meg.
+        </p>
+
+        <h2 className="text-2xl font-semibold">Külön fókusz, külön erősség</h2>
+        <p>
+          Számlázz.hu: kimenő számlázás, compliance és pénzügyi admin. AdminAI: NAV levelek, határozatok és egyéb dokumentumok
+          értelmezése, határidők és teendők kiemelése.
+        </p>
+
+        <h2 className="text-2xl font-semibold">Mikor érdemes AdminAI-t is használni?</h2>
+        <ul className="list-disc pl-6 text-muted-foreground space-y-1">
+          <li>Ha sok különböző hivatalos dokumentum érkezik</li>
+          <li>Ha gyorsan kell érthető magyarázat és következő lépés</li>
+          <li>Ha nem akarsz minden egyes levéllel külön szakértőt bevonni</li>
+        </ul>
+
+        <div className="flex gap-3">
+          <Button onClick={() => navigate("/auth")}>Ingyenes kipróbálás</Button>
+          <Button variant="outline" onClick={() => navigate("/nav-hatarozat-ertelmezes")}>NAV értelmezés</Button>
+        </div>
+
+        <p className="text-sm">
+          Általános AI összehasonlítás: <Link to="/adminai-vs-chatgpt" className="text-primary underline">AdminAI vs ChatGPT</Link>
+        </p>
+      </div>
+    </div>
+  );
+}

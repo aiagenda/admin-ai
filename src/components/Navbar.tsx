@@ -20,7 +20,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { usePlanType } from "@/hooks/usePlanType";
 
 export function Navbar() {
   const { user, signOut } = useAuth();
@@ -31,7 +30,9 @@ export function Navbar() {
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hasInvoiceAccess, setHasInvoiceAccess] = useState(false);
-  const { planType, loading: planLoading } = usePlanType(user);
+  const ownerEmailsRaw = (import.meta.env.VITE_OWNER_EMAILS || "").toString();
+  const ownerEmails = ownerEmailsRaw.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  const isOwner = !!user?.email && ownerEmails.includes(user.email.toLowerCase());
 
   useEffect(() => {
     setMounted(true);
@@ -179,6 +180,18 @@ export function Navbar() {
         </Link>
       )}
       <Link 
+        to="/gyik" 
+        className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2"
+      >
+        GYIK
+      </Link>
+      <Link 
+        to="/blog" 
+        className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2"
+      >
+        Blog
+      </Link>
+      <Link 
         to="/help" 
         className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2"
       >
@@ -198,7 +211,7 @@ export function Navbar() {
           >
             Analitika
           </Link>
-          {!planLoading && planType === "enterprise" && (
+          {isOwner && (
             <Link 
               to="/admin/ai-studio" 
               className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2"
@@ -219,12 +232,14 @@ export function Navbar() {
       {user && <NavLink to="/search">Keresés</NavLink>}
       {user && (hasInvoiceAccess || isAdmin) && <NavLink to="/invoices">Könyvelés</NavLink>}
       {user && <NavLink to="/settings">Beállítások</NavLink>}
+      <NavLink to="/gyik">GYIK</NavLink>
+      <NavLink to="/blog">Blog</NavLink>
       <NavLink to="/help">Segítség</NavLink>
       {user && !checkingAdmin && isAdmin && (
         <>
           <NavLink to="/admin/forms">Űrlapkezelő</NavLink>
           <NavLink to="/admin/analytics">Analitika</NavLink>
-          {!planLoading && planType === "enterprise" && <NavLink to="/admin/ai-studio">AI Studio</NavLink>}
+          {isOwner && <NavLink to="/admin/ai-studio">AI Studio</NavLink>}
           <NavLink to="/admin/knowledge-base">Knowledge Base</NavLink>
         </>
       )}

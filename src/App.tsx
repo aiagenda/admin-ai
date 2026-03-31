@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
-import { EnterpriseRoute } from "@/components/EnterpriseRoute";
+import { OwnerRoute } from "@/components/OwnerRoute";
 import { Navbar } from "@/components/Navbar";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import Home from "./pages/Home";
@@ -32,6 +32,16 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
 import InvoiceArchive from "./pages/InvoiceArchive";
 import InvoiceUpload from "./pages/InvoiceUpload";
 import InvoiceDetail from "./pages/InvoiceDetail";
+import BlogPostPage from "./pages/BlogPostPage";
+import ComparisonSzamlazzPage from "./pages/ComparisonSzamlazzPage";
+import ComparisonBillingoPage from "./pages/ComparisonBillingoPage";
+import ComparisonChatGptPage from "./pages/ComparisonChatGptPage";
+import BlogIndexPage from "./pages/BlogIndexPage";
+import GyikPage from "./pages/GyikPage";
+import ArakPage from "./pages/ArakPage";
+import UseCaseArchivumPage from "./pages/UseCaseArchivumPage";
+import UseCaseSzamlaOCRPage from "./pages/UseCaseSzamlaOCRPage";
+import UseCaseNavPage from "./pages/UseCaseNavPage";
 
 const queryClient = new QueryClient();
 
@@ -170,9 +180,9 @@ const App = () => (
                   path="/admin/ai-studio"
                   element={
                     <AdminRoute>
-                      <EnterpriseRoute featureName="AI Studio">
+                      <OwnerRoute>
                         <AIStudio />
-                      </EnterpriseRoute>
+                      </OwnerRoute>
                     </AdminRoute>
                   }
                 />
@@ -184,6 +194,16 @@ const App = () => (
                     </AdminRoute>
                   }
                 />
+                <Route path="/arak" element={<ArakPage />} />
+                <Route path="/gyik" element={<GyikPage />} />
+                <Route path="/blog" element={<BlogIndexPage />} />
+                <Route path="/blog/:slug" element={<BlogPostPage />} />
+                <Route path="/nav-hatarozat-ertelmezes" element={<UseCaseNavPage />} />
+                <Route path="/szamla-ocr" element={<UseCaseSzamlaOCRPage />} />
+                <Route path="/dokumentum-archivum" element={<UseCaseArchivumPage />} />
+                <Route path="/adminai-vs-chatgpt" element={<ComparisonChatGptPage />} />
+                <Route path="/adminai-vs-billingo" element={<ComparisonBillingoPage />} />
+                <Route path="/adminai-vs-szamlazz" element={<ComparisonSzamlazzPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

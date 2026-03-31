@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, Crown, Building2, Receipt } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { SEOHead } from "@/components/SEOHead";
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -68,6 +69,12 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen py-12 px-4">
+      <SEOHead
+        title="AdminAI árak - AI dokumentum értelmezés és számla OCR"
+        description="Hasonlítsd össze az AdminAI csomagokat: ingyenes, alap és professzionális. NAV dokumentum értelmezés, számla OCR, archívum és export."
+        path="/pricing"
+        keywords="AdminAI árak, dokumentum AI előfizetés, számla OCR ár"
+      />
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center space-y-4 mb-12">

@@ -14,6 +14,7 @@ import { format, startOfMonth, endOfMonth } from "date-fns";
 import { hu } from "date-fns/locale";
 import { getHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
 import { Link } from "react-router-dom";
+import { SEOHead } from "@/components/SEOHead";
 
 // Time-based greeting
 function getGreeting(): { text: string; emoji: string } {
@@ -202,6 +203,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      <SEOHead
+        title="AdminAI - Hivatalos dokumentumok AI-alapú értelmezése magyarul"
+        description="Az AdminAI AI-val értelmezi a NAV határozatokat, hatósági leveleket és számlákat. Egyszerű magyarázat, határidő-figyelmeztetés, OCR, export."
+        path="/"
+        keywords="hivatal levél értelmezés, NAV határozat értelmezés, számla OCR KKV, dokumentum archiválás"
+      />
       {user ? (
         /* Dashboard for logged-in users */
         <div className="container mx-auto max-w-6xl py-12 px-4 flex flex-col gap-6">
@@ -513,7 +520,7 @@ export default function Home() {
           <div className="text-center space-y-6">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
               Hivatalos dokumentumok{" "}
-              <span className="text-primary">egyszerűen</span>
+              <span className="text-primary">AI-alapú értelmezése magyarul</span>
             </h1>
 
             {/* ÚJ SZLOGEN BLOKK */}
@@ -551,7 +558,7 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Hogyan működik?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">Hogyan értelmezi az AdminAI a hivatal leveleit?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <Card>
               <CardContent className="pt-6 space-y-4">
@@ -607,7 +614,7 @@ export default function Home() {
       {/* Benefits Section */}
       <section className="bg-muted/50 py-20 px-4">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Miért az AdminAI?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">Számla OCR és dokumentumkezelés kis- és középvállalkozásoknak</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="flex gap-4">
               <Shield className="h-8 w-8 text-primary flex-shrink-0" />
@@ -672,12 +679,59 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Részletes megoldások dokumentumtípus szerint</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link to="/nav-hatarozat-ertelmezes" className="rounded-lg border p-4 hover:border-primary transition-colors">
+              <h3 className="font-semibold mb-1">NAV határozat értelmezés</h3>
+              <p className="text-sm text-muted-foreground">Mit jelent a levél és mi a következő lépés?</p>
+            </Link>
+            <Link to="/szamla-ocr" className="rounded-lg border p-4 hover:border-primary transition-colors">
+              <h3 className="font-semibold mb-1">Számla OCR</h3>
+              <p className="text-sm text-muted-foreground">Számla felismerés és könyvelőbarát export.</p>
+            </Link>
+            <Link to="/dokumentum-archivum" className="rounded-lg border p-4 hover:border-primary transition-colors">
+              <h3 className="font-semibold mb-1">Dokumentum archívum</h3>
+              <p className="text-sm text-muted-foreground">Visszakereshető iratkezelés KKV-knak.</p>
+            </Link>
+            <Link to="/gyik" className="rounded-lg border p-4 hover:border-primary transition-colors">
+              <h3 className="font-semibold mb-1">GYIK</h3>
+              <p className="text-sm text-muted-foreground">Leggyakoribb kérdések az AdminAI használatáról.</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="pb-10 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-2xl font-bold text-center mb-6">Összehasonlítások</h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Link to="/adminai-vs-chatgpt" className="rounded-lg border p-4 hover:border-primary transition-colors">
+              <h3 className="font-semibold mb-1">AdminAI vs ChatGPT</h3>
+              <p className="text-sm text-muted-foreground">Általános AI vs célzott dokumentum-értelmezés.</p>
+            </Link>
+            <Link to="/adminai-vs-billingo" className="rounded-lg border p-4 hover:border-primary transition-colors">
+              <h3 className="font-semibold mb-1">AdminAI vs Billingo</h3>
+              <p className="text-sm text-muted-foreground">Kimenő számlázás vs bejövő dokumentum értelmezés.</p>
+            </Link>
+            <Link to="/adminai-vs-szamlazz" className="rounded-lg border p-4 hover:border-primary transition-colors">
+              <h3 className="font-semibold mb-1">AdminAI vs Számlázz.hu</h3>
+              <p className="text-sm text-muted-foreground">Piacvezető számlázó és az AdminAI eltérő fókusza.</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-4xl text-center space-y-6">
           <h2 className="text-3xl font-bold">Kezdje el most!</h2>
           <p className="text-lg text-muted-foreground">
             Nincs több bonyolult hivatali nyelv - érthető magyarázatok percek alatt
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Az AdminAI tájékoztató jellegű AI-rendszer, nem minősül egyedi jogi tanácsadásnak.
           </p>
 
           <Button
