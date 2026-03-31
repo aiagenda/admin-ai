@@ -3,12 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Upload as UploadIcon, Loader2, X, Receipt, Camera, ArrowLeft, CheckCircle2, AlertCircle, FileText } from "lucide-react";
+import { Upload as UploadIcon, Loader2, X, Receipt, ArrowLeft, CheckCircle2, AlertCircle, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { DocumentScanner } from "@/components/DocumentScanner";
 
 function sanitizeFilename(name: string) {
   return name
@@ -93,7 +92,6 @@ export default function InvoiceUpload() {
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [scannerOpen, setScannerOpen] = useState(false);
 
   const validateFile = (file: File): string | null => {
     const isPDF = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
@@ -407,18 +405,6 @@ export default function InvoiceUpload() {
                   <UploadIcon className="h-4 w-4 mr-2" />
                   Fájlok kiválasztása
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  disabled={isUploading}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setScannerOpen(true);
-                  }}
-                >
-                  <Camera className="h-4 w-4 mr-2" />
-                  Kamera szkenner
-                </Button>
               </div>
               <input
                 type="file"
@@ -431,20 +417,6 @@ export default function InvoiceUpload() {
                     handleFilesSelect(e.target.files);
                   }
                 }}
-              />
-              <DocumentScanner
-                open={scannerOpen}
-                onClose={() => setScannerOpen(false)}
-                onCapture={async (scannedFile) => {
-                  setScannerOpen(false);
-                  await handleFilesSelect([scannedFile]);
-                }}
-                onCaptureBatch={async (scannedFiles) => {
-                  setScannerOpen(false);
-                  await handleFilesSelect(scannedFiles);
-                }}
-                mode="invoice"
-                title="Számla szkennelése"
               />
             </div>
 

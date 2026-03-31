@@ -2,14 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload as UploadIcon, Loader2, X, FileText, Camera, Scan, Download } from "lucide-react";
+import { Upload as UploadIcon, Loader2, X, FileText, Camera, Download } from "lucide-react";
 import { HelpTooltip } from "@/components/HelpTooltip";
 import { UsageLimit } from "@/components/UsageLimit";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { DocumentScanner } from "@/components/DocumentScanner";
 
 function sanitizeFilename(name: string) {
   return name
@@ -88,7 +87,6 @@ export default function Upload() {
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [scannerOpen, setScannerOpen] = useState(false);
 
   // LOG
   useEffect(() => {
@@ -550,15 +548,6 @@ export default function Upload() {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
-                  onClick={() => setScannerOpen(true)}
-                  className="w-full sm:flex-none shrink-0 min-h-[44px] touch-manipulation"
-                >
-                  <Scan className="mr-2 h-4 w-4 shrink-0" />
-                  <span className="truncate">Kamera szkenner (ajánlott)</span>
-                </Button>
-                <Button
-                  type="button"
                   variant="ghost"
                   onClick={() => {
                     if (fileInputRef.current) {
@@ -577,19 +566,6 @@ export default function Upload() {
                   <span className="truncate">Gyors fotó</span>
                 </Button>
               </div>
-              <DocumentScanner
-                open={scannerOpen}
-                onClose={() => setScannerOpen(false)}
-                onCapture={async (scannedFile) => {
-                  setScannerOpen(false);
-                  await handleFileSelect(scannedFile);
-                }}
-                onCaptureBatch={async (scannedFiles) => {
-                  setScannerOpen(false);
-                  await handleFileSelect(scannedFiles);
-                }}
-                mode="document"
-              />
               </>
               )}
 
