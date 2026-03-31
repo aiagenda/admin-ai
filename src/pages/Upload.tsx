@@ -503,7 +503,7 @@ export default function Upload() {
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground text-center">
-                    ✓ Ellenőrizd, hogy ez a megfelelő dokumentum
+                    ✓ Ellenőrizd a kivágást és olvashatóságot feltöltés előtt
                   </p>
                 </div>
               ) : (
@@ -555,7 +555,7 @@ export default function Upload() {
                   className="w-full sm:flex-none shrink-0 min-h-[44px] touch-manipulation"
                 >
                   <Scan className="mr-2 h-4 w-4 shrink-0" />
-                  <span className="truncate">Dokumentum szkennelése</span>
+                  <span className="truncate">Kamera szkenner (ajánlott)</span>
                 </Button>
                 <Button
                   type="button"
@@ -574,7 +574,7 @@ export default function Upload() {
                   className="w-full sm:flex-none shrink-0 text-muted-foreground min-h-[44px] touch-manipulation"
                 >
                   <Camera className="mr-2 h-4 w-4 shrink-0" />
-                  <span className="truncate">Egyszerű fotó</span>
+                  <span className="truncate">Gyors fotó</span>
                 </Button>
               </div>
               <DocumentScanner
@@ -583,6 +583,10 @@ export default function Upload() {
                 onCapture={async (scannedFile) => {
                   setScannerOpen(false);
                   await handleFileSelect(scannedFile);
+                }}
+                onCaptureBatch={async (scannedFiles) => {
+                  setScannerOpen(false);
+                  await handleFileSelect(scannedFiles);
                 }}
                 mode="document"
               />

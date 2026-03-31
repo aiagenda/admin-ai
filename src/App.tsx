@@ -10,6 +10,7 @@ import { AdminRoute } from "@/components/AdminRoute";
 import { OwnerRoute } from "@/components/OwnerRoute";
 import { Navbar } from "@/components/Navbar";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
@@ -56,7 +57,7 @@ const App = () => (
             <div className="min-h-screen flex flex-col">
               <Navbar />
               <PWAInstallBanner />
-              <main className="flex-1 pb-[env(safe-area-inset-bottom)]">
+              <main className="flex-1 pb-20 md:pb-[env(safe-area-inset-bottom)]">
                 <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/auth" element={<Auth />} />
@@ -207,6 +208,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
+              <MobileBottomNav />
           </div>
             </AuthProvider>
       </BrowserRouter>

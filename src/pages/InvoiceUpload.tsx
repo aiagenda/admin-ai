@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { DocumentScanner } from "@/components/DocumentScanner";
 
 function sanitizeFilename(name: string) {
   return name
@@ -92,6 +93,7 @@ export default function InvoiceUpload() {
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const validateFile = (file: File): string | null => {
     const isPDF = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
@@ -411,21 +413,11 @@ export default function InvoiceUpload() {
                   disabled={isUploading}
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Trigger camera on mobile
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
-                    input.capture = 'environment';
-                    input.multiple = true;
-                    input.onchange = (ev) => {
-                      const files = (ev.target as HTMLInputElement).files;
-                      if (files) handleFilesSelect(files);
-                    };
-                    input.click();
+                    setScannerOpen(true);
                   }}
                 >
                   <Camera className="h-4 w-4 mr-2" />
-                  Kamera
+                  Kamera szkenner
                 </Button>
               </div>
               <input
@@ -439,6 +431,20 @@ export default function InvoiceUpload() {
                     handleFilesSelect(e.target.files);
                   }
                 }}
+              />
+              <DocumentScanner
+                open={scannerOpen}
+                onClose={() => setScannerOpen(false)}
+                onCapture={async (scannedFile) => {
+                  setScannerOpen(false);
+                  await handleFilesSelect([scannedFile]);
+                }}
+                onCaptureBatch={async (scannedFiles) => {
+                  setScannerOpen(false);
+                  await handleFilesSelect(scannedFiles);
+                }}
+                mode="invoice"
+                title="Számla szkennelése"
               />
             </div>
 
