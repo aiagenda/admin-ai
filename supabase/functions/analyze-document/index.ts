@@ -30,6 +30,18 @@ type AnalysisResult = {
   deadline?: string | null;
 };
 
+
+type OCRProvider = "openai" | "glm";
+
+type OCROptions = {
+  provider: OCRProvider;
+  openaiApiKey: string;
+  glmApiKey?: string;
+  glmApiUrl?: string;
+  glmModel?: string;
+  supabase?: ReturnType<typeof createClient>;
+};
+
 /**
  * Extract text from PDF using pdfjs-serverless (Deno-compatible, no workers needed)
  * This works for text-based PDFs
@@ -337,6 +349,91 @@ Preserve formatting, dates, amounts, account numbers, and all details exactly as
     console.error("Vision OCR error:", error);
     throw new Error(`Failed to extract text using Vision OCR: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
+}
+
+
+async function extractTextWithGLMOCR(
+  imageBase64Array: string[],
+  glmApiKey: string,
+  glmApiUrl: string,
+  glmModel: string,
+  supabase?: ReturnType<typeof createClient>,
+): Promise<string> {
+  const textParts: string[] = [];
+  const maxPages = 10;
+  const pagesToProcess = Math.min(imageBase64Array.length, maxPages);
+
+  for (let i = 0; i < pagesToProcess; i++) {
+    const imageBase64 = imageBase64Array[i];
+    let ocrPrompt = `Extract all text from this Hungarian administrative document image.
+Return only the extracted text, no analysis.`;
+
+    if (supabase) {
+      const ocrImprovements = await getOCRImprovements(supabase);
+      if (ocrImprovements) ocrPrompt += ocrImprovements;
+    }
+
+    const response = await fetch(glmApiUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${glmApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: glmModel,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: ocrPrompt },
+              { type: "image_url", image_url: { url: imageBase64 } },
+            ],
+          },
+        ],
+        max_tokens: 4000,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`GLM OCR API error for page ${i + 1}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    const extractedText = data.choices?.[0]?.message?.content;
+    if (extractedText) textParts.push(extractedText);
+  }
+
+  const fullText = textParts.join("\n\n").trim();
+  if (!fullText) throw new Error("GLM OCR extracted no text");
+  return fullText;
+}
+
+async function extractTextWithVisionProvider(
+  imageBase64Array: string[],
+  options: OCROptions,
+): Promise<{ text: string; providerUsed: OCRProvider }> {
+  if (options.provider === "glm") {
+    if (!options.glmApiKey) {
+      console.warn("GLM OCR selected but GLM_OCR_API_KEY is missing, falling back to OpenAI OCR");
+    } else {
+      try {
+        const text = await extractTextWithGLMOCR(
+          imageBase64Array,
+          options.glmApiKey,
+          options.glmApiUrl || "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+          options.glmModel || "glm-4.5v",
+          options.supabase,
+        );
+        return { text, providerUsed: "glm" };
+      } catch (glmErr) {
+        console.warn("GLM OCR failed, falling back to OpenAI OCR:", glmErr);
+      }
+    }
+  }
+
+  const text = await extractTextWithVisionOCR(imageBase64Array, options.openaiApiKey, options.supabase);
+  return { text, providerUsed: "openai" };
 }
 
 /**
@@ -1057,6 +1154,10 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const openaiApiKey = Deno.env.get("OPENAI_API_KEY") ?? "";
+    const configuredOCRProvider = (Deno.env.get("OCR_PROVIDER") ?? "openai").toLowerCase() === "glm" ? "glm" : "openai";
+    const glmApiKey = Deno.env.get("GLM_OCR_API_KEY") ?? "";
+    const glmApiUrl = Deno.env.get("GLM_OCR_API_URL") ?? "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+    const glmModel = Deno.env.get("GLM_OCR_MODEL") ?? "glm-4.5v";
 
     if (!supabaseUrl || !supabaseServiceKey) {
       throw new Error("Server configuration error: missing Supabase credentials");
@@ -1101,10 +1202,18 @@ Deno.serve(async (req) => {
         
         const imageBase64 = `data:${mimeType};base64,${base64}`;
         
-        console.log("Extracting text from image using OpenAI Vision OCR...");
-        extractedText = await extractTextWithVisionOCR([imageBase64], openaiApiKey, supabase);
+        console.log(`Extracting text from image using ${configuredOCRProvider.toUpperCase()} OCR provider...`);
+        const ocrResult = await extractTextWithVisionProvider([imageBase64], {
+          provider: configuredOCRProvider,
+          openaiApiKey,
+          glmApiKey,
+          glmApiUrl,
+          glmModel,
+          supabase,
+        });
+        extractedText = ocrResult.text;
         usedOCR = true;
-        console.log("✅ OCR extraction successful from image");
+        console.log(`✅ OCR extraction successful from image via ${ocrResult.providerUsed}`);
       } catch (ocrError) {
         console.error("OCR extraction from image failed:", ocrError);
         throw new Error(
@@ -1133,10 +1242,18 @@ Deno.serve(async (req) => {
           const pageImages = await convertPdfPagesToImages(uint8);
           console.log(`Converted ${pageImages.length} page(s) to images`);
           
-          console.log("Extracting text using OpenAI Vision OCR...");
-          extractedText = await extractTextWithVisionOCR(pageImages, openaiApiKey, supabase);
+          console.log(`Extracting text using ${configuredOCRProvider.toUpperCase()} OCR provider...`);
+          const ocrResult = await extractTextWithVisionProvider(pageImages, {
+            provider: configuredOCRProvider,
+            openaiApiKey,
+            glmApiKey,
+            glmApiUrl,
+            glmModel,
+            supabase,
+          });
+          extractedText = ocrResult.text;
           usedOCR = true;
-          console.log("✅ OCR extraction successful");
+          console.log(`✅ OCR extraction successful via ${ocrResult.providerUsed}`);
         } catch (ocrError) {
           console.error("OCR extraction also failed:", ocrError);
           throw new Error(
