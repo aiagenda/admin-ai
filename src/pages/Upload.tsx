@@ -68,7 +68,9 @@ async function optimizeImage(file: File): Promise<File> {
               return;
             }
             // Create new File with original name
-            const optimizedFile = new File([blob], file.name, {
+            const baseName = file.name.replace(/\.[^/.]+$/, "");
+            const normalizedName = `${baseName || "photo"}.jpg`;
+            const optimizedFile = new File([blob], normalizedName, {
               type: "image/jpeg",
               lastModified: Date.now(),
             });

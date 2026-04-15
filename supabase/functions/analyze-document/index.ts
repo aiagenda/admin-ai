@@ -1177,10 +1177,18 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to download file: ${downloadError?.message ?? "Unknown error"}`);
     }
 
-    // Determine file type from URL extension
+    // Determine file type from both extension and blob MIME (more reliable for mobile camera uploads)
     const fileExtension = file_url.split('.').pop()?.toLowerCase() || '';
-    const isImage = ['jpg', 'jpeg', 'png', 'heic'].includes(fileExtension);
-    const isPDF = fileExtension === 'pdf' || !isImage; // Default to PDF if unknown
+    const blobMimeType = (fileBlob.type || '').toLowerCase();
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'heic', 'heif', 'webp'];
+    const isImageByExtension = imageExtensions.includes(fileExtension);
+    const isImageByMime = blobMimeType.startsWith('image/');
+    const isImage = isImageByExtension || isImageByMime;
+    const isPDF = fileExtension === 'pdf' || blobMimeType === 'application/pdf';
+
+    if (!isImage && !isPDF) {
+      throw new Error(`Unsupported file type for analysis: extension=${fileExtension || 'unknown'}, mime=${blobMimeType || 'unknown'}`);
+    }
 
     let extractedText = "";
     let usedOCR = false;
@@ -1196,9 +1204,14 @@ Deno.serve(async (req) => {
         const base64 = btoa(String.fromCharCode(...uint8));
         
         // Determine MIME type
-        let mimeType = 'image/jpeg';
-        if (fileExtension === 'png') mimeType = 'image/png';
-        else if (fileExtension === 'heic') mimeType = 'image/heic';
+        let mimeType = blobMimeType || 'image/jpeg';
+        if (!mimeType.startsWith('image/')) {
+          if (fileExtension === 'png') mimeType = 'image/png';
+          else if (fileExtension === 'heic') mimeType = 'image/heic';
+          else if (fileExtension === 'heif') mimeType = 'image/heif';
+          else if (fileExtension === 'webp') mimeType = 'image/webp';
+          else mimeType = 'image/jpeg';
+        }
         
         const imageBase64 = `data:${mimeType};base64,${base64}`;
         
