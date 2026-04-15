@@ -19,6 +19,14 @@ function sanitizeFilename(name: string) {
     .replace(/[^a-zA-Z0-9_\-.]/g, "");
 }
 
+function formatFileSize(bytes: number) {
+  if (!bytes) return "0 KB";
+  const mb = bytes / (1024 * 1024);
+  if (mb >= 0.1) return `${mb.toFixed(2)} MB`;
+  const kb = bytes / 1024;
+  return `${kb.toFixed(0)} KB`;
+}
+
 /**
  * Optimize image: resize to max 1920x1080, compress to quality 0.8
  */
@@ -80,7 +88,6 @@ async function optimizeImage(file: File): Promise<File> {
 
 export default function Upload() {
   const [file, setFile] = useState<File | null>(null);
-  const [files, setFiles] = useState<File[]>([]); // Multiple files support
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [processingDocId, setProcessingDocId] = useState<string | null>(null);
@@ -99,49 +106,66 @@ export default function Upload() {
 
   const handleFileSelect = async (selectedFiles: File | File[]) => {
     const fileArray = Array.isArray(selectedFiles) ? selectedFiles : [selectedFiles];
-    
-    // Validate file types
-    const validFiles = fileArray.filter(f => {
-      const isPDF = f.type === "application/pdf";
-      const isImage = f.type.startsWith("image/");
-      return isPDF || isImage;
+
+    if (fileArray.length === 0) return;
+
+    const nonEmptyFiles = fileArray.filter((f) => f.size > 0);
+    if (nonEmptyFiles.length === 0) {
+      toast.error("A kiválasztott fájl üres (0 byte). Kérlek válassz másik dokumentumot.");
+      return;
+    }
+
+    // Safari / iOS esetén előfordulhat hiányzó MIME type, ezért az extension is számít.
+    const validFiles = nonEmptyFiles.filter((f) => {
+      const lowerName = f.name.toLowerCase();
+      const isPDF = f.type === "application/pdf" || lowerName.endsWith(".pdf");
+      const isImage = f.type.startsWith("image/") || /\.(jpg|jpeg|png|heic|heif|webp)$/i.test(lowerName);
+      const inSizeLimit = f.size <= 20 * 1024 * 1024;
+      return (isPDF || isImage) && inSizeLimit;
     });
 
     if (validFiles.length === 0) {
-      toast.error("Csak PDF vagy kép (JPG, PNG, HEIC) tölthető fel");
+      toast.error("Csak PDF vagy kép (JPG, PNG, HEIC) tölthető fel, max 20MB méretig");
       return;
     }
 
     if (validFiles.length < fileArray.length) {
-      toast.warning(`${fileArray.length - validFiles.length} fájl nem támogatott formátumú`);
+      toast.warning(`${fileArray.length - validFiles.length} fájl nem támogatott vagy túl nagy`);
     }
 
-    // For now, handle single file (we'll extend to multiple later)
     let firstFile = validFiles[0];
-    
-    // Optimize image if it's an image file
-    if (firstFile.type.startsWith("image/")) {
+
+    const isImageFile = firstFile.type.startsWith("image/") || /\.(jpg|jpeg|png|heic|heif|webp)$/i.test(firstFile.name.toLowerCase());
+    if (isImageFile) {
       try {
         firstFile = await optimizeImage(firstFile);
-        toast.success("Kép optimalizálva");
+        if (firstFile.size === 0) {
+          toast.error("A kamera/fájlforrás üres képet adott vissza. Kérlek készíts új fotót.");
+          return;
+        }
       } catch (error) {
         console.error("Image optimization failed:", error);
+        const name = firstFile.name.toLowerCase();
+        const isHeic = firstFile.type.includes("heic") || firstFile.type.includes("heif") || /\.(heic|heif)$/i.test(name);
+        if (isHeic) {
+          toast.error("A HEIC kép feldolgozása sikertelen. Kérlek válassz JPG/PNG fájlt, vagy használd az egyszerű fotó opciót.");
+          return;
+        }
         toast.warning("Kép optimalizálás sikertelen, eredeti fájl használata");
       }
     }
-    
-    setFile(firstFile);
-    setFiles(validFiles);
 
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result;
-      if (result) {
-        setFilePreview(result as string);
-      }
-    };
-    reader.readAsDataURL(firstFile);
+    if (firstFile.size < 1024) {
+      toast.error("A fájl túl kicsi vagy sérült. Kérlek készíts új fotót.");
+      return;
+    }
+
+    if (filePreview && filePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(filePreview);
+    }
+
+    setFile(firstFile);
+    setFilePreview(URL.createObjectURL(firstFile));
   };
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -153,8 +177,7 @@ export default function Upload() {
 
   const clearFile = () => {
     setFile(null);
-    setFiles([]);
-    if (filePreview) {
+    if (filePreview && filePreview.startsWith("blob:")) {
       URL.revokeObjectURL(filePreview);
     }
     setFilePreview(null);
@@ -175,6 +198,10 @@ export default function Upload() {
     }
     if (file.size === 0) {
       toast.error("A fájl üres. Készíts új fényképet vagy válassz másik fájlt.");
+      return;
+    }
+    if (file.size < 1024) {
+      toast.error("A fájl túl kicsi vagy sérült, kérlek válassz másik dokumentumot.");
       return;
     }
 
@@ -281,10 +308,10 @@ export default function Upload() {
           const result = await res.json();
           if (!res.ok || !result?.success) {
             console.error("Edge Function error:", result);
+            const details = result?.error || result?.message || "Ismeretlen backend hiba";
+            toast.error(`Elemzési hiba: ${details}`);
             // Don't throw here - let polling handle status updates
             // The Edge Function will update status to "error" if it fails
-          } else {
-            console.log("Edge Function started successfully:", result);
           }
         })
         .catch((err) => {
@@ -469,7 +496,7 @@ export default function Upload() {
                       <div className="min-w-0">
                         <p className="font-semibold truncate" title={file?.name}>{file?.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {((file?.size || 0) / 1024 / 1024).toFixed(2)} MB
+                          {formatFileSize(file?.size || 0)}
                         </p>
                       </div>
                     </div>
@@ -527,7 +554,7 @@ export default function Upload() {
                 <p className="text-sm text-muted-foreground">PDF, JPG, PNG, HEIC • Max 20MB</p>
                 <input
                   type="file"
-                  accept="application/pdf,image/jpeg,image/jpg,image/png,image/heic"
+                  accept="application/pdf,image/*,.heic,.heif"
                   ref={fileInputRef}
                   className="hidden"
                   onChange={(e) => {
