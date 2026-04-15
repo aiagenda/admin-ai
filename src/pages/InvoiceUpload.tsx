@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { LegalQuickLinks } from "@/components/LegalQuickLinks";
 
 function sanitizeFilename(name: string) {
   return name
@@ -540,6 +541,17 @@ export default function InvoiceUpload() {
                 )}
               </div>
             )}
+            <p className="text-xs text-center text-muted-foreground">
+              A feldolgozas inditasaval elfogadod az {" "}
+              <Link className="underline text-primary" to="/legal/privacy">
+                adatkezelesi tajekoztatot
+              </Link>
+              {" "}es az {" "}
+              <Link className="underline text-primary" to="/legal/terms">
+                ASZF-et
+              </Link>
+              .
+            </p>
 
             {/* Info */}
             <div className="bg-muted/50 rounded-lg p-4">
@@ -552,6 +564,12 @@ export default function InvoiceUpload() {
                 <li>• Automatikus költség kategória</li>
                 <li>• Kézzel írt számlák is!</li>
               </ul>
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+              <p className="text-sm">
+                Biztonsag: titkositott atvitel, szerepkoralapu hozzaferes, audit naplozas.
+              </p>
+              <LegalQuickLinks />
             </div>
           </CardContent>
         </Card>

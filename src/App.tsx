@@ -43,6 +43,12 @@ import ArakPage from "./pages/ArakPage";
 import UseCaseArchivumPage from "./pages/UseCaseArchivumPage";
 import UseCaseSzamlaOCRPage from "./pages/UseCaseSzamlaOCRPage";
 import UseCaseNavPage from "./pages/UseCaseNavPage";
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import CookiePolicy from "./pages/legal/CookiePolicy";
+import TermsOfService from "./pages/legal/TermsOfService";
+import DataProcessingAgreement from "./pages/legal/DataProcessingAgreement";
+import Imprint from "./pages/legal/Imprint";
+import SecurityPage from "./pages/legal/SecurityPage";
 
 const queryClient = new QueryClient();
 
@@ -161,6 +167,12 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
+                <Route path="/legal/privacy" element={<PrivacyPolicy />} />
+                <Route path="/legal/cookies" element={<CookiePolicy />} />
+                <Route path="/legal/terms" element={<TermsOfService />} />
+                <Route path="/legal/dpa" element={<DataProcessingAgreement />} />
+                <Route path="/legal/imprint" element={<Imprint />} />
+                <Route path="/legal/security" element={<SecurityPage />} />
                 <Route
                   path="/admin/forms"
                   element={

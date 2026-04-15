@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload as UploadIcon, Loader2, X, FileText, Camera, Download } from "lucide-react";
 import { HelpTooltip } from "@/components/HelpTooltip";
 import { UsageLimit } from "@/components/UsageLimit";
+import { LegalQuickLinks } from "@/components/LegalQuickLinks";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -590,22 +591,42 @@ export default function Upload() {
                   </div>
                 </div>
               ) : (
-                <Button 
-                  className="w-full mt-6 h-12 text-base bg-gradient-to-r from-blue-600 to-primary hover:from-blue-700 hover:to-primary/90 shadow-lg shadow-primary/25" 
-                  onClick={handleSubmit} 
-                  disabled={loading || !file}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Feltöltés...
-                    </>
-                  ) : (
-                    <>
-                      <UploadIcon className="mr-2 h-5 w-5" /> Elemzés indítása
-                    </>
-                  )}
-                </Button>
+                <>
+                  <Button 
+                    className="w-full mt-6 h-12 text-base bg-gradient-to-r from-blue-600 to-primary hover:from-blue-700 hover:to-primary/90 shadow-lg shadow-primary/25" 
+                    onClick={handleSubmit} 
+                    disabled={loading || !file}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Feltöltés...
+                      </>
+                    ) : (
+                      <>
+                        <UploadIcon className="mr-2 h-5 w-5" /> Elemzés indítása
+                      </>
+                    )}
+                  </Button>
+                  <p className="mt-3 text-xs text-center text-muted-foreground">
+                    A feltoltes folytatasaval elfogadod az {" "}
+                    <Link className="underline text-primary" to="/legal/privacy">
+                      adatkezelesi tajekoztatot
+                    </Link>
+                    {" "}es az {" "}
+                    <Link className="underline text-primary" to="/legal/terms">
+                      ASZF-et
+                    </Link>
+                    .
+                  </p>
+                </>
               )}
+
+              <div className="mt-6 rounded-xl border bg-muted/30 p-4 space-y-3">
+                <p className="text-sm">
+                  Biztonsag: TLS kapcsolat, jogosultsagalapu hozzaferes, naplozott feldolgozas.
+                </p>
+                <LegalQuickLinks />
+              </div>
             </CardContent>
           </div>
         </Card>
