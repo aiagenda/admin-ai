@@ -27,6 +27,23 @@ function formatFileSize(bytes: number) {
   return `${kb.toFixed(0)} KB`;
 }
 
+
+function getProcessingMessage(status: string, elapsedSec: number) {
+  if (status === "completed") return "Átirányítás az eredményhez...";
+  if (status !== "processing") return "Hiba történt a feldolgozás során";
+
+  if (elapsedSec >= 60) {
+    return "Még dolgozunk rajta. Összetettebb dokumentum esetén ez kicsit tovább tarthat.";
+  }
+  if (elapsedSec >= 30) {
+    return "Már dolgozunk rajta, hamarosan kész.";
+  }
+  if (elapsedSec >= 10) {
+    return "Feldolgozás folyamatban, köszönjük a türelmed.";
+  }
+  return "Az AI elemzi a dokumentumot. Ez eltarthat néhány másodpercig.";
+}
+
 /**
  * Optimize image: resize to max 1920x1080, compress to quality 0.8
  */
@@ -94,6 +111,7 @@ export default function Upload() {
   const [loading, setLoading] = useState(false);
   const [processingDocId, setProcessingDocId] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<string>("");
+  const [processingElapsedSec, setProcessingElapsedSec] = useState(0);
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -105,6 +123,23 @@ export default function Upload() {
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
     console.log("✅ FUNCTION URL:", `${fnBase}/analyze-document`);
   }, []);
+
+  useEffect(() => {
+    if (!processingDocId || processingStatus !== "processing") {
+      setProcessingElapsedSec(0);
+      return;
+    }
+
+    const startedAt = Date.now();
+    setProcessingElapsedSec(0);
+
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+      setProcessingElapsedSec(elapsed);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [processingDocId, processingStatus]);
 
   const handleFileSelect = async (selectedFiles: File | File[]) => {
     const fileArray = Array.isArray(selectedFiles) ? selectedFiles : [selectedFiles];
@@ -327,6 +362,7 @@ export default function Upload() {
               toast.error("Nem sikerült elindítani az elemzést");
               setProcessingDocId(null);
               setProcessingStatus("");
+              setProcessingElapsedSec(0);
             });
         });
 
@@ -369,6 +405,7 @@ export default function Upload() {
               toast.error("Hiba történt az elemzés során");
               setProcessingDocId(null);
               setProcessingStatus("");
+              setProcessingElapsedSec(0);
               return true; // Stop polling
             }
           }
@@ -379,6 +416,7 @@ export default function Upload() {
             toast.error("Az elemzés túl sokáig tart. Kérjük, ellenőrizze az archívumot később.");
             setProcessingDocId(null);
             setProcessingStatus("");
+            setProcessingElapsedSec(0);
             return true; // Stop polling
           }
 
@@ -431,6 +469,7 @@ export default function Upload() {
                 toast.error("Hiba történt az elemzés során");
                 setProcessingDocId(null);
                 setProcessingStatus("");
+                setProcessingElapsedSec(0);
               }
             }
           )
@@ -610,12 +649,11 @@ export default function Upload() {
                         {processingStatus === "completed" ? "✓ Elemzés kész!" : "Dokumentum feldolgozása..."}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {processingStatus === "processing"
-                          ? "Az AI elemzi a dokumentumot. Ez eltarthat néhány másodpercig."
-                          : processingStatus === "completed"
-                            ? "Átirányítás az eredményhez..."
-                            : "Hiba történt a feldolgozás során"}
+                        {getProcessingMessage(processingStatus, processingElapsedSec)}
                       </p>
+                      {processingStatus === "processing" && processingElapsedSec >= 10 && (
+                        <p className="text-xs text-muted-foreground/80 mt-1">Eltelt idő: ~{processingElapsedSec} mp</p>
+                      )}
                     </div>
                   </div>
                 </div>
