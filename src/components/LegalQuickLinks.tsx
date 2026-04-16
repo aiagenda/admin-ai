@@ -7,16 +7,16 @@ type LegalQuickLinksProps = {
 export function LegalQuickLinks({ className }: LegalQuickLinksProps) {
   return (
     <div className={className}>
-      <p className="text-sm font-medium">Jogi es adatvedelmi dokumentumok</p>
+      <p className="text-sm font-medium">Jogi és adatvédelmi dokumentumok</p>
       <div className="mt-2 flex flex-wrap gap-2 text-sm">
         <Link className="underline text-primary" to="/legal/privacy">
-          Adatkezelesi tajekoztato
+          Adatkezelési tájékoztató
         </Link>
         <Link className="underline text-primary" to="/legal/cookies">
-          Cookie tajekoztato
+          Cookie tájékoztató
         </Link>
         <Link className="underline text-primary" to="/legal/terms">
-          ASZF
+          ÁSZF
         </Link>
         <Link className="underline text-primary" to="/legal/dpa">
           DPA
@@ -25,7 +25,7 @@ export function LegalQuickLinks({ className }: LegalQuickLinksProps) {
           Impresszum
         </Link>
         <Link className="underline text-primary" to="/legal/security">
-          Biztonsag
+          Biztonság
         </Link>
       </div>
     </div>

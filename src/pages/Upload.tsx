@@ -506,7 +506,7 @@ export default function Upload() {
             <h1 className="text-2xl sm:text-3xl font-bold">Dokumentum feltöltése</h1>
             <HelpTooltip 
               content="Töltsön fel PDF dokumentumot vagy képet (JPG, PNG, HEIC). Az elemzés általában 30-60 másodpercig tart."
-              helpPageAnchor="feltoltes"
+              helpPageAnchor="feltöltés"
             />
           </div>
           <p className="text-muted-foreground">Tölts fel PDF-et vagy képet elemzéshez - az AI azonnal elkezdi feldolgozni</p>
@@ -667,13 +667,13 @@ export default function Upload() {
                     )}
                   </Button>
                   <p className="mt-3 text-xs text-center text-muted-foreground">
-                    A feltoltes folytatasaval elfogadod az {" "}
+                    A feltöltés folytatásával elfogadod az {" "}
                     <Link className="underline text-primary" to="/legal/privacy">
-                      adatkezelesi tajekoztatot
+                      adatkezelési tájékoztatót
                     </Link>
                     {" "}es az {" "}
                     <Link className="underline text-primary" to="/legal/terms">
-                      ASZF-et
+                      ÁSZF-et
                     </Link>
                     .
                   </p>
@@ -682,7 +682,7 @@ export default function Upload() {
 
               <div className="mt-6 rounded-xl border bg-muted/30 p-4 space-y-3">
                 <p className="text-sm">
-                  Biztonsag: TLS kapcsolat, jogosultsagalapu hozzaferes, naplozott feldolgozas.
+                  Biztonság: TLS kapcsolat, jogosultságalapú hozzáférés, naplózott feldolgozás.
                 </p>
                 <LegalQuickLinks />
               </div>
