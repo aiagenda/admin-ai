@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload as UploadIcon, Loader2, X, FileText, Camera, Download } from "lucide-react";
+import { Upload as UploadIcon, Loader2, X, FileText, Camera } from "lucide-react";
 import { HelpTooltip } from "@/components/HelpTooltip";
 import { UsageLimit } from "@/components/UsageLimit";
 import { LegalQuickLinks } from "@/components/LegalQuickLinks";
@@ -510,14 +510,6 @@ export default function Upload() {
             />
           </div>
           <p className="text-muted-foreground">Tölts fel PDF-et vagy képet elemzéshez - az AI azonnal elkezdi feldolgozni</p>
-          <a
-            href="/test-documents.zip"
-            download="test-documents.zip"
-            className="inline-flex items-center gap-2 text-sm text-primary hover:underline mt-2"
-          >
-            <Download className="h-4 w-4" />
-            Tesztdokumentumok letöltése (zip)
-          </a>
         </div>
 
         {/* Usage Limit Widget */}
@@ -605,12 +597,12 @@ export default function Upload() {
                   }}
                 />
               </div>
-              <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full sm:flex-none shrink-0 min-h-[44px] touch-manipulation"
+                  className="w-full min-h-[44px] touch-manipulation"
                 >
                   <FileText className="mr-2 h-4 w-4 shrink-0" />
                   <span className="truncate">Fájl kiválasztása</span>
@@ -629,7 +621,7 @@ export default function Upload() {
                       }, 100);
                     }
                   }}
-                  className="w-full sm:flex-none shrink-0 text-muted-foreground min-h-[44px] touch-manipulation"
+                  className="w-full text-muted-foreground min-h-[44px] touch-manipulation"
                 >
                   <Camera className="mr-2 h-4 w-4 shrink-0" />
                   <span className="truncate">Gyors fotó</span>
