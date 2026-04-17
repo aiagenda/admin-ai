@@ -22,6 +22,17 @@ interface DocumentWithAnalysis {
   } | null;
 }
 
+
+function uint8ToBase64(bytes: Uint8Array): string {
+  const chunkSize = 0x8000;
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+    binary += String.fromCharCode(...chunk);
+  }
+  return btoa(binary);
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -64,14 +75,20 @@ Deno.serve(async (req) => {
     let usersToProcess: Array<{ user_id: string; email: string }> = [];
 
     if (isTest && testEmail) {
-      // Test mode: get user by email
-      const { data: authUser } = await supabase.auth.admin.listUsers();
-      const testUser = authUser?.users.find((u) => u.email === testEmail);
-      if (testUser) {
-        usersToProcess = [{ user_id: testUser.id, email: testEmail }];
-      } else {
-        throw new Error(`Test user not found with email: ${testEmail}`);
+      // Test mode: use the currently authenticated user, send to the provided accountant email.
+      const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+      const token = authHeader?.replace(/^Bearer\s+/i, "").trim();
+
+      if (!token) {
+        throw new Error("Missing Authorization token in test mode");
       }
+
+      const { data: authData, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !authData?.user?.id) {
+        throw new Error("Invalid or expired user session for test mode");
+      }
+
+      usersToProcess = [{ user_id: authData.user.id, email: String(testEmail).trim() }];
     } else {
       // Production mode: find users with auto-send enabled and today is their send day
       const { data: profiles, error: profilesError } = await supabase
@@ -242,9 +259,7 @@ Deno.serve(async (req) => {
         const mimeType = "text/csv;charset=utf-8";
 
         // Convert buffer to base64 for email attachment
-        const base64Report = btoa(
-          String.fromCharCode(...reportBuffer),
-        );
+        const base64Report = uint8ToBase64(reportBuffer);
 
         // Send email via Resend API
         const emailResponse = await fetch("https://api.resend.com/emails", {
