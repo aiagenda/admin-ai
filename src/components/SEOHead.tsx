@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { getSiteOrigin } from "@/lib/site";
 
 interface SEOHeadProps {
   title: string;
@@ -6,10 +7,10 @@ interface SEOHeadProps {
   path?: string;
   keywords?: string;
   ogType?: "website" | "article";
+  /** Teljes URL, vagy `/ikon.png` relatív a site originhoz */
+  ogImage?: string;
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
 }
-
-const BASE_URL = "https://adminai.hu";
 
 function upsertMeta(name: string, content: string, isProperty = false) {
   const attr = isProperty ? "property" : "name";
@@ -22,16 +23,32 @@ function upsertMeta(name: string, content: string, isProperty = false) {
   tag.setAttribute("content", content);
 }
 
+function absoluteOgImage(origin: string, ogImage?: string): string {
+  if (!ogImage || !ogImage.trim()) {
+    return `${origin}/icon-512.png`;
+  }
+  const s = ogImage.trim();
+  if (s.startsWith("http://") || s.startsWith("https://")) {
+    return s;
+  }
+  const path = s.startsWith("/") ? s : `/${s}`;
+  return `${origin}${path}`;
+}
+
 export function SEOHead({
   title,
   description,
   path = "/",
   keywords,
   ogType = "website",
+  ogImage,
   structuredData,
 }: SEOHeadProps) {
   useEffect(() => {
-    const canonicalUrl = `${BASE_URL}${path}`;
+    const origin = getSiteOrigin();
+    const pathNorm = path.startsWith("/") ? path : `/${path}`;
+    const canonicalUrl = `${origin}${pathNorm}`;
+    const imageUrl = absoluteOgImage(origin, ogImage);
 
     document.title = title;
     upsertMeta("description", description);
@@ -41,9 +58,12 @@ export function SEOHead({
     upsertMeta("og:description", description, true);
     upsertMeta("og:type", ogType, true);
     upsertMeta("og:url", canonicalUrl, true);
+    upsertMeta("og:image", imageUrl, true);
 
+    upsertMeta("twitter:card", "summary_large_image");
     upsertMeta("twitter:title", title);
     upsertMeta("twitter:description", description);
+    upsertMeta("twitter:image", imageUrl);
 
     let canonical = document.head.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
     if (!canonical) {
@@ -69,7 +89,7 @@ export function SEOHead({
       const existing = document.getElementById(scriptId);
       if (existing) existing.remove();
     };
-  }, [title, description, path, keywords, ogType, structuredData]);
+  }, [title, description, path, keywords, ogType, ogImage, structuredData]);
 
   return null;
 }

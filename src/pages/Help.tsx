@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { HelpCircle, ChevronDown, ChevronUp, FileText, Upload, Archive, GitCompare, Tag, Calendar, CheckSquare } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SEOHead } from "@/components/SEOHead";
 
 interface FAQItem {
   question: string;
@@ -93,6 +94,16 @@ const faqData: FAQItem[] = [
   },
 ];
 
+const helpFaqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqData.map((f) => ({
+    "@type": "Question",
+    "name": f.question,
+    "acceptedAnswer": { "@type": "Answer", "text": f.answer },
+  })),
+};
+
 const categories = ["Általános", "Feltöltés", "Eredmények", "Archívum", "Exportálás", "Határidők", "Biztonság"];
 
 export default function Help() {
@@ -134,6 +145,13 @@ export default function Help() {
 
   return (
     <div className="min-h-screen py-12 px-4">
+      <SEOHead
+        title="Segítség és GYIK – AdminAI"
+        description="AdminAI használata: feltöltés, elemzés, archívum, export, könyvelés. Gyakori kérdések és válaszok magyarul."
+        path="/help"
+        keywords="AdminAI segítség, GYIK, dokumentum feltöltés, NAV levél"
+        structuredData={helpFaqJsonLd}
+      />
       <div className="container mx-auto max-w-4xl space-y-6">
         {/* Header */}
         <div>

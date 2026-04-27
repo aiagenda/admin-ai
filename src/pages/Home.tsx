@@ -15,6 +15,7 @@ import { hu } from "date-fns/locale";
 import { getHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
 import { Link } from "react-router-dom";
 import { SEOHead } from "@/components/SEOHead";
+import { getSiteOrigin } from "@/lib/site";
 
 // Time-based greeting
 function getGreeting(): { text: string; emoji: string } {
@@ -204,10 +205,27 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title="AdminAI - Hivatalos dokumentumok AI-alapú értelmezése magyarul"
-        description="Az AdminAI AI-val értelmezi a NAV határozatokat, hatósági leveleket és számlákat. Egyszerű magyarázat, határidő-figyelmeztetés, OCR, export."
+        title="AdminAI – hivatalos levelek és NAV iratok értelmezése (1 ingyenes próba)"
+        description="Töltsd fel a hivatalos levelet vagy NAV iratot: magyarázat, teendők, határidők. Egy ingyenes próbadokumentum, utána dokumentumonként vagy havi csomag. Számla OCR és könyvelés modul elérhető."
         path="/"
-        keywords="hivatal levél értelmezés, NAV határozat értelmezés, számla OCR KKV, dokumentum archiválás"
+        keywords="NAV levél értelmezés, hivatalos levél magyarázat, adóhatóság, számla OCR, AdminAI"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "AdminAI",
+              url: getSiteOrigin(),
+              logo: `${getSiteOrigin()}/icon-512.png`,
+            },
+            {
+              "@type": "WebSite",
+              name: "AdminAI",
+              url: getSiteOrigin(),
+              inLanguage: "hu",
+            },
+          ],
+        }}
       />
       {user ? (
         /* Dashboard for logged-in users */

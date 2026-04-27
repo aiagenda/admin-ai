@@ -1,5 +1,7 @@
 # Cursor „agentek” ebben a projektben
 
+> **Fontos:** A „Composer / példa mondatok” szekció **neked, fejlesztőként** szól a Cursorban — **nem** az **adminai.hu** látogatóinak. A nyilvános SEO-t a webalkalmazás (`SEOHead`, `index.html`, sitemap) kezeli.
+
 A Cursorban a **felhasználó** nem ugyanazt a „Task / subagent” gombot látja, mint a háttérben futó asszisztens. Amit te tudsz csinálni: **világosan megfogalmazni a feladatot**, és **Agent (Composer) módban** dolgozni — az elsődleges asszisztens szükség szerint **specializált háttér‑feladatokat** indíthat (kódbázis‑feltérképés, deploy, shell, stb.).
 
 ## Hogyan „hívod meg” őket gyakorlatban

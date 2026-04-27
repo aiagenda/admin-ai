@@ -66,7 +66,7 @@ export default function Pricing() {
     <div className="min-h-screen py-12 px-4">
       <SEOHead
         title="AdminAI – magyar hivatali levelek pánikgomb"
-        description="1 próba, majd vásárolj dokumentumonként, vagy válassz havi 10 vagy 50 documentumos csomagot. Stripe, gyors, biztonságos."
+        description="1 próba, majd vásárolj dokumentumonként, vagy válassz havi 10 vagy 50 dokumentumos csomagot. Stripe, gyors, biztonságos."
         path="/pricing"
         keywords="NAV levél, hivatalos levél, AI, AdminAI, ár"
       />
