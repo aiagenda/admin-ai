@@ -13,6 +13,8 @@ interface UsageData {
   current_usage: number;
   limit_amount: number;
   plan_type: string;
+  prepaid_basic_credits?: number;
+  prepaid_pro_credits?: number;
 }
 
 export function UsageLimit() {
@@ -41,7 +43,6 @@ export function UsageLimit() {
         });
 
         if (error) {
-          // If function doesn't exist (migration not run), silently fail
           if (error.code === "PGRST202" || error.message?.includes("Could not find the function")) {
             sessionStorage.setItem(STORAGE_KEY, "false");
             setLoading(false);
@@ -53,8 +54,9 @@ export function UsageLimit() {
         if (data && data.length > 0) {
           setUsage(data[0] as UsageData);
         }
-      } catch (error: any) {
-        if (error?.code === "PGRST202" || error?.message?.includes("Could not find the function") || error?.status === 404) {
+      } catch (error: unknown) {
+        const e = error as { code?: string; message?: string; status?: number };
+        if (e?.code === "PGRST202" || e?.message?.includes("Could not find the function") || e?.status === 404) {
           sessionStorage.setItem(STORAGE_KEY, "false");
           setLoading(false);
           return;
@@ -73,22 +75,30 @@ export function UsageLimit() {
     return null;
   }
 
-  // Don't show component if usage data is not available (migration not run)
   if (!usage) {
     return null;
   }
 
-  const percentage = (usage.current_usage / usage.limit_amount) * 100;
-  const remaining = usage.limit_amount - usage.current_usage;
-  const isNearLimit = percentage >= 80;
+  const pb = usage.prepaid_basic_credits ?? 0;
+  const pp = usage.prepaid_pro_credits ?? 0;
+  const hasPrepaid = pb > 0 || pp > 0;
+  const limit = Math.max(usage.limit_amount, 1);
+  const percentage = (usage.current_usage / limit) * 100;
+  const remaining = Math.max(0, limit - usage.current_usage);
+  const isNearLimit = !hasPrepaid && percentage >= 80;
   const isAtLimit = !usage.can_upload;
 
   const getPlanLabel = (planType: string) => {
     switch (planType) {
       case "pro":
-        return "Pro";
+        return "Pro (régi)";
       case "enterprise":
-        return "Enterprise";
+        return "Professzionális";
+      case "monthly":
+      case "basic":
+        return "Havi 10";
+      case "business":
+        return "Business 50";
       default:
         return "Ingyenes";
     }
@@ -99,77 +109,71 @@ export function UsageLimit() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            {usage.plan_type === "free" ? (
+            {usage.plan_type === "free" && !hasPrepaid ? (
               <Crown className="h-4 w-4 text-muted-foreground" />
             ) : (
               <CheckCircle2 className="h-4 w-4 text-primary" />
             )}
-            Használati kvóta ({getPlanLabel(usage.plan_type)})
+            Kvóta / egyenleg ({getPlanLabel(usage.plan_type)})
           </CardTitle>
-          {isAtLimit && (
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-          )}
+          {isAtLimit && <AlertTriangle className="h-4 w-4 text-destructive" />}
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              {usage.current_usage} / {usage.limit_amount} dokumentum ebben a hónapban
-            </span>
-            <span className={isAtLimit ? "text-destructive font-semibold" : isNearLimit ? "text-warning font-semibold" : "text-muted-foreground"}>
-              {remaining} maradt
-            </span>
+        {hasPrepaid && (
+          <p className="text-sm text-muted-foreground">
+            Előre vásárolt: <span className="font-medium text-foreground">{pb}</span> alap ·{" "}
+            <span className="font-medium text-foreground">{pp}</span> pro elemzés
+          </p>
+        )}
+
+        {usage.plan_type === "free" && !hasPrepaid && (
+          <p className="text-sm text-muted-foreground">
+            Ingyenes: 1 próba dokumentum (életen át), ha még nem használtad.
+          </p>
+        )}
+
+        {usage.plan_type !== "free" && !hasPrepaid && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                {usage.current_usage} / {usage.limit_amount} dokumentum ebben a hónapban
+              </span>
+              <span
+                className={
+                  isAtLimit ? "text-destructive font-semibold" : isNearLimit ? "text-warning font-semibold" : "text-muted-foreground"
+                }
+              >
+                {isAtLimit ? 0 : remaining} maradt
+              </span>
+            </div>
+            <Progress value={Math.min(100, percentage)} className={isAtLimit ? "bg-destructive" : isNearLimit ? "bg-warning" : ""} />
           </div>
-          <Progress 
-            value={percentage} 
-            className={isAtLimit ? "bg-destructive" : isNearLimit ? "bg-warning" : ""}
-          />
-        </div>
+        )}
 
         {isAtLimit && (
           <div className="pt-2 border-t">
-            <p className="text-sm text-destructive mb-3">
-              Elérte a havi kvóta limitjét. Frissítse előfizetését további dokumentumok feltöltéséhez.
-            </p>
-            <Button
-              size="sm"
-              onClick={() => navigate("/pricing")}
-              className="w-full"
-            >
-              Előfizetés frissítése
+            <p className="text-sm text-destructive mb-3">Nincs további feltöltési lehetőség. Vásárolj csomagot vagy krediteket.</p>
+            <Button size="sm" onClick={() => navigate("/pricing")} className="w-full">
+              Árak
             </Button>
           </div>
         )}
 
         {isNearLimit && !isAtLimit && (
           <div className="pt-2 border-t">
-            <p className="text-sm text-warning mb-3">
-              Közel van a havi kvóta limitjéhez. Fontolja meg az előfizetés frissítését.
-            </p>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate("/pricing")}
-              className="w-full"
-            >
-              Előfizetés megtekintése
+            <p className="text-sm text-warning mb-3">Közel a havi limithez.</p>
+            <Button size="sm" variant="outline" onClick={() => navigate("/pricing")} className="w-full">
+              Csomagok
             </Button>
           </div>
         )}
 
-        {usage.plan_type === "free" && !isNearLimit && (
+        {usage.plan_type === "free" && usage.can_upload && !hasPrepaid && (
           <div className="pt-2 border-t">
-            <p className="text-xs text-muted-foreground mb-2">
-              Frissítsen Pro-ra korlátlan dokumentumokért
-            </p>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate("/pricing")}
-              className="w-full"
-            >
-              Pro előfizetés
+            <p className="text-xs text-muted-foreground mb-2">Több dokumentum? Vásárolj egyszeri elemezést vagy havi csomagot.</p>
+            <Button size="sm" variant="outline" onClick={() => navigate("/pricing")} className="w-full">
+              Árak
             </Button>
           </div>
         )}
@@ -177,4 +181,3 @@ export function UsageLimit() {
     </Card>
   );
 }
-

@@ -7,78 +7,102 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+type PlanKey =
+  | "basic_doc"
+  | "pro_doc"
+  | "monthly"
+  | "business"
+  | "enterprise"
+  | "alap"
+  | "professzionalis";
+
+const PLANS: Record<
+  PlanKey,
+  { name: string; price: string; period: string; features: string[]; isSubscription: boolean }
+> = {
+  basic_doc: {
+    name: "Basic – 1 dokumentum",
+    price: "1 490 Ft",
+    period: "egyszeri",
+    features: ["1 alkalommal elemzés", "Normál mélység", "E-mail értesítés"],
+    isSubscription: false,
+  },
+  pro_doc: {
+    name: "Pro – 1 dokumentum",
+    price: "3 990 Ft",
+    period: "egyszeri",
+    features: ["Mélyebb elemzés", "Válaszminta", "PDF export (ahol elérhető)"],
+    isSubscription: false,
+  },
+  monthly: {
+    name: "Havi 10 dokumentum",
+    price: "4 990 Ft",
+    period: "hó",
+    features: ["10 feltöltés / naptári hó", "Jó megoldás, ha hónapról hónapra jön levél"],
+    isSubscription: true,
+  },
+  business: {
+    name: "Business 50",
+    price: "14 990 Ft",
+    period: "hó",
+    features: ["50 dokumentum / hó", "Több család, iroda, cég"],
+    isSubscription: true,
+  },
+  enterprise: {
+    name: "Professzionális (könyvelés + prémium)",
+    price: "9 990 Ft+",
+    period: "hó (Stripe Price)",
+    features: ["Könyvelés / OCR bővítések a Stripe-hoz hangolva", "A pontos bruttó összeg a termékben"],
+    isSubscription: true,
+  },
+  alap: {
+    name: "Havi 10 (régi)",
+    price: "2 990 Ft+",
+    period: "hó (legacy price ID)",
+    features: ["A STRIPE_PRICE_ALAP azonosító alatt"],
+    isSubscription: true,
+  },
+  professzionalis: {
+    name: "Pro / Enterprise (régi)",
+    price: "9 990 Ft+",
+    period: "hó (legacy price ID)",
+    features: ["STRIPE_PRICE_PRO → Professzionális hozzáférés"],
+    isSubscription: true,
+  },
+};
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { user, session } = useAuth();
   const [searchParams] = useSearchParams();
-  const plan = searchParams.get("plan") || "alap";
+  const planParam = (searchParams.get("plan") as PlanKey | null) || "monthly";
+  const plan: PlanKey = planParam in PLANS ? planParam : "monthly";
+  const selected = PLANS[plan] ?? PLANS.monthly;
   const [loading, setLoading] = useState(false);
-
-  const plans: Record<string, { name: string; price: string; priceNum: number; features: string[] }> = {
-    alap: {
-      name: "Alap",
-      price: "2 990 Ft",
-      priceNum: 2990,
-      features: [
-        "50 dokumentum / hónap",
-        "Részletes elemzés",
-        "Email és Push értesítések",
-        "90 napos archívum",
-        "Prioritás támogatás",
-      ],
-    },
-    professzionalis: {
-      name: "Professzionális",
-      price: "9 990 Ft",
-      priceNum: 9990,
-      features: [
-        "Korlátlan dokumentum",
-        "Haladó elemzés AI-val",
-        "Minden értesítési csatorna",
-        "Korlátlan archívum",
-        "24/7 támogatás",
-        "API hozzáférés",
-        "📊 Könyvelés modul",
-        "Számla fotózás & OCR",
-      ],
-    },
-  };
-
-  const selectedPlan = plans[plan] || plans.alap;
 
   const handlePayment = async () => {
     if (!user || !session?.access_token) {
-      toast.error("Be kell jelentkezned az előfizetéshez");
+      toast.error("Be kell jelentkezned");
       navigate("/auth");
       return;
     }
-
     setLoading(true);
     try {
-      // Call Edge Function to create Stripe Checkout Session
       const { data, error } = await supabase.functions.invoke("create-checkout-session", {
         body: { plan },
       });
-
       if (error) {
         throw new Error(error.message);
       }
-
       if (data?.url) {
-        // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
-        throw new Error("No checkout URL returned");
+        throw new Error("Nem jött vissza Stripe URL");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Payment error:", err);
-      
-      // Check if it's a configuration error
-      if (err.message?.includes("not configured") || err.message?.includes("placeholder")) {
-        toast.error("A fizetési rendszer konfigurálása folyamatban. Kérjük, próbáld később!");
-      } else {
-        toast.error(err.message || "Hiba történt a fizetés indításakor");
-      }
+      const msg = err instanceof Error ? err.message : "A fizetés indítása sikertelen";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -89,21 +113,13 @@ export default function Checkout() {
       <div className="min-h-screen flex items-center justify-center py-12 px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle>Bejelentkezés szükséges</CardTitle>
-            <CardDescription>
-              Az előfizetéshez be kell jelentkezned
-            </CardDescription>
+            <CardTitle>Bejelentkezés</CardTitle>
+            <CardDescription>Az vásárláshoz jelentkezz be</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button onClick={() => navigate("/auth")} className="w-full">
-              Bejelentkezés
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/pricing")}
-              className="w-full"
-            >
-              Vissza az árakhoz
+            <Button onClick={() => navigate("/auth")} className="w-full">Bejelentkezés</Button>
+            <Button variant="outline" onClick={() => navigate("/pricing")} className="w-full">
+              Vissza
             </Button>
           </CardContent>
         </Card>
@@ -114,115 +130,83 @@ export default function Checkout() {
   return (
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-4xl">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/pricing")}
-          className="mb-6"
-        >
+        <Button variant="ghost" onClick={() => navigate("/pricing")} className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Vissza az árakhoz
+          Vissza
         </Button>
-
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Order Summary */}
           <Card className="border-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-primary" />
-                Rendelés összesítése
+                Megrendelés
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="p-4 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-lg">
-                <h3 className="font-semibold text-xl">{selectedPlan.name} csomag</h3>
-                <p className="text-3xl font-bold mt-2 text-primary">{selectedPlan.price}<span className="text-base font-normal text-muted-foreground"> / hónap</span></p>
+                <h3 className="font-semibold text-xl">{selected.name}</h3>
+                <p className="text-3xl font-bold mt-2 text-primary">
+                  {selected.price}
+                  <span className="text-base font-normal text-muted-foreground">
+                    {" "}
+                    / {selected.period}
+                  </span>
+                </p>
               </div>
-
-              <div className="space-y-3">
-                <h4 className="font-semibold text-sm text-muted-foreground">A CSOMAG TARTALMA:</h4>
-                <ul className="space-y-2">
-                  {selectedPlan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="pt-4 border-t space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Havi előfizetés</span>
-                  <span>{selectedPlan.price}</span>
-                </div>
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Összesen</span>
-                  <span className="text-primary">{selectedPlan.price}/hó</span>
-                </div>
+              <ul className="space-y-2">
+                {selected.features.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm">
+                    <Check className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="pt-3 border-t text-sm text-muted-foreground">
+                {selected.isSubscription ? "Előfizetés, automatikus megújítás, lemondható a Stripe e-mailből vagy támogatáson." : "Egyszeri fizetés, nincs megújítás. +1 kredit a fiókodhoz a sikeres fizetés után (webhook)."}
               </div>
             </CardContent>
           </Card>
-
-          {/* Payment Form */}
           <Card className="border-2 border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lock className="h-5 w-5 text-green-500" />
-                Biztonságos fizetés
+                Fizetés
               </CardTitle>
-              <CardDescription>
-                A fizetés a Stripe biztonságos rendszerén keresztül történik
-              </CardDescription>
+              <CardDescription>Stripe, PCI DSS, titkosított</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Security badges */}
-              <div className="flex items-center justify-center gap-4 p-4 bg-muted rounded-lg">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <CardContent className="space-y-5">
+              <div className="flex items-center justify-center gap-4 p-3 bg-muted rounded-lg text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-green-500" />
-                  <span>SSL védelem</span>
+                  <span>SSL</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
                   <Lock className="h-4 w-4 text-green-500" />
-                  <span>PCI DSS</span>
+                  <span>3DS</span>
                 </div>
               </div>
-
-              {/* Payment info */}
-              <div className="space-y-4">
-                <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-900">
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    A <strong>Fizetés</strong> gombra kattintva átirányítunk a Stripe biztonságos fizetési oldalára, ahol megadhatod a bankkártya adataidat.
-                  </p>
-                </div>
-
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p>• Elfogadott kártyák: Visa, Mastercard, Amex</p>
-                  <p>• Az előfizetés havonta automatikusan megújul</p>
-                  <p>• Bármikor lemondható</p>
-                </div>
-              </div>
-
+              <p className="text-sm text-muted-foreground">A gomb a Stripe hosztolt fizetési oldalára visz, kártya adatokat nem tárol a böngészőnkből kezelünk.</p>
               <Button
                 onClick={handlePayment}
-                className="w-full h-12 text-lg bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                className="w-full h-12 text-lg bg-gradient-to-r from-primary to-purple-600"
                 size="lg"
                 disabled={loading}
               >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Átirányítás...
+                    Átirányítás…
                   </>
                 ) : (
                   <>
                     <CreditCard className="mr-2 h-5 w-5" />
-                    Fizetés ({selectedPlan.price}/hó)
+                    Tovább a fizetéshez
                   </>
                 )}
               </Button>
-
               <p className="text-xs text-center text-muted-foreground">
-                A fizetéssel elfogadod az <a href="/terms" className="underline">Általános Szerződési Feltételeket</a> és az <a href="/privacy" className="underline">Adatvédelmi Szabályzatot</a>.
+                Az elfogadással tudomásul veszed a <a className="underline" href="/legal/terms">ÁSZF</a>-et és a{" "}
+                <a className="underline" href="/legal/privacy">adatkezelést</a>.
               </p>
             </CardContent>
           </Card>
