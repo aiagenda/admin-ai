@@ -10,7 +10,7 @@ Use the **Task** tool with an appropriate `subagent_type` when it saves time or 
 - **explore**: Broad or ambiguous codebase questions; finding files/patterns across many paths; readonly reconnaissance before editing.
 - **shell**: Git operations, installs, builds, scripted checks, `supabase` / `vercel` CLI when non-interactive flags exist.
 - **deployment-expert**: Vercel deploys, env vars, `vercel.json`, routing/middleware, preview vs production, CI.
-- **performance-optimizer**: Core Web Vitals, bundle size, slow pages, caching.
+- **performance-optimizer**: Core Web Vitals, bundle size, slow pages, caching. Also first pass for **SEO-related performance** (LCP on marketing routes).
 - **ai-architect**: AI SDK / gateway / multi-provider design for AI-heavy features.
 - **cursor-guide**: Questions about Cursor product behavior (rules, hooks, UI), not app code.
 - **generalPurpose**: Multi-step research + implementation when no narrower agent fits.
@@ -18,5 +18,7 @@ Use the **Task** tool with an appropriate `subagent_type` when it saves time or 
 **Do not** launch parallel explore agents for a single narrow file lookup—use **Grep/Read** first.
 
 When the user writes in **Hungarian**, still pick `subagent_type` correctly; return summaries in the same language as the user unless they ask otherwise.
+
+**SEO / marketing tech**: use **explore** to find pages missing `SEOHead` vs `public/sitemap.xml`; use **deployment-expert** if prod password lock or middleware blocks crawlers; align `index.html` static meta with `src/components/SEOHead.tsx` and product copy. Human checklist: `docs/CURSOR_AGENTEK.md` § „SEO feladatok”.
 
 Project anchors: Supabase (migrations, RLS, Edge Functions), Vite + React, Vercel hosting, Hungarian copy for user-facing strings.

@@ -25,11 +25,47 @@ Az elsődleges asszisztens a Cursor **beépített agent‑típusai** közül vá
 | AI SDK, gateway, több modell | „AI architect: hogyan érdemes a checkout sessiont szervezni?” |
 | Cursor funkció (hooks, rules, beállítás) | „Cursor guide: hol állítom a rules / agent viselkedést?” |
 
+---
+
+## SEO feladatok (AdminAI) — így hívd „agent” logikával
+
+A cél: **technikai SEO + konzisztens meta + mérhetőség**. A repóban már van `SEOHead`, `public/sitemap.xml`, `public/robots.txt`, statikus `index.html` — ezeket kell **szinkronban** tartani a termékkel és **kiterjeszteni**, ahol hiányzik.
+
+### Példa mondatok Agent módban (másold be / módosítsd)
+
+| Lépés | Mit írj a Composernek |
+|--------|-------------------------|
+| Feltérképezés | *„Explore (readonly): mely **nyilvános** route-okon nincs `SEOHead`, és hol ütközik az `index.html` meta a `/pricing` / főoldal szövegével?”* |
+| Teljesítmény | *„Performance: főoldal + `/arak` LCP, bundle — adj prioritást és konkrét javaslatot.”* |
+| Deploy / indexelés | *„Deployment: a prod domainen van-e jelszózár / middleware ami blokkolja a Google-t? Ha igen, dokumentáld és javasolj megoldást.”* |
+| Build ellenőrzés | *„Shell: `npm run build` + eslint a módosított SEO fájlokra.”* |
+
+### Checklist (SEO „maxi” irány)
+
+1. **`index.html`** — `title`, `meta name="description"`, `og:*`, `twitter:*` **egyezzen** a valós ajánlattal (pl. próba: 1 dokumentum, nem elavult „5 ingyen”, ha már nem az van).
+2. **Minden nyilvános marketing URL** — legyen `SEOHead` (`title`, `description`, `path`, szükség szerint `keywords`). Hiány példa: `/help`, jogi oldalak — döntsd el, indexelendő-e; ha igen, egyedi meta.
+3. **`SEOHead` / canonical** — a `BASE_URL` jelenleg fix (`adminai.hu`). **Preview / staging** esetén env alapú domain (`VITE_PUBLIC_SITE_URL` vagy build arg) ne törje a canonicalt.
+4. **`og:image`** — oldalanként (blog, use case, összehasonlítás): a komponens bővíthető opcionális `ogImage` prop-pal; addig legalább a fő kép konzisztens.
+5. **Structured data** — `SEOHead` `structuredData`: globálisan **Organization** + **WebSite**; **FAQPage** a `/gyik`-hez; **Article** a blog posztokhoz (ahol van slug).
+6. **`public/sitemap.xml`** — új publikus URL = frissítés; lehetőség szerint **`<lastmod>`**; belső folyamat (script / checklist PR-ben).
+7. **`public/robots.txt`** — `Sitemap:` URL élő; `Disallow` maradjon a belső / auth útvonalakon.
+8. **Prerender / SSR** (nagyobb feladat) — kulcs URL-ek első HTML-je legyen tartalommal (nem csak üres shell + JS meta).
+9. **Külső** — Google Search Console: property, **sitemap beküldés**, lefedettség / Core Web Vitals figyelés.
+
+### Fájlok, amikhez leggyakrabban nyúlsz
+
+- `src/components/SEOHead.tsx` — meta, canonical, JSON-LD
+- `index.html` — statikus alap meta
+- `public/sitemap.xml`, `public/robots.txt`
+- Nyilvános oldalak: `src/pages/Home.tsx`, `ArakPage.tsx`, `Pricing.tsx`, `GyikPage.tsx`, `Blog*.tsx`, `UseCase*.tsx`, `Comparison*.tsx`, `Help.tsx`, `legal/*.tsx`
+
+---
+
 ## Projekt‑specifikus szabályok (röviden)
 
 - **Supabase** (DB, Edge Function, Auth, RLS): mindig szerver oldali igazság + migrációk.
 - **Vercel**: `vercel.json`, Edge middleware, env — deploy előtt ellenőrizd az `APP_URL` / Stripe secret párost.
-- **SEO**: nyilvános route‑okhoz `SEOHead` + `sitemap.xml` + statikus `index.html` szöveg szinkron.
+- **SEO**: lásd fent a **„SEO feladatok”** szekciót — `SEOHead` + `sitemap.xml` + **`index.html` szinkron** kötelező minimum.
 
 ## Hol van a gépi utasítás a modellnek
 

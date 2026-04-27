@@ -1,7 +1,14 @@
 # Repository agents (Cursor)
 
-Human-facing guide (Hungarian): see **`docs/CURSOR_AGENTEK.md`**.
+## Embereknek (magyar)
 
-For the coding agent: **`/.cursor/rules/subagent-delegation.mdc`** defines when to delegate to Cursor background subagents (`explore`, `shell`, `deployment-expert`, `performance-optimizer`, `ai-architect`, `cursor-guide`, `generalPurpose`).
+Részletes útmutató: **`docs/CURSOR_AGENTEK.md`** — hogyan dolgozz **Agent / Composer** módban, példa mondatok, táblázat.
 
-**How humans invoke help:** use **Agent / Composer** in Cursor, describe the goal, optionally ask for “explore first” or “check Vercel deploy”. The primary agent delegates internally where appropriate.
+**SEO checklist + példa hívások** ugyanott: szekció **„SEO feladatok (AdminAI)”** (fájlban keresd: `## SEO feladatok`).
+
+## Gépi asszisztensnek
+
+- **`/.cursor/rules/subagent-delegation.mdc`** — mikor delegálj háttér‑feladatot: `explore`, `shell`, `deployment-expert`, `performance-optimizer`, `ai-architect`, `cursor-guide`, `generalPurpose`.
+- **SEO munkánál** is érvényes: először feltérképezés (`explore`), teljesítmény (`performance-optimizer`), prod lock / deploy (`deployment-expert`), build (`shell`).
+
+**Hogyan hívja meg a felhasználó:** Cursorban **Agent / Composer**, cél leírása magyarul; opcionálisan: *„először explore”*, *„deployment szemszög”*.
