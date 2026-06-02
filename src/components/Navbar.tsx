@@ -217,8 +217,11 @@ export function Navbar() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => navigate("/admin/forms")}>{t("formsAdmin")}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/admin")}>Dashboard</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/admin/blog")}>Blog / Articles</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/admin/users")}>Users</DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/admin/analytics")}>{t("analytics")}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/admin/forms")}>{t("formsAdmin")}</DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/admin/knowledge-base")}>{t("knowledgeBase")}</DropdownMenuItem>
             {isOwner && <DropdownMenuItem onClick={() => navigate("/admin/ai-studio")}>{t("aiStudio")}</DropdownMenuItem>}
           </DropdownMenuContent>
@@ -252,8 +255,11 @@ export function Navbar() {
           {!checkingAdmin && isAdmin && (
             <>
               <p className="text-xs uppercase tracking-wide text-muted-foreground px-2 pt-2">{t("admin")}</p>
-              <NavLink to="/admin/forms">{t("formsAdmin")}</NavLink>
+              <NavLink to="/admin">Dashboard</NavLink>
+              <NavLink to="/admin/blog">Blog / Articles</NavLink>
+              <NavLink to="/admin/users">Users</NavLink>
               <NavLink to="/admin/analytics">{t("analytics")}</NavLink>
+              <NavLink to="/admin/forms">{t("formsAdmin")}</NavLink>
               <NavLink to="/admin/knowledge-base">{t("knowledgeBase")}</NavLink>
               {isOwner && <NavLink to="/admin/ai-studio">{t("aiStudio")}</NavLink>}
             </>

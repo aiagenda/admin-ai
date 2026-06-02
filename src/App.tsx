@@ -29,6 +29,9 @@ import FormAdmin from "./pages/admin/FormAdmin";
 import Analytics from "./pages/admin/Analytics";
 import KnowledgeBaseAdmin from "./pages/admin/KnowledgeBaseAdmin";
 import AIStudio from "./pages/admin/AIStudio";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UsersAdmin from "./pages/admin/UsersAdmin";
+import BlogAdmin from "./pages/admin/BlogAdmin";
 import Settings from "./pages/Settings";
 import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
@@ -183,6 +186,30 @@ const App = () => (
                 <Route path="/legal/dpa" element={<DataProcessingAgreement />} />
                 <Route path="/legal/imprint" element={<Imprint />} />
                 <Route path="/legal/security" element={<SecurityPage />} />
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminRoute>
+                      <AdminDashboard />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <AdminRoute>
+                      <UsersAdmin />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/blog"
+                  element={
+                    <AdminRoute>
+                      <BlogAdmin />
+                    </AdminRoute>
+                  }
+                />
                 <Route
                   path="/admin/forms"
                   element={
