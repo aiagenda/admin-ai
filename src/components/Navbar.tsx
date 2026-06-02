@@ -202,6 +202,9 @@ export function Navbar() {
       <Link to="/search" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
         {t("search")}
       </Link>
+      <Link to="/blog" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
+        {t("blog")}
+      </Link>
       {!isUsMarket() && (hasInvoiceAccess || isAdmin) && (
         <Link to="/invoices" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2 gap-1">
           <Receipt className="h-4 w-4" />
