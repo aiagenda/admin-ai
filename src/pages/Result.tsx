@@ -9,8 +9,6 @@ import { ArrowLeft, Calendar, AlertCircle, Info, AlertTriangle, Copy, Download, 
 import { HelpTooltip } from "@/components/HelpTooltip";
 import { SmartSuggestions } from "@/components/SmartSuggestions";
 import { FormCard } from "@/components/FormCard";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import posthog from "posthog-js";
@@ -360,6 +358,10 @@ export default function Result() {
 
   // Export analysis as PDF - html2canvas + jsPDF with proper multi-page handling
   const exportAsPDF = async () => {
+    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+      import("jspdf"),
+      import("html2canvas"),
+    ]);
     if (!analysis) return;
 
     try {

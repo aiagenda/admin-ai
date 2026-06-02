@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,45 +19,47 @@ import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import Upload from "./pages/Upload";
 import Result from "./pages/Result";
-import Archive from "./pages/Archive";
-import Compare from "./pages/Compare";
-import Help from "./pages/Help";
 import Pricing from "./pages/Pricing";
-import Search from "./pages/Search";
-import FormFill from "./pages/FormFill";
 import NotFound from "./pages/NotFound";
-import FormAdmin from "./pages/admin/FormAdmin";
-import Analytics from "./pages/admin/Analytics";
-import KnowledgeBaseAdmin from "./pages/admin/KnowledgeBaseAdmin";
-import AIStudio from "./pages/admin/AIStudio";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import UsersAdmin from "./pages/admin/UsersAdmin";
-import BlogAdmin from "./pages/admin/BlogAdmin";
-import Settings from "./pages/Settings";
-import Checkout from "./pages/Checkout";
-import CheckoutSuccess from "./pages/CheckoutSuccess";
-import InvoiceArchive from "./pages/InvoiceArchive";
-import InvoiceUpload from "./pages/InvoiceUpload";
-import InvoiceDetail from "./pages/InvoiceDetail";
-import BlogPostPage from "./pages/BlogPostPage";
-import ComparisonSzamlazzPage from "./pages/ComparisonSzamlazzPage";
-import ComparisonBillingoPage from "./pages/ComparisonBillingoPage";
-import ComparisonChatGptPage from "./pages/ComparisonChatGptPage";
-import BlogIndexPage from "./pages/BlogIndexPage";
-import GyikPage from "./pages/GyikPage";
-import ArakPage from "./pages/ArakPage";
-import UseCaseArchivumPage from "./pages/UseCaseArchivumPage";
-import UseCaseSzamlaOCRPage from "./pages/UseCaseSzamlaOCRPage";
-import UseCaseNavPage from "./pages/UseCaseNavPage";
-import IRSNoticesPage from "./pages/IRSNoticesPage";
-import SSALettersPage from "./pages/SSALettersPage";
-import StateTaxPage from "./pages/StateTaxPage";
-import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
-import CookiePolicy from "./pages/legal/CookiePolicy";
-import TermsOfService from "./pages/legal/TermsOfService";
-import DataProcessingAgreement from "./pages/legal/DataProcessingAgreement";
-import Imprint from "./pages/legal/Imprint";
-import SecurityPage from "./pages/legal/SecurityPage";
+
+// Lazy-loaded routes — split into separate chunks, loaded on demand
+const Archive = lazy(() => import("./pages/Archive"));
+const Compare = lazy(() => import("./pages/Compare"));
+const Help = lazy(() => import("./pages/Help"));
+const Search = lazy(() => import("./pages/Search"));
+const FormFill = lazy(() => import("./pages/FormFill"));
+const FormAdmin = lazy(() => import("./pages/admin/FormAdmin"));
+const Analytics = lazy(() => import("./pages/admin/Analytics"));
+const KnowledgeBaseAdmin = lazy(() => import("./pages/admin/KnowledgeBaseAdmin"));
+const AIStudio = lazy(() => import("./pages/admin/AIStudio"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const UsersAdmin = lazy(() => import("./pages/admin/UsersAdmin"));
+const BlogAdmin = lazy(() => import("./pages/admin/BlogAdmin"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
+const InvoiceArchive = lazy(() => import("./pages/InvoiceArchive"));
+const InvoiceUpload = lazy(() => import("./pages/InvoiceUpload"));
+const InvoiceDetail = lazy(() => import("./pages/InvoiceDetail"));
+const BlogPostPage = lazy(() => import("./pages/BlogPostPage"));
+const ComparisonSzamlazzPage = lazy(() => import("./pages/ComparisonSzamlazzPage"));
+const ComparisonBillingoPage = lazy(() => import("./pages/ComparisonBillingoPage"));
+const ComparisonChatGptPage = lazy(() => import("./pages/ComparisonChatGptPage"));
+const BlogIndexPage = lazy(() => import("./pages/BlogIndexPage"));
+const GyikPage = lazy(() => import("./pages/GyikPage"));
+const ArakPage = lazy(() => import("./pages/ArakPage"));
+const UseCaseArchivumPage = lazy(() => import("./pages/UseCaseArchivumPage"));
+const UseCaseSzamlaOCRPage = lazy(() => import("./pages/UseCaseSzamlaOCRPage"));
+const UseCaseNavPage = lazy(() => import("./pages/UseCaseNavPage"));
+const IRSNoticesPage = lazy(() => import("./pages/IRSNoticesPage"));
+const SSALettersPage = lazy(() => import("./pages/SSALettersPage"));
+const StateTaxPage = lazy(() => import("./pages/StateTaxPage"));
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+const CookiePolicy = lazy(() => import("./pages/legal/CookiePolicy"));
+const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
+const DataProcessingAgreement = lazy(() => import("./pages/legal/DataProcessingAgreement"));
+const Imprint = lazy(() => import("./pages/legal/Imprint"));
+const SecurityPage = lazy(() => import("./pages/legal/SecurityPage"));
 
 const queryClient = new QueryClient();
 
@@ -74,6 +77,7 @@ const App = () => (
               <Navbar />
               <PWAInstallBanner />
               <main className="flex-1 pb-20 md:pb-[env(safe-area-inset-bottom)]">
+                <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
                 <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/auth" element={<Auth />} />
@@ -259,6 +263,7 @@ const App = () => (
                 <Route path="/adminai-vs-szamlazz" element={<Navigate to="/govletter-vs-szamlazz" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+                </Suspense>
             </main>
               <MobileBottomNav />
           </div>

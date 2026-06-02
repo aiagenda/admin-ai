@@ -28,7 +28,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
 import { hu } from "date-fns/locale";
-import ExcelJS from "exceljs";
 
 interface Invoice {
   id: string;
@@ -337,6 +336,7 @@ export default function InvoiceArchive() {
     }
     setExportingExcel(true);
     try {
+      const { default: ExcelJS } = await import("exceljs");
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet("Számlák", { views: [{ state: "frozen", ySplit: 1 }] });
 

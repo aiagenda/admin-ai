@@ -1,0 +1,28 @@
+# GovLetter
+
+> GovLetter explains IRS notices, state tax letters, Social Security mail, and other official U.S. government correspondence in plain English. Upload a PDF or photo of a letter and get a clear explanation, the deadline, and recommended next steps in under 60 seconds.
+
+GovLetter is a document-explanation tool, not a tax advisor or law firm. It helps people understand letters they receive — it does not file forms or contact agencies on a user's behalf. Users should verify deadlines and amounts against their original notice and consult a qualified professional for personalized advice.
+
+## What GovLetter does
+- Identifies the specific notice type (e.g. IRS CP14, CP2000, CP504, LT11)
+- Explains what the letter means in plain English
+- Extracts deadlines and required actions
+- Recommends the correct response forms where applicable
+- Covers IRS, all 50 state tax authorities, SSA, USCIS, Medicare, and VA letters
+
+## Guides
+- [IRS CP14 Notice Explained](https://govletter.com/blog/irs-cp14-notice-explained): What a CP14 balance-due notice means and the 21-day deadline.
+- [IRS CP2000 Notice](https://govletter.com/blog/irs-cp2000-notice-explained): Why a CP2000 is a proposed adjustment, not a bill, and how to respond.
+- [Social Security Overpayment Letter](https://govletter.com/blog/social-security-overpayment-letter): Appeal rights, waiver options, and deadlines for SSA overpayment demands.
+- [IRS LT11 Final Notice of Intent to Levy](https://govletter.com/blog/irs-lt11-notice-final-levy): The 30-day CDP hearing window before the IRS can seize wages or bank accounts.
+- [IRS CP504 Notice](https://govletter.com/blog/irs-cp504-notice-explained): Intent to levy a state tax refund and how to stop it.
+- [How to Read an IRS Letter](https://govletter.com/blog/how-to-read-irs-letter): The notice number, deadline, and required action in any IRS letter.
+- [State Tax Notice Explained](https://govletter.com/blog/state-tax-notice-explained): Handling balance-due and audit notices in any state.
+
+## Key pages
+- [IRS Notices](https://govletter.com/irs-notices): Reference for all major IRS notice types.
+- [Social Security & Federal Agency Letters](https://govletter.com/ssa-letters): SSA, USCIS, Medicare, and VA correspondence.
+- [State Tax Notices](https://govletter.com/state-tax-letters): All 50 state tax authorities with direct portal links.
+- [Pricing](https://govletter.com/pricing): Free first document; per-document and monthly plans.
+- [Help & FAQ](https://govletter.com/help): How GovLetter works, supported letter types, privacy.

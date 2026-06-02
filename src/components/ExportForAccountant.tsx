@@ -5,7 +5,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
 
 interface DocumentWithAnalysis {
   id: string;
@@ -155,7 +154,7 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
     }
   };
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     try {
       const excelData: Record<string, string | number>[] = [];
 
@@ -188,6 +187,7 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
         });
       });
 
+      const XLSX = await import("xlsx");
       const ws = XLSX.utils.json_to_sheet(excelData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Dokumentumok");
