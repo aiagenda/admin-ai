@@ -4,6 +4,7 @@ Allow: /
 # Private/authenticated routes should not be indexed
 Disallow: /admin/
 Disallow: /auth
+Disallow: /auth/callback
 Disallow: /upload
 Disallow: /archive
 Disallow: /result/

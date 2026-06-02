@@ -1,0 +1,48 @@
+{
+  "loading": "Betöltés…",
+  "shell": {
+    "htmlTitle": "AdminAI · NoticeIQ — AI dokumentum munkafelület",
+    "htmlDescription": "Magyar (AdminAI) és angol (NoticeIQ): hivatalos levelek, számlák, vállalkozási dokumentumok. A részletes SEO-t az alkalmazás állítja be nyelv és útvonal szerint."
+  },
+  "imprint": {
+    "legalEntity": "Szervezet:",
+    "registeredAddress": "Székhely / bejegyzett cím:",
+    "privacy": "Adatvédelem:",
+    "support": "Ügyfélszolgálat:",
+    "security": "Biztonság:"
+  },
+  "formFiller": {
+    "field": {
+      "name": "Teljes név",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "address": "Cím",
+      "date": "Dátum",
+      "signature": "Megerősítem, hogy az adatok pontosak"
+    },
+    "ph": {
+      "name": "Kovács János",
+      "email": "pelda@email.hu",
+      "phone": "+36 …",
+      "address": "Utca, irányítószám, település"
+    },
+    "openOfficialOnline": "Hivatalos online űrlap megnyitása (IRS.gov / portál)",
+    "instructionsTitle": "Útmutató",
+    "fillFieldsBelow": "Töltsd ki az alábbi mezőket. Ez az asszisztens nem küldi be automatikusan az IRS-nek.",
+    "saved": "Piszkozat mentve (helyben)",
+    "selectPlaceholder": "Válassz…",
+    "save": "Piszkozat mentése",
+    "downloadPdf": "PDF letöltése",
+    "print": "Nyomtatás",
+    "submitting": "Küldés…",
+    "submit": "Piszkozat törlése (helyi)",
+    "progressSaved": "A piszkozat elmentve ebben a böngészőben.",
+    "saveError": "Nem sikerült menteni a piszkozatot.",
+    "pdfSoon": "Az alkalmazásból a PDF letöltés még nincs bekötve — használd a hivatalos PDF-et vagy nyomtatást.",
+    "missingRequired": "Kérjük, töltsd ki:",
+    "submitSuccess": "Helyi piszkozat törölve.",
+    "submitError": "Hiba:",
+    "unknownError": "Ismeretlen hiba",
+    "footerHint": "Ez csak piszkozat-készítő segédlet. Mindig ellenőrizd a határidőket, összegeket és sorokat a levél és a hivatalos IRS útmutató alapján. Adótanácsért fordulj szakemberhez."
+  }
+}

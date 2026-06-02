@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <title>Számla - MOL Üzemanyag</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+    @media print { body { margin: 0; } }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background: #f5f5f5; }
+    .meta { color: #666; font-size: 0.9rem; margin-bottom: 24px; }
+    .total { font-weight: bold; font-size: 1.2rem; text-align: right; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>ELSZÁMOLÓLAP / SZÁMLA</h1>
+  <p class="meta">Szla. szám: MOL-2026-001234 | Kelte: 2026.02.15. | Teljesítés: 2026.02.15.</p>
+  <p><strong>Szállító:</strong> MOL Magyar Olaj- és Gázipari Zrt. | 1117 Budapest, Október huszonharmadika u. 18. | Adószám: 10668462-1-44</p>
+  <p><strong>Vevő:</strong> Teszt Kft. | 1052 Budapest, Váci u. 1. | Adószám: 12345678-2-42</p>
+  <table>
+    <tr><th>Megnevezés</th><th>Menny.</th><th>Egységár (Ft)</th><th>Nettó (Ft)</th><th>ÁFA %</th><th>ÁFA (Ft)</th><th>Bruttó (Ft)</th></tr>
+    <tr><td>95-ös benzin</td><td>45 L</td><td>648</td><td>29 160</td><td>27</td><td>7 873</td><td>37 033</td></tr>
+    <tr><td>Dízel</td><td>52 L</td><td>678</td><td>35 256</td><td>27</td><td>9 519</td><td>44 775</td></tr>
+  </table>
+  <p class="total">Összesen bruttó: 81 808 Ft</p>
+  <p class="meta">Fizetési határidő: 2026.03.01. | Fizetési mód: Átutalás | Számla végösszege: 81 808 Ft</p>
+</body>
+</html>

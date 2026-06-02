@@ -42,6 +42,18 @@ type OCROptions = {
   supabase?: ReturnType<typeof createClient>;
 };
 
+
+function uint8ToBase64(bytes: Uint8Array): string {
+  // Avoid spreading large typed arrays which can crash with stack/arg limits.
+  const chunkSize = 0x8000;
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+    binary += String.fromCharCode(...chunk);
+  }
+  return btoa(binary);
+}
+
 /**
  * Extract text from PDF using pdfjs-serverless (Deno-compatible, no workers needed)
  * This works for text-based PDFs
@@ -115,7 +127,7 @@ async function convertPdfPagesToImages(uint8Array: Uint8Array): Promise<string[]
                   const imgData = await (xObject as any).getImageData();
                   if (imgData && imgData.data) {
                     const imageBytes = new Uint8Array(imgData.data);
-                    const base64 = btoa(String.fromCharCode(...imageBytes));
+                    const base64 = uint8ToBase64(imageBytes);
                     imageBase64Array.push(`data:image/png;base64,${base64}`);
                     imageFound = true;
                     console.log(`✅ Extracted image from page ${pageNum}`);
@@ -928,8 +940,8 @@ function getLanguagePrompt(language: string, todayStr: string): string {
   "detected_category": "adozas" | "egeszsegugy" | "oktatas" | "szocialis" | "kozlekedes" | "ingatlan" | "uzlet" | "egyeb" vagy null,
   "detected_tags": ["tag1", "tag2"] vagy [] ha nincs tag,
   "mentioned_laws": ["Art. 123. §", "Áfa tv. 55. §"] vagy [] - a dokumentumban EXPLICIT említett jogszabályok és paragrafusok,
-  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "unknown",
-  "issuer": "NAV" | "bíróság" | "önkormányzat" | "bank" | "közmű" | "egyéb" vagy null
+  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "irs_notice_balance_due" | "irs_notice_intent_to_levy" | "irs_notice_generic" | "unknown",
+  "issuer": "NAV" | "IRS" | "bíróság" | "önkormányzat" | "bank" | "közmű" | "egyéb" vagy null
 }
 
 FONTOS SZABÁLYOK:
@@ -937,9 +949,9 @@ FONTOS SZABÁLYOK:
 2. legal_summary SOHA ne tartalmaz példát vagy mindennapi neveket, csak professzionális jogi értelmezés.
 3. deadlines: tömb formátumban YYYY-MM-DD formátumban. Ha a dokumentumban relatív dátum van (pl. "2 hét múlva", "következő hónap"), számold ki a pontos dátumot a mai dátumhoz képest (ma: ${todayStr}).
 4. detected_category: válassz egyet a következők közül: "adozas", "egeszsegugy", "oktatas", "szocialis", "kozlekedes", "ingatlan", "uzlet", "egyeb" vagy null.
-5. mentioned_laws: ha a dokumentumban EXPLICIT jogszabály hivatkozás van (pl. "Art. 123. §", "2017. évi CL. törvény", "Áfa tv.", "Ákr.", "Vht."), írd ki őket ebbe a tömbbe. Ha nincs, üres tömb [].
-6. doc_type: válaszd ki a dokumentum típusát: "nav_missing_info" (NAV hiánypótlás), "nav_fine" (NAV bírság/pótlék), "nav_payment_demand" (NAV fizetési felszólítás), "execution" (végrehajtás), "official_decision" (hatósági határozat), "invoice" (számla), "unknown" (ismeretlen).
-7. issuer: ki küldte a dokumentumot? "NAV", "bíróság", "önkormányzat", "bank", "közmű", "egyéb" vagy null.
+5. mentioned_laws: EXPLICIT jogszabály hivatkozások a dokumentumból (HU: pl. "Áfa tv.", "Vht."; USA: pl. "26 U.S.C. §6020", "IRC §6331", "Treas. Reg."). Ha nincs, [].
+6. doc_type: válaszd ki a dokumentum típusát: NAV esetén "nav_missing_info" (hiánypótlás), "nav_fine", "nav_payment_demand", "execution", "official_decision", "invoice". USA IRS levél esetén: "irs_notice_balance_due" (egyenleg/CP14-szerű), "irs_notice_intent_to_levy" (végrehajtási szándék, CP504/LT11), "irs_notice_generic" (egyéb IRS), egyébként "unknown".
+7. issuer: ki küldte? Magyarországon "NAV", "bíróság", stb.; USA IRS/Treasury esetén "IRS".
 8. FIZETÉSI ADATOK SZABÁLYA: A "bank_account", "amount" és "recipient_name" mezőket CSAK akkor töltsd ki, ha a dokumentum TÉNYLEGES FIZETÉSI KÖTELEZETTSÉGET tartalmaz (pl. számla, bírság, felszólítás fizetésre, tartozás). Ha a dokumentum csak TÁJÉKOZTATÁS vagy ÉRTESÍTÉS (pl. végrehajtási jog törlése, jogosultság igazolása, státusz értesítés), akkor ezek a mezők legyenek NULL. A "recipient_name" SOHA ne legyen kitöltve önmagában - csak akkor, ha van mellette "bank_account" VAGY "amount" is.`,
     
     en: `You are an expert administrative assistant. Analyze the provided document text and respond strictly with JSON containing:
@@ -958,8 +970,8 @@ FONTOS SZABÁLYOK:
   "detected_category": "tax" | "healthcare" | "education" | "social" | "transport" | "property" | "business" | "other" or null,
   "detected_tags": ["tag1", "tag2"] or [] if no tags,
   "mentioned_laws": ["Art. 123. §", "VAT Act 55. §"] or [] - EXPLICIT law references found in the document,
-  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "unknown",
-  "issuer": "tax_authority" | "court" | "municipality" | "bank" | "utility" | "other" or null
+  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "irs_notice_balance_due" | "irs_notice_intent_to_levy" | "irs_notice_generic" | "unknown",
+  "issuer": "irs" | "tax_authority" | "court" | "municipality" | "bank" | "utility" | "other" or null
 }
 
 IMPORTANT RULES:
@@ -967,9 +979,9 @@ IMPORTANT RULES:
 2. legal_summary MUST NEVER include examples or everyday names, only professional legal interpretation.
 3. deadlines: array format in YYYY-MM-DD. If the document contains relative dates (e.g., "2 weeks from now", "next month"), calculate the exact date relative to today (today: ${todayStr}).
 4. detected_category: choose one from: "tax", "healthcare", "education", "social", "transport", "property", "business", "other" or null.
-5. mentioned_laws: if the document EXPLICITLY references laws (e.g., "Art. 123. §", "Act CL of 2017", "VAT Act"), list them here. If none, empty array [].
-6. doc_type: choose document type: "nav_missing_info" (missing info request), "nav_fine" (fine/penalty), "nav_payment_demand" (payment demand), "execution" (enforcement), "official_decision" (official decision), "invoice" (invoice), "unknown".
-7. issuer: who sent the document? "tax_authority", "court", "municipality", "bank", "utility", "other" or null.
+5. mentioned_laws: explicit citations only (e.g. "26 U.S.C. §6331", "IRC §6651", "Treas. Reg. 1.6651-1", Hungarian acts if present). If none, [].
+6. doc_type: For Hungarian documents use nav_* / execution / official_decision / invoice as appropriate. For US IRS mail: "irs_notice_balance_due" (balance due / CP14-like), "irs_notice_intent_to_levy" (levy intent / CP504 / LT11), "irs_notice_generic" (other IRS), else "unknown".
+7. issuer: "irs" for Internal Revenue Service / US Treasury tax notices; "tax_authority" for other national tax agencies; otherwise court/municipality/bank/utility/other.
 8. PAYMENT DATA RULE: Only fill "bank_account", "amount" and "recipient_name" if the document contains an ACTUAL PAYMENT OBLIGATION (e.g., invoice, fine, payment demand, debt). If the document is only INFORMATIONAL or a NOTIFICATION (e.g., removal of enforcement rights, eligibility confirmation, status update), these fields should be NULL. "recipient_name" should NEVER be filled alone - only if there is also "bank_account" OR "amount".`,
     
     de: `Sie sind ein Experte für Verwaltungsangelegenheiten. Analysieren Sie den bereitgestellten Dokumententext und antworten Sie strikt mit JSON:
@@ -988,8 +1000,8 @@ IMPORTANT RULES:
   "detected_category": "steuern" | "gesundheitswesen" | "bildung" | "soziales" | "verkehr" | "immobilien" | "geschäft" | "sonstiges" oder null,
   "detected_tags": ["tag1", "tag2"] oder [] wenn keine Tags,
   "mentioned_laws": ["Art. 123. §", "UStG 55. §"] oder [] - EXPLIZIT im Dokument erwähnte Gesetze,
-  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "unknown",
-  "issuer": "finanzamt" | "gericht" | "gemeinde" | "bank" | "versorger" | "sonstiges" oder null
+  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "irs_notice_balance_due" | "irs_notice_intent_to_levy" | "irs_notice_generic" | "unknown",
+  "issuer": "irs" | "finanzamt" | "gericht" | "gemeinde" | "bank" | "versorger" | "sonstiges" oder null
 }
 
 WICHTIGE REGELN:
@@ -998,8 +1010,8 @@ WICHTIGE REGELN:
 3. deadlines: Array-Format in YYYY-MM-DD. Wenn das Dokument relative Daten enthält (z.B. "in 2 Wochen", "nächsten Monat"), berechnen Sie das genaue Datum relativ zu heute (heute: ${todayStr}).
 4. detected_category: wählen Sie eine aus: "steuern", "gesundheitswesen", "bildung", "soziales", "verkehr", "immobilien", "geschäft", "sonstiges" oder null.
 5. mentioned_laws: wenn das Dokument EXPLIZIT auf Gesetze verweist (z.B. "Art. 123. §", "Gesetz CL von 2017", "UStG"), listen Sie sie hier auf. Wenn keine, leeres Array [].
-6. doc_type: wählen Sie Dokumenttyp: "nav_missing_info" (Fehlende Info), "nav_fine" (Strafe), "nav_payment_demand" (Zahlungsaufforderung), "execution" (Vollstreckung), "official_decision" (Behördenbescheid), "invoice" (Rechnung), "unknown".
-7. issuer: wer hat das Dokument gesendet? "finanzamt", "gericht", "gemeinde", "bank", "versorger", "sonstiges" oder null.
+6. doc_type: Ungarn: nav_* wie bisher. USA IRS: "irs_notice_balance_due", "irs_notice_intent_to_levy", "irs_notice_generic", sonst "unknown".
+7. issuer: bei IRS "irs", sonst wie bisher.
 8. ZAHLUNGSDATEN-REGEL: Füllen Sie "bank_account", "amount" und "recipient_name" NUR aus, wenn das Dokument eine TATSÄCHLICHE ZAHLUNGSPFLICHT enthält (z.B. Rechnung, Strafe, Zahlungsaufforderung, Schulden). Wenn das Dokument nur INFORMATIV oder eine BENACHRICHTIGUNG ist (z.B. Aufhebung von Vollstreckungsrechten, Berechtigungsbestätigung, Statusmeldung), sollten diese Felder NULL sein. "recipient_name" sollte NIEMALS allein ausgefüllt werden - nur wenn auch "bank_account" ODER "amount" vorhanden ist.`,
   };
 
@@ -1201,7 +1213,7 @@ Deno.serve(async (req) => {
         // Convert image blob to base64
         const arrayBuffer = await fileBlob.arrayBuffer();
         const uint8 = new Uint8Array(arrayBuffer);
-        const base64 = btoa(String.fromCharCode(...uint8));
+        const base64 = uint8ToBase64(uint8);
         
         // Determine MIME type
         let mimeType = blobMimeType || 'image/jpeg';
@@ -1316,6 +1328,31 @@ Deno.serve(async (req) => {
         ? JSON.stringify([analysis.what_to_do])
         : todoSimpleString; // Fallback to todo_simple if what_to_do not provided
 
+    let playbookFormKey: string | null = null;
+    let playbookRequiredForms: string[] = [];
+    try {
+      const { data: playbookRows, error: playbookErr } = await supabase.rpc("get_matching_playbook", {
+        _category: analysis.detected_category ?? null,
+        _tags: analysis.detected_tags ?? null,
+        _content_keywords: analysis.detected_tags ?? null,
+        _doc_type: analysis.doc_type ?? null,
+      });
+      if (playbookErr) {
+        console.warn("get_matching_playbook:", playbookErr.message);
+      } else if (playbookRows && playbookRows.length > 0) {
+        const rf = (playbookRows[0] as { related_forms?: string[] }).related_forms;
+        if (Array.isArray(rf) && rf.length > 0) {
+          playbookRequiredForms = [...rf];
+          playbookFormKey = rf[0] ?? null;
+        }
+      }
+    } catch (pb) {
+      console.warn("Playbook lookup failed:", pb);
+    }
+
+    const mentionedLaws = Array.isArray(analysis.mentioned_laws) ? analysis.mentioned_laws : [];
+    const deadlineDesc = Array.isArray(analysis.deadline_descriptions) ? analysis.deadline_descriptions : [];
+
     const { data: insertedAnalysis, error: insertError } = await supabase
       .from("analyses")
       .insert({
@@ -1332,6 +1369,12 @@ Deno.serve(async (req) => {
         recipient_name: analysis.recipient_name,
         detected_category: analysis.detected_category || null,
         detected_tags: analysis.detected_tags || [],
+        mentioned_laws: mentionedLaws,
+        doc_type: analysis.doc_type || null,
+        issuer: analysis.issuer || null,
+        deadline_descriptions: deadlineDesc,
+        form_key: playbookFormKey,
+        required_forms: playbookRequiredForms.length > 0 ? playbookRequiredForms : null,
         // Legacy fields for backward compatibility
         what_is_it: analysis.what_is_it || analysis.simple_summary,
         what_to_do: whatToDoString,

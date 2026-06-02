@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
 
 const faqItems = [
   {
@@ -40,13 +40,7 @@ export default function GyikPage() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <SEOHead
-        title="GYIK - AdminAI"
-        description="Gyakori kérdések az AdminAI-ról: NAV határozatok értelmezése, számla OCR, dokumentumbiztonság és export lehetőségek."
-        path="/gyik"
-        keywords="AdminAI GYIK, NAV határozat kérdések, számla OCR kérdések, dokumentum AI"
-        structuredData={schema}
-      />
+      <PageSEO pageKey="gyik" path="/gyik" structuredData={schema} />
       <div className="container mx-auto max-w-4xl space-y-6">
         <h1 className="text-4xl font-bold">Gyakori kérdések (GYIK)</h1>
         <p className="text-muted-foreground">

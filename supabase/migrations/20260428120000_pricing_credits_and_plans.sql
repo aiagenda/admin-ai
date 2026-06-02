@@ -66,6 +66,9 @@ END;
 $$;
 
 -- -----------------------------------------------------------------------------
+-- PG forbids changing RETURNS TABLE column set via CREATE OR REPLACE (42P13).
+DROP FUNCTION IF EXISTS public.can_user_upload(uuid);
+
 CREATE OR REPLACE FUNCTION public.can_user_upload(_user_id UUID)
 RETURNS TABLE (
   can_upload BOOLEAN,

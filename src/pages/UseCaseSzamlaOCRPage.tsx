@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function UseCaseSzamlaOCRPage() {
@@ -7,12 +7,7 @@ export default function UseCaseSzamlaOCRPage() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <SEOHead
-        title="Számla OCR és számla felismerés szoftver KKV-knak | AdminAI"
-        description="Számla OCR magyar vállalkozásoknak: fotózd le a számlát, az AdminAI kiolvassa az adatokat és Excelbe exportálja könyveléshez."
-        path="/szamla-ocr"
-        keywords="számla OCR, számla felismerés szoftver, számla OCR KKV, könyvelés automatizálás"
-      />
+      <PageSEO pageKey="useCaseOcr" path="/szamla-ocr" />
       <div className="container mx-auto max-w-4xl space-y-8">
         <h1 className="text-4xl font-bold">Számla OCR és automatizált felismerés KKV-knak</h1>
         <p className="text-lg text-muted-foreground">

@@ -30,19 +30,18 @@ function basicAuthPassword(authorization: string | null): string | null {
   return decoded.slice(colon + 1);
 }
 
+/**
+ * Site-wide Basic Auth for **staging / closed previews only**.
+ *
+ * - If `SITE_ACCESS_PASSWORD` is **unset or empty** → middleware passes through (**public site**, normal production).
+ * - If set → all matched routes require Basic Auth with this password (username ignored).
+ *
+ * Do **not** set `SITE_ACCESS_PASSWORD` on the public US/production domain unless you intentionally want the entire site behind a password (SEO and sign-up will break).
+ */
 export default function middleware(request: Request): Response {
   const expected = process.env.SITE_ACCESS_PASSWORD;
   if (expected == null || expected === "") {
-    return new Response(
-      "SITE_ACCESS_PASSWORD is not set. Add it in Vercel → Settings → Environment Variables.",
-      {
-        status: 503,
-        headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          "Cache-Control": "no-store",
-        },
-      },
-    );
+    return next();
   }
 
   const password = basicAuthPassword(request.headers.get("authorization"));

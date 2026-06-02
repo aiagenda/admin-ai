@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,9 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, Download, Printer, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Save, Download, Printer, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 interface FormField {
   name: string;
@@ -17,8 +17,7 @@ interface FormField {
   label: string;
   required?: boolean;
   placeholder?: string;
-  options?: string[]; // For select fields
-  value?: string | boolean;
+  options?: string[];
 }
 
 interface FormFillerProps {
@@ -27,92 +26,60 @@ interface FormFillerProps {
   formName: string;
   pdfUrl: string;
   fillableUrl?: string | null;
+  onlineUrl?: string | null;
   instructions?: string | null;
 }
 
 export function FormFiller({
-  formId,
+  formId: _formId,
   formKey,
   formName,
   pdfUrl,
   fillableUrl,
+  onlineUrl,
   instructions,
 }: FormFillerProps) {
+  const { t } = useTranslation("common");
   const [fields, setFields] = useState<FormField[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
 
-  // Load saved progress from localStorage
+  const externalOfficialUrl = (fillableUrl || onlineUrl || "").trim() || null;
+
+  const defaultFields = useMemo<FormField[]>(
+    () => [
+      { name: "name", type: "text", label: t("formFiller.field.name"), required: true, placeholder: t("formFiller.ph.name") },
+      { name: "email", type: "text", label: t("formFiller.field.email"), required: true, placeholder: t("formFiller.ph.email") },
+      { name: "phone", type: "text", label: t("formFiller.field.phone"), placeholder: t("formFiller.ph.phone") },
+      { name: "address", type: "textarea", label: t("formFiller.field.address"), required: true, placeholder: t("formFiller.ph.address") },
+      { name: "date", type: "date", label: t("formFiller.field.date"), required: true },
+      { name: "signature", type: "checkbox", label: t("formFiller.field.signature"), required: true },
+    ],
+    [t],
+  );
+
   useEffect(() => {
     const savedData = localStorage.getItem(`form_${formKey}`);
     if (savedData) {
       try {
-        const parsed = JSON.parse(savedData);
+        const parsed = JSON.parse(savedData) as Record<string, unknown>;
         setFormData(parsed);
         setSaved(true);
-      } catch (error) {
-        console.error("Failed to load saved form data:", error);
+      } catch (e) {
+        console.error(e);
       }
     }
   }, [formKey]);
 
-  // Initialize form fields (simplified - in production, you'd parse the PDF form fields)
   useEffect(() => {
-    // For now, we'll create a simple form structure
-    // In production, you'd use pdf-lib or react-pdf to extract actual form fields
-    const defaultFields: FormField[] = [
-      {
-        name: "name",
-        type: "text",
-        label: "Név",
-        required: true,
-        placeholder: "Teljes név",
-      },
-      {
-        name: "email",
-        type: "text",
-        label: "Email cím",
-        required: true,
-        placeholder: "email@example.com",
-      },
-      {
-        name: "phone",
-        type: "text",
-        label: "Telefonszám",
-        placeholder: "+36 20 123 4567",
-      },
-      {
-        name: "address",
-        type: "textarea",
-        label: "Lakcím",
-        required: true,
-        placeholder: "Irányítószám, Város, Utca, Házszám",
-      },
-      {
-        name: "date",
-        type: "date",
-        label: "Dátum",
-        required: true,
-      },
-      {
-        name: "signature",
-        type: "checkbox",
-        label: "Aláírom, hogy az adatok helyesek",
-        required: true,
-      },
-    ];
-
     setFields(defaultFields);
     setLoading(false);
-  }, []);
+  }, [defaultFields]);
 
-  const handleFieldChange = (name: string, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleFieldChange = (name: string, value: unknown) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
     setSaved(false);
   };
 
@@ -120,47 +87,44 @@ export function FormFiller({
     try {
       localStorage.setItem(`form_${formKey}`, JSON.stringify(formData));
       setSaved(true);
-      toast.success("Előrehaladás mentve");
-    } catch (error) {
-      toast.error("Hiba a mentés során");
+      toast.success(t("formFiller.progressSaved"));
+    } catch {
+      toast.error(t("formFiller.saveError"));
     }
   };
 
   const handleDownload = () => {
-    // In production, you'd generate a filled PDF using pdf-lib
-    toast.info("PDF generálás funkció hamarosan elérhető");
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleSubmit = async () => {
-    // Validate required fields
-    const missingFields = fields
-      .filter((field) => field.required && !formData[field.name])
-      .map((field) => field.label);
-
-    if (missingFields.length > 0) {
-      toast.error(`Kérjük, töltse ki a kötelező mezőket: ${missingFields.join(", ")}`);
+    if (!pdfUrl) {
+      toast.info(t("formFiller.pdfSoon"));
       return;
     }
+    const a = document.createElement("a");
+    a.href = pdfUrl;
+    a.download = `${formKey}.pdf`;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+  const handlePrint = () => window.print();
 
+  const handleSubmit = async () => {
+    const missing = fields.filter((f) => f.required && !formData[f.name]).map((f) => f.label);
+    if (missing.length) {
+      toast.error(`${t("formFiller.missingRequired")} ${missing.join(", ")}`);
+      return;
+    }
     setSaving(true);
-
     try {
-      // In production, you'd submit the form data to your backend
-      // For now, we'll just save it
-      await handleSave();
-      
-      toast.success("Űrlap sikeresen elküldve");
-      
-      // Clear saved data after successful submission
+      await Promise.resolve(handleSave());
+      toast.success(t("formFiller.submitSuccess"));
       localStorage.removeItem(`form_${formKey}`);
       setFormData({});
       setSaved(false);
-    } catch (error: any) {
-      toast.error("Hiba az elküldés során: " + (error.message || "Ismeretlen hiba"));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : t("formFiller.unknownError");
+      toast.error(`${t("formFiller.submitError")} ${msg}`);
     } finally {
       setSaving(false);
     }
@@ -176,30 +140,39 @@ export function FormFiller({
 
   return (
     <div className="space-y-6">
-      {/* Instructions */}
+      {externalOfficialUrl && (
+        <Card>
+          <CardContent className="pt-6">
+            <Button type="button" variant="secondary" className="w-full sm:w-auto" asChild>
+              <a href={externalOfficialUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                {t("formFiller.openOfficialOnline")}
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       {instructions && (
         <Card>
           <CardHeader>
-            <CardTitle>Kitöltési útmutató</CardTitle>
+            <CardTitle>{t("formFiller.instructionsTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm whitespace-pre-line">{instructions}</p>
           </CardContent>
         </Card>
       )}
-
-      {/* Form */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>{formName}</CardTitle>
-              <CardDescription>Kérjük, töltse ki az alábbi mezőket</CardDescription>
+              <CardDescription>{t("formFiller.fillFieldsBelow")}</CardDescription>
             </div>
             {saved && (
               <Badge variant="outline" className="flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
-                Mentve
+                {t("formFiller.saved")}
               </Badge>
             )}
           </div>
@@ -212,77 +185,32 @@ export function FormFiller({
                   {field.label}
                   {field.required && <span className="text-destructive ml-1">*</span>}
                 </Label>
-
                 {field.type === "text" && (
-                  <Input
-                    id={field.name}
-                    type="text"
-                    value={formData[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                  />
+                  <Input id={field.name} type="text" value={(formData[field.name] as string) || ""} onChange={(e) => handleFieldChange(field.name, e.target.value)} placeholder={field.placeholder} required={field.required} />
                 )}
-
                 {field.type === "textarea" && (
-                  <Textarea
-                    id={field.name}
-                    value={formData[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    rows={3}
-                  />
+                  <Textarea id={field.name} value={(formData[field.name] as string) || ""} onChange={(e) => handleFieldChange(field.name, e.target.value)} placeholder={field.placeholder} required={field.required} rows={3} />
                 )}
-
                 {field.type === "number" && (
-                  <Input
-                    id={field.name}
-                    type="number"
-                    value={formData[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                  />
+                  <Input id={field.name} type="number" value={(formData[field.name] as string) || ""} onChange={(e) => handleFieldChange(field.name, e.target.value)} placeholder={field.placeholder} required={field.required} />
                 )}
-
                 {field.type === "date" && (
-                  <Input
-                    id={field.name}
-                    type="date"
-                    value={formData[field.name] || ""}
-                    onChange={(e) => handleFieldChange(field.name, e.target.value)}
-                    required={field.required}
-                  />
+                  <Input id={field.name} type="date" value={(formData[field.name] as string) || ""} onChange={(e) => handleFieldChange(field.name, e.target.value)} required={field.required} />
                 )}
-
                 {field.type === "checkbox" && (
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id={field.name}
-                      checked={formData[field.name] || false}
-                      onCheckedChange={(checked) => handleFieldChange(field.name, checked)}
-                      required={field.required}
-                    />
-                    <Label htmlFor={field.name} className="font-normal cursor-pointer">
-                      {field.label}
-                    </Label>
+                    <Checkbox id={field.name} checked={Boolean(formData[field.name])} onCheckedChange={(c) => handleFieldChange(field.name, c)} required={field.required} />
+                    <Label htmlFor={field.name} className="font-normal cursor-pointer">{field.label}</Label>
                   </div>
                 )}
-
                 {field.type === "select" && (
-                  <Select
-                    value={formData[field.name] || ""}
-                    onValueChange={(value) => handleFieldChange(field.name, value)}
-                  >
+                  <Select value={(formData[field.name] as string) || ""} onValueChange={(v) => handleFieldChange(field.name, v)}>
                     <SelectTrigger>
-                      <SelectValue placeholder={field.placeholder || "Válasszon..."} />
+                      <SelectValue placeholder={field.placeholder || t("formFiller.selectPlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      {field.options?.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
+                      {field.options?.map((o) => (
+                        <SelectItem key={o} value={o}>{o}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -290,47 +218,24 @@ export function FormFiller({
               </div>
             ))}
           </div>
-
-          {/* Actions */}
           <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t">
-            <Button onClick={handleSave} variant="outline" disabled={saving}>
-              <Save className="h-4 w-4 mr-2" />
-              Mentés
-            </Button>
-            <Button onClick={handleDownload} variant="outline" disabled={saving}>
-              <Download className="h-4 w-4 mr-2" />
-              PDF letöltése
-            </Button>
-            <Button onClick={handlePrint} variant="outline" disabled={saving}>
-              <Printer className="h-4 w-4 mr-2" />
-              Nyomtatás
-            </Button>
-            <Button onClick={handleSubmit} disabled={saving} className="ml-auto">
-              {saving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Küldés...
-                </>
-              ) : (
-                "Elküldés"
-              )}
+            <Button type="button" onClick={handleSave} variant="outline" disabled={saving}><Save className="h-4 w-4 mr-2" />{t("formFiller.save")}</Button>
+            <Button type="button" onClick={handleDownload} variant="outline" disabled={saving}><Download className="h-4 w-4 mr-2" />{t("formFiller.downloadPdf")}</Button>
+            <Button type="button" onClick={handlePrint} variant="outline" disabled={saving}><Printer className="h-4 w-4 mr-2" />{t("formFiller.print")}</Button>
+            <Button type="button" onClick={handleSubmit} disabled={saving} className="ml-auto">
+              {saving ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("formFiller.submitting")}</>) : t("formFiller.submit")}
             </Button>
           </div>
         </CardContent>
       </Card>
-
-      {/* Info */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
-            <AlertCircle className="h-4 w-4 mt-0.5" />
-            <p>
-              Az előrehaladás automatikusan mentésre kerül. Ha szeretné, letöltheti kitöltött űrlapot PDF formátumban vagy kinyomtathatja.
-            </p>
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+            <p>{t("formFiller.footerHint")}</p>
           </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-

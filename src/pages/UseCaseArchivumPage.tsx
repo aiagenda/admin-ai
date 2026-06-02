@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function UseCaseArchivumPage() {
@@ -7,12 +7,7 @@ export default function UseCaseArchivumPage() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <SEOHead
-        title="Dokumentum archiválás és iratkezelő szoftver KKV-knak | AdminAI"
-        description="Iratkezelő szoftver KKV-knak: dokumentum archiválás, kereshetőség, határidőkövetés és AI-alapú értelmezés egy rendszerben."
-        path="/dokumentum-archivum"
-        keywords="iratkezelő szoftver KKV, dokumentum archiválás, digitális iratkezelés, vállalkozás dokumentumkezelés"
-      />
+      <PageSEO pageKey="useCaseArchive" path="/dokumentum-archivum" />
       <div className="container mx-auto max-w-4xl space-y-8">
         <h1 className="text-4xl font-bold">Dokumentum archiválás és iratkezelő szoftver KKV-knak</h1>
         <p className="text-lg text-muted-foreground">

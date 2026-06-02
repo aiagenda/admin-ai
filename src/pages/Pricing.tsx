@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, FileText, Zap, CalendarRange, Receipt } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
 
 const docPlans = [
   {
@@ -20,7 +20,7 @@ const docPlans = [
     name: "Pro",
     price: "3 990 Ft",
     per: "dokumentum",
-    description: "Deeper elemzés, válaszminta, PDF",
+    description: "Mélyebb elemzés, válaszminta, PDF",
     cta: "Vásárlás",
     planKey: "pro_doc" as const,
     features: ["Mélyebb elemzés", "Javasolt válaszminta", "PDF export a riportból (ahol elérhető)"],
@@ -64,12 +64,7 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <SEOHead
-        title="AdminAI – magyar hivatali levelek pánikgomb"
-        description="1 próba, majd vásárolj dokumentumonként, vagy válassz havi 10 vagy 50 dokumentumos csomagot. Stripe, gyors, biztonságos."
-        path="/pricing"
-        keywords="NAV levél, hivatalos levél, AI, AdminAI, ár"
-      />
+      <PageSEO pageKey="pricing" path="/pricing" />
       <div className="container mx-auto max-w-6xl">
         <div className="text-center space-y-4 mb-12 max-w-3xl mx-auto">
           <Badge variant="secondary" className="mb-1">

@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { OwnerRoute } from "@/components/OwnerRoute";
 import { Navbar } from "@/components/Navbar";
+import { LangSync } from "@/components/LangSync";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import Home from "./pages/Home";
@@ -59,6 +60,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <LangSync />
           <AuthProvider>
             <div className="min-h-screen flex flex-col">
               <Navbar />

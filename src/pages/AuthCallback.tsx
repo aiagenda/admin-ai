@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { PageSEO } from "@/components/PageSEO";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -39,5 +40,10 @@ export default function AuthCallback() {
     handleAuth();
   }, [navigate]);
 
-  return <p>Bejelentkezés folyamatban...</p>;
+  return (
+    <>
+      <PageSEO pageKey="authCallback" path="/auth/callback" noindex />
+      <p>Bejelentkezés folyamatban...</p>
+    </>
+  );
 }

@@ -101,6 +101,7 @@ export function LegalReferencesPanel({
           _category: detectedCategory || null,
           _tags: detectedTags || null,
           _content_keywords: detectedTags || null, // Use tags as keywords too
+          _doc_type: docType || null,
         });
 
         if (playbookData && playbookData.length > 0) {

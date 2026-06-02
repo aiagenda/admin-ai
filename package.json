@@ -12,9 +12,13 @@
     "kb:import": "NODE_OPTIONS='--max-old-space-size=4096' tsx scripts/knowledge-base-pipeline.ts",
     "kb:chunks": "NODE_OPTIONS='--max-old-space-size=4096' tsx scripts/create-chunks-for-existing.ts",
     "kb:embeddings": "NODE_OPTIONS='--max-old-space-size=4096' tsx scripts/generate-embeddings.ts",
+    "kb:sync": "npm run kb:chunks && npm run kb:embeddings",
     "kb:cleanup": "tsx scripts/cleanup-duplicate-chunks.ts",
     "kb:verify": "tsx scripts/verify-knowledge-sources.ts",
-    "generate-icons": "node scripts/generate-pwa-icons.mjs"
+    "generate-icons": "node scripts/generate-pwa-icons.mjs",
+    "generate:legal": "python3 scripts/generate_legal_locales.py",
+    "forms:sync": "npx tsx scripts/sync-irs-forms.ts",
+    "forms:sync:dry": "npx tsx scripts/sync-irs-forms.ts --dry"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -59,6 +63,8 @@
     "exceljs": "^4.4.0",
     "framer-motion": "^12.34.2",
     "html2canvas": "^1.4.1",
+    "i18next": "^26.0.9",
+    "i18next-browser-languagedetector": "^8.2.1",
     "input-otp": "^1.4.2",
     "jspdf": "^3.0.4",
     "lucide-react": "^0.462.0",
@@ -69,6 +75,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.61.1",
+    "react-i18next": "^17.0.6",
     "react-image-crop": "^11.0.10",
     "react-resizable-panels": "^2.1.9",
     "react-router-dom": "^6.30.1",

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { HelpCircle, ChevronDown, ChevronUp, FileText, Upload, Archive, GitCompare, Tag, Calendar, CheckSquare } from "lucide-react";
 import { Link } from "react-router-dom";
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
 
 interface FAQItem {
   question: string;
@@ -78,6 +78,11 @@ const faqData: FAQItem[] = [
     answer: "Az elemzés oldalon a 'Megosztás' gombbal generálhat egy megosztási linket. Ez a link csak olvasási jogot ad, így biztonságosan megoszthatja másokkal.",
   },
   {
+    category: "Exportálás",
+    question: "Hogyan adom át a könyvelőnek táblázatban (CSV / Excel)?",
+    answer: "Menjen a Dokumentum archívumba. Ott az „CSV / Excel könyvelőnek” exporttal letölthető listát állíthat össze (szűrés, dátum, összeg, határidő). Az elemzés oldalról is van gyorslink az archívumba a könyvelő exporttal.",
+  },
+  {
     category: "Határidők",
     question: "Hogyan exportálhatom a határidőket naptárba?",
     answer: "Az elemzés oldalon a határidő mellett van egy 'Naptárba exportálás' gomb. Ez egy iCal fájlt generál, amit importálhat Google Calendar-ba vagy más naptáralkalmazásba.",
@@ -145,13 +150,7 @@ export default function Help() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <SEOHead
-        title="Segítség és GYIK – AdminAI"
-        description="AdminAI használata: feltöltés, elemzés, archívum, export, könyvelés. Gyakori kérdések és válaszok magyarul."
-        path="/help"
-        keywords="AdminAI segítség, GYIK, dokumentum feltöltés, NAV levél"
-        structuredData={helpFaqJsonLd}
-      />
+      <PageSEO pageKey="help" path="/help" structuredData={helpFaqJsonLd} />
       <div className="container mx-auto max-w-4xl space-y-6">
         {/* Header */}
         <div>

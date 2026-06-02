@@ -1,0 +1,48 @@
+{
+  "loading": "Loading…",
+  "shell": {
+    "htmlTitle": "AdminAI · NoticeIQ — AI document workspace",
+    "htmlDescription": "Hungarian (AdminAI) and English (NoticeIQ): official letters, invoices, and SMB workflows. The SPA sets detailed SEO per language and route."
+  },
+  "imprint": {
+    "legalEntity": "Legal entity:",
+    "registeredAddress": "Registered address:",
+    "privacy": "Privacy:",
+    "support": "Support:",
+    "security": "Security:"
+  },
+  "formFiller": {
+    "field": {
+      "name": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "date": "Date",
+      "signature": "I confirm the information is accurate"
+    },
+    "ph": {
+      "name": "John Doe",
+      "email": "you@example.com",
+      "phone": "+1 …",
+      "address": "Street, city, state, ZIP"
+    },
+    "openOfficialOnline": "Open official online form (IRS.gov / portal)",
+    "instructionsTitle": "Instructions",
+    "fillFieldsBelow": "Fill in the fields below. This assistant does not file with the IRS for you.",
+    "saved": "Draft saved locally",
+    "selectPlaceholder": "Select…",
+    "save": "Save draft",
+    "downloadPdf": "Download PDF",
+    "print": "Print",
+    "submitting": "Submitting…",
+    "submit": "Clear draft (local)",
+    "progressSaved": "Draft saved in this browser.",
+    "saveError": "Could not save draft.",
+    "pdfSoon": "PDF download from the app is not wired yet — use the official PDF or print.",
+    "missingRequired": "Please complete:",
+    "submitSuccess": "Local draft cleared.",
+    "submitError": "Error:",
+    "unknownError": "Unknown error",
+    "footerHint": "This is a drafting aid only. Always verify deadlines, amounts, and line items against your notice and official IRS instructions. For tax advice, consult a qualified professional."
+  }
+}

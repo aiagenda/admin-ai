@@ -1,4 +1,4 @@
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -7,12 +7,7 @@ export default function ComparisonSzamlazzPage() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <SEOHead
-        title="AdminAI vs Számlázz.hu - dokumentum értelmezés összehasonlítás"
-        description="AdminAI vs Számlázz.hu: Számlázz.hu számlázási motor, AdminAI pedig a bejövő hivatalos dokumentumok AI-értelmező rendszere."
-        path="/adminai-vs-szamlazz"
-        keywords="AdminAI vs Számlázz.hu, Számlázz.hu alternatíva, hivatalos dokumentum értelmezés"
-      />
+      <PageSEO pageKey="comparisonSzamlazz" path="/adminai-vs-szamlazz" />
       <div className="container mx-auto max-w-4xl space-y-6">
         <h1 className="text-4xl font-bold">AdminAI vs Számlázz.hu</h1>
         <p className="text-lg text-muted-foreground">

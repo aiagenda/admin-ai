@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { LegalQuickLinks } from "@/components/LegalQuickLinks";
+import { PageSEO } from "@/components/PageSEO";
 
 function sanitizeFilename(name: string) {
   return name
@@ -358,6 +359,7 @@ export default function InvoiceUpload() {
 
   return (
     <div className="min-h-screen py-8 px-4">
+      <PageSEO pageKey="upload" path="/invoices/upload" noindex />
       <div className="container mx-auto max-w-3xl">
         <Button
           variant="ghost"

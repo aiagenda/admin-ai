@@ -6,6 +6,7 @@ import { Upload as UploadIcon, Loader2, X, FileText, Camera } from "lucide-react
 import { HelpTooltip } from "@/components/HelpTooltip";
 import { UsageLimit } from "@/components/UsageLimit";
 import { LegalQuickLinks } from "@/components/LegalQuickLinks";
+import { PageSEO } from "@/components/PageSEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -494,6 +495,7 @@ export default function Upload() {
 
   return (
     <div className="min-h-screen py-6 sm:py-8 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <PageSEO pageKey="upload" path="/upload" noindex />
       <div className="container mx-auto max-w-3xl space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">

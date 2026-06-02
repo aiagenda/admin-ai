@@ -12,6 +12,7 @@ interface Form {
   name: string;
   pdf_url: string;
   fillable_url: string | null;
+  online_url: string | null;
   instructions: string | null;
   form_type: string | null;
   category: string | null;
@@ -104,6 +105,7 @@ export default function FormFill() {
         formName={form.name}
         pdfUrl={form.pdf_url}
         fillableUrl={form.fillable_url}
+        onlineUrl={form.online_url}
         instructions={form.instructions}
       />
     </div>

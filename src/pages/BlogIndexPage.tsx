@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
 import { Link } from "react-router-dom";
 
 const posts = [
@@ -23,12 +23,7 @@ const posts = [
 export default function BlogIndexPage() {
   return (
     <div className="min-h-screen py-12 px-4">
-      <SEOHead
-        title="AdminAI Blog - NAV, számla OCR, iratkezelés"
-        description="AdminAI blog: NAV felszólítás értelmezés, számla OCR workflow-k és iratkezelő tippek magyar vállalkozásoknak."
-        path="/blog"
-        keywords="NAV felszólítás, számla OCR, iratkezelő szoftver KKV, dokumentumfeldolgozás"
-      />
+      <PageSEO pageKey="blog" path="/blog" />
       <div className="container mx-auto max-w-4xl space-y-6">
         <h1 className="text-4xl font-bold">AdminAI Blog</h1>
         <p className="text-muted-foreground">Gyakorlati útmutatók hivatalos dokumentumok és számlák kezeléséhez.</p>

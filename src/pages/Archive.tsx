@@ -57,6 +57,16 @@ export default function Archive() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (loading) return;
+    if (typeof window === "undefined") return;
+    if (window.location.hash !== "#export-konyvelo") return;
+    const t = window.setTimeout(() => {
+      document.getElementById("export-konyvelo")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 150);
+    return () => window.clearTimeout(t);
+  }, [loading, documents.length]);
+
+  useEffect(() => {
     if (!user) return;
 
     const fetchDocuments = async () => {
@@ -543,7 +553,9 @@ export default function Archive() {
             )}
             {documents.length > 0 && (
               <>
-                <ExportForAccountant documents={documents} />
+                <div id="export-konyvelo" className="scroll-mt-24">
+                  <ExportForAccountant documents={documents} />
+                </div>
                 {selectedDocs.length > 0 && (
                   <>
                     <Button

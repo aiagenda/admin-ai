@@ -1,4 +1,4 @@
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -7,12 +7,7 @@ export default function ComparisonBillingoPage() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <SEOHead
-        title="AdminAI vs Billingo - bejövő dokumentum értelmezés"
-        description="AdminAI vs Billingo: Billingo erős számlázásban, AdminAI pedig a kapott hivatalos dokumentumok értelmezésében és teendőkezelésben."
-        path="/adminai-vs-billingo"
-        keywords="AdminAI vs Billingo, Billingo alternatíva, NAV levél értelmezés"
-      />
+      <PageSEO pageKey="comparisonBillingo" path="/adminai-vs-billingo" />
       <div className="container mx-auto max-w-4xl space-y-6">
         <h1 className="text-4xl font-bold">AdminAI vs Billingo</h1>
         <p className="text-lg text-muted-foreground">

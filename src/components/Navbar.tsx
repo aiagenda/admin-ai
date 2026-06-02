@@ -19,10 +19,13 @@ import {
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "next-themes";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export function Navbar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation("nav");
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -118,13 +121,13 @@ export function Navbar() {
     if (mobile) {
       return (
         <>
-          <p className="text-xs uppercase tracking-wide text-muted-foreground px-2 pt-2">Megoldások</p>
-          <NavLink to="/nav-hatarozat-ertelmezes">NAV határozat értelmezés</NavLink>
-          <NavLink to="/szamla-ocr">Számla OCR</NavLink>
-          <NavLink to="/dokumentum-archivum">Dokumentum archívum</NavLink>
-          <NavLink to="/adminai-vs-chatgpt">AdminAI vs ChatGPT</NavLink>
-          <NavLink to="/adminai-vs-billingo">AdminAI vs Billingo</NavLink>
-          <NavLink to="/adminai-vs-szamlazz">AdminAI vs Számlázz.hu</NavLink>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground px-2 pt-2">{t("solutions")}</p>
+          <NavLink to="/nav-hatarozat-ertelmezes">{t("sol_navDecision")}</NavLink>
+          <NavLink to="/szamla-ocr">{t("sol_invoiceOcr")}</NavLink>
+          <NavLink to="/dokumentum-archivum">{t("sol_docArchive")}</NavLink>
+          <NavLink to="/adminai-vs-chatgpt">{t("sol_vsChatgpt")}</NavLink>
+          <NavLink to="/adminai-vs-billingo">{t("sol_vsBillingo")}</NavLink>
+          <NavLink to="/adminai-vs-szamlazz">{t("sol_vsSzamlazz")}</NavLink>
         </>
       );
     }
@@ -134,16 +137,16 @@ export function Navbar() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="text-sm font-medium min-h-[44px] px-2">
             <Layers className="h-4 w-4 mr-1" />
-            Megoldások
+            {t("solutions")}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={() => navigate("/nav-hatarozat-ertelmezes")}>NAV határozat értelmezés</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/szamla-ocr")}>Számla OCR</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/dokumentum-archivum")}>Dokumentum archívum</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/adminai-vs-chatgpt")}>AdminAI vs ChatGPT</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/adminai-vs-billingo")}>AdminAI vs Billingo</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/adminai-vs-szamlazz")}>AdminAI vs Számlázz.hu</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/nav-hatarozat-ertelmezes")}>{t("sol_navDecision")}</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/szamla-ocr")}>{t("sol_invoiceOcr")}</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/dokumentum-archivum")}>{t("sol_docArchive")}</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/adminai-vs-chatgpt")}>{t("sol_vsChatgpt")}</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/adminai-vs-billingo")}>{t("sol_vsBillingo")}</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/adminai-vs-szamlazz")}>{t("sol_vsSzamlazz")}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     );
@@ -193,10 +196,10 @@ export function Navbar() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => navigate("/admin/forms")}>Űrlapkezelő</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/admin/analytics")}>Analitika</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/admin/knowledge-base")}>Knowledge Base</DropdownMenuItem>
-            {isOwner && <DropdownMenuItem onClick={() => navigate("/admin/ai-studio")}>AI Studio</DropdownMenuItem>}
+            <DropdownMenuItem onClick={() => navigate("/admin/forms")}>{t("formsAdmin")}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/admin/analytics")}>{t("analytics")}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/admin/knowledge-base")}>{t("knowledgeBase")}</DropdownMenuItem>
+            {isOwner && <DropdownMenuItem onClick={() => navigate("/admin/ai-studio")}>{t("aiStudio")}</DropdownMenuItem>}
           </DropdownMenuContent>
         </DropdownMenu>
       )}
@@ -207,31 +210,31 @@ export function Navbar() {
     <>
       {!user ? (
         <>
-          <NavLink to="/">Főoldal</NavLink>
-          <NavLink to="/arak">Árak</NavLink>
-          <NavLink to="/blog">Blog</NavLink>
-          <NavLink to="/gyik">GYIK</NavLink>
-          <NavLink to="/help">Segítség</NavLink>
+          <NavLink to="/">{t("home")}</NavLink>
+          <NavLink to="/arak">{t("pricing")}</NavLink>
+          <NavLink to="/blog">{t("blog")}</NavLink>
+          <NavLink to="/gyik">{t("faq")}</NavLink>
+          <NavLink to="/help">{t("help")}</NavLink>
           <SolutionsDropdown mobile />
         </>
       ) : (
         <>
-          <NavLink to="/">Dashboard</NavLink>
-          <NavLink to="/upload">Feltöltés</NavLink>
-          <NavLink to="/archive">Archívum</NavLink>
-          <NavLink to="/search">Keresés</NavLink>
-          {(hasInvoiceAccess || isAdmin) && <NavLink to="/invoices">Könyvelés</NavLink>}
-          <NavLink to="/settings">Beállítások</NavLink>
-          <NavLink to="/blog">Blog</NavLink>
-          <NavLink to="/gyik">GYIK</NavLink>
-          <NavLink to="/help">Segítség</NavLink>
+          <NavLink to="/">{t("dashboard")}</NavLink>
+          <NavLink to="/upload">{t("upload")}</NavLink>
+          <NavLink to="/archive">{t("archive")}</NavLink>
+          <NavLink to="/search">{t("search")}</NavLink>
+          {(hasInvoiceAccess || isAdmin) && <NavLink to="/invoices">{t("accounting")}</NavLink>}
+          <NavLink to="/settings">{t("settings")}</NavLink>
+          <NavLink to="/blog">{t("blog")}</NavLink>
+          <NavLink to="/gyik">{t("faq")}</NavLink>
+          <NavLink to="/help">{t("help")}</NavLink>
           {!checkingAdmin && isAdmin && (
             <>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground px-2 pt-2">Admin</p>
-              <NavLink to="/admin/forms">Űrlapkezelő</NavLink>
-              <NavLink to="/admin/analytics">Analitika</NavLink>
-              <NavLink to="/admin/knowledge-base">Knowledge Base</NavLink>
-              {isOwner && <NavLink to="/admin/ai-studio">AI Studio</NavLink>}
+              <p className="text-xs uppercase tracking-wide text-muted-foreground px-2 pt-2">{t("admin")}</p>
+              <NavLink to="/admin/forms">{t("formsAdmin")}</NavLink>
+              <NavLink to="/admin/analytics">{t("analytics")}</NavLink>
+              <NavLink to="/admin/knowledge-base">{t("knowledgeBase")}</NavLink>
+              {isOwner && <NavLink to="/admin/ai-studio">{t("aiStudio")}</NavLink>}
             </>
           )}
         </>
@@ -245,11 +248,13 @@ export function Navbar() {
         <div className="flex h-14 sm:h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-bold text-lg sm:text-xl text-primary touch-manipulation min-h-[44px]">
             <FileText className="h-5 w-5 sm:h-6 sm:w-6" />
-            <span>AdminAI</span>
+            <span>{t("brand")}</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-3 lg:gap-4">
             {user ? <DesktopAppLinks /> : <DesktopPublicLinks />}
+
+            <LanguageSwitcher />
 
             {mounted && (
               <Button
@@ -257,7 +262,7 @@ export function Navbar() {
                 size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 className="min-h-[44px] min-w-[44px] touch-manipulation"
-                aria-label="Toggle theme"
+                aria-label={theme === "dark" ? t("themeLight") : t("themeDark")}
               >
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
@@ -268,38 +273,39 @@ export function Navbar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2 min-h-[44px] touch-manipulation" data-tour="nav-profile">
                     <User className="h-4 w-4" />
-                    <span>Profil</span>
+                    <span>{t("profile")}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => navigate("/upload")}>Dokumentum feltöltése</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")}>Beállítások</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/gyik")}>GYIK</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/upload")}>{t("uploadDoc")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>{t("settings")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/gyik")}>{t("faq")}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/help")}>
                     <HelpCircle className="h-4 w-4 mr-2" />
-                    Segítő
+                    {t("helpCoach")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut} className="text-destructive">
                     <LogOut className="h-4 w-4 mr-2" />
-                    Kijelentkezés
+                    {t("signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <Button onClick={() => navigate("/auth")} size="sm" className="min-h-[44px] touch-manipulation">
-                Bejelentkezés
+                {t("login")}
               </Button>
             )}
           </div>
 
           <div className="flex md:hidden items-center gap-2">
+            <LanguageSwitcher className="h-9 w-[100px]" />
             {mounted && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 className="min-h-[44px] min-w-[44px] p-2 touch-manipulation"
-                aria-label="Toggle theme"
+                aria-label={theme === "dark" ? t("themeLight") : t("themeDark")}
               >
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
@@ -313,18 +319,18 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => navigate("/upload")}>Dokumentum feltöltése</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")}>Beállítások</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/help")}>Segítő</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/upload")}>{t("uploadDoc")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>{t("settings")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/help")}>{t("helpCoach")}</DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut} className="text-destructive">
                     <LogOut className="h-4 w-4 mr-2" />
-                    Kijelentkezés
+                    {t("signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <Button onClick={() => navigate("/auth")} size="sm" className="min-h-[44px] px-3 touch-manipulation text-xs sm:text-sm">
-                Belépés
+                {t("loginShort")}
               </Button>
             )}
 
@@ -332,12 +338,12 @@ export function Navbar() {
               <SheetTrigger asChild>
                 <Button variant="outline" size="sm" className="min-h-[44px] min-w-[44px] p-2 touch-manipulation">
                   <Menu className="h-5 w-5" />
-                  <span className="sr-only">Menü megnyitása</span>
+                  <span className="sr-only">{t("openMenu")}</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[280px] sm:w-[320px]">
                 <SheetHeader>
-                  <SheetTitle className="text-left">Menü</SheetTitle>
+                  <SheetTitle className="text-left">{t("menu")}</SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-1 mt-6">{mobileNavLinks}</div>
               </SheetContent>

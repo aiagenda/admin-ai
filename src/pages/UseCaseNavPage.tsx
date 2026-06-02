@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function UseCaseNavPage() {
@@ -8,12 +8,7 @@ export default function UseCaseNavPage() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <SEOHead
-        title="NAV határozat értelmezés AI-val | AdminAI"
-        description="NAV határozat, adóhivatal levél vagy felszólítás érkezett? Az AdminAI közérthetően elmagyarázza, mit jelent és mi a következő lépés."
-        path="/nav-hatarozat-ertelmezes"
-        keywords="NAV határozat értelmezés, adóhivatal levél, NAV felszólítás, hivatalos dokumentum értelmezés"
-      />
+      <PageSEO pageKey="useCaseNav" path="/nav-hatarozat-ertelmezes" />
       <div className="container mx-auto max-w-4xl space-y-8">
         <header className="space-y-3">
           <h1 className="text-4xl font-bold">NAV határozat értelmezése AI-val, magyarul</h1>

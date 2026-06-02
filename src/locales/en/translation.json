@@ -1,0 +1,120 @@
+{
+  "seo": {
+    "home": {
+      "title": "NoticeIQ – understand agency letters & invoices | AI for SMBs",
+      "description": "Plain-language summaries, next steps, and deadlines from PDFs and scans. Free trial, then per-document or monthly plans. Invoice OCR and bookkeeping-friendly export.",
+      "keywords": "IRS letter, tax notice, agency letter, invoice OCR, SMB admin AI, NoticeIQ",
+      "websiteDescription": "Plain-language breakdowns of official letters and deadlines. Invoice OCR and export for small businesses."
+    },
+    "pricing": {
+      "title": "NoticeIQ pricing – documents, monthly plans, bookkeeping add-on",
+      "description": "Per-document and monthly bundles with a free trial and Stripe checkout. Built for official letters, invoice OCR, and bookkeeping workflows.",
+      "keywords": "NoticeIQ pricing, document AI, monthly plan, invoice OCR, Stripe"
+    },
+    "arak": {
+      "title": "NoticeIQ pricing (2026) – trial, documents, monthly, invoices",
+      "description": "Compare plans for AI breakdowns of official letters, invoice OCR, and archive. Built for busy SMB teams.",
+      "keywords": "NoticeIQ pricing, SMB, invoice OCR, subscription"
+    },
+    "upload": {
+      "title": "Upload a document | NoticeIQ",
+      "description": "Upload a PDF or photo for AI analysis: deadlines, amounts, and export for your accountant.",
+      "keywords": "upload PDF, document AI, NoticeIQ"
+    },
+    "auth": {
+      "title": "Sign in or create account | NoticeIQ",
+      "description": "Access document and invoice workflows: Google or email sign-in.",
+      "keywords": "NoticeIQ login, sign up"
+    },
+    "authBootstrap": {
+      "title": "Signing in | NoticeIQ",
+      "description": "Complete sign-in with Google or email.",
+      "keywords": ""
+    },
+    "authCallback": {
+      "title": "Completing sign-in | NoticeIQ",
+      "description": "OAuth redirect endpoint (not indexed).",
+      "keywords": ""
+    },
+    "notFound": {
+      "title": "404 – page not found | NoticeIQ",
+      "description": "This page does not exist. Return home for document analysis and invoice tools.",
+      "keywords": ""
+    },
+    "help": {
+      "title": "Help & FAQ | NoticeIQ",
+      "description": "How upload, analysis, archive, invoices, and export work — troubleshooting and tips.",
+      "keywords": "NoticeIQ help, upload, invoice module, FAQ"
+    },
+    "gyik": {
+      "title": "FAQ: tax letters, invoice OCR, privacy | NoticeIQ",
+      "description": "Deadlines, OCR, exports, and security — common questions about NoticeIQ.",
+      "keywords": "FAQ, invoice OCR, tax letter, NoticeIQ"
+    },
+    "blog": {
+      "title": "NoticeIQ blog – tax letters, invoices, SMB operations",
+      "description": "Practical guides for interpreting notices and streamlining invoice workflows.",
+      "keywords": "tax blog, invoice OCR, SMB, NoticeIQ"
+    },
+    "comparisonChatgpt": {
+      "title": "NoticeIQ vs ChatGPT for official documents",
+      "description": "Why a purpose-built workflow beats a general chatbot for deadlines, structured extraction, and archives.",
+      "keywords": "NoticeIQ vs ChatGPT, document AI"
+    },
+    "comparisonBillingo": {
+      "title": "NoticeIQ vs Billingo – incoming documents",
+      "description": "Billingo focuses on outbound invoicing; NoticeIQ focuses on understanding letters you receive.",
+      "keywords": "Billingo, incoming mail, NoticeIQ"
+    },
+    "comparisonSzamlazz": {
+      "title": "NoticeIQ vs Számlázz.hu – different jobs",
+      "description": "Invoicing platforms vs document interpretation — what each is best at.",
+      "keywords": "Számlázz, document AI, NoticeIQ"
+    },
+    "useCaseNav": {
+      "title": "Understand tax authority letters (SMB) | NoticeIQ",
+      "description": "Turn complex notices into clear next steps and calendar-ready deadlines.",
+      "keywords": "tax notice, authority letter, SMB"
+    },
+    "useCaseOcr": {
+      "title": "Invoice OCR for SMBs | NoticeIQ",
+      "description": "Capture invoice fields from scans and photos and export to spreadsheets.",
+      "keywords": "invoice OCR, bookkeeping export"
+    },
+    "useCaseArchive": {
+      "title": "Document archive for SMBs | NoticeIQ",
+      "description": "Searchable archive with AI summaries for operational and compliance paperwork.",
+      "keywords": "document archive, SMB"
+    },
+    "legalPrivacy": {
+      "title": "Privacy policy | NoticeIQ",
+      "description": "How we process personal data: purposes, retention, and your rights.",
+      "keywords": "privacy, GDPR, NoticeIQ"
+    },
+    "legalCookies": {
+      "title": "Cookie notice | NoticeIQ",
+      "description": "Cookies used by the web app and how to control them.",
+      "keywords": "cookies, NoticeIQ"
+    },
+    "legalTerms": {
+      "title": "Terms of service | NoticeIQ",
+      "description": "Terms covering access, billing, liability, and termination.",
+      "keywords": "terms, NoticeIQ"
+    },
+    "legalDpa": {
+      "title": "Data processing agreement (DPA) | NoticeIQ",
+      "description": "B2B processing roles, instructions, and subprocessors (template-level overview).",
+      "keywords": "DPA, processing agreement"
+    },
+    "legalImprint": {
+      "title": "Imprint & contact | NoticeIQ",
+      "description": "Provider details and contact channels.",
+      "keywords": "imprint, contact"
+    },
+    "legalSecurity": {
+      "title": "Security overview | NoticeIQ",
+      "description": "How we protect documents and accounts at a high level.",
+      "keywords": "security, NoticeIQ"
+    }
+  }
+}

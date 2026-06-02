@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, AlertCircle, Info, AlertTriangle, Copy, Download, ExternalLink, ThumbsUp, ThumbsDown, MessageSquare, CalendarDays, Share2, FileText as FileTextIcon, FileDown } from "lucide-react";
+import { ArrowLeft, Calendar, AlertCircle, Info, AlertTriangle, Copy, Download, ExternalLink, ThumbsUp, ThumbsDown, MessageSquare, CalendarDays, Share2, FileText as FileTextIcon, FileDown, FileSpreadsheet } from "lucide-react";
 import { HelpTooltip } from "@/components/HelpTooltip";
 import { SmartSuggestions } from "@/components/SmartSuggestions";
 import { FormCard } from "@/components/FormCard";
@@ -1070,16 +1070,29 @@ END:VCALENDAR`;
           </Button>
         </div>
           
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
             <Button onClick={exportAsPDF} variant="outline" size="sm" className="min-h-[44px] touch-manipulation w-full sm:w-auto">
               <FileDown className="h-4 w-4 mr-2" />
               Exportálás PDF-ként
+            </Button>
+            <Button
+              type="button"
+              onClick={() => navigate("/archive#export-konyvelo")}
+              variant="outline"
+              size="sm"
+              className="min-h-[44px] touch-manipulation w-full sm:w-auto"
+            >
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              CSV / Excel könyvelőnek
             </Button>
             <Button onClick={generateShareLink} variant="outline" size="sm" className="min-h-[44px] touch-manipulation w-full sm:w-auto">
               <Share2 className="h-4 w-4 mr-2" />
               Megosztás
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground text-center sm:text-left">
+            A könyvelőnek szánt táblázatot az archívumban állíthatod össze (szűrés, dátum, összeg, határidő).
+          </p>
         </div>
 
         {/* Share Dialog */}

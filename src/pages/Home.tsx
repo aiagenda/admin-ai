@@ -14,7 +14,8 @@ import { format, startOfMonth, endOfMonth } from "date-fns";
 import { hu } from "date-fns/locale";
 import { getHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
 import { Link } from "react-router-dom";
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
+import { useTranslation } from "react-i18next";
 import { getSiteOrigin } from "@/lib/site";
 
 // Time-based greeting
@@ -202,31 +203,36 @@ export default function Home() {
     return map;
   }, [visibleCardOrder]);
 
+  const { t: seoT } = useTranslation("translation");
+  const { t: navT } = useTranslation("nav");
+  const { i18n } = useTranslation();
+
+  const homeStructuredData = useMemo(() => {
+    const origin = getSiteOrigin();
+    const lang = i18n.language?.startsWith("en") ? "en-US" : "hu-HU";
+    return {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          name: navT("brand"),
+          url: origin,
+          logo: `${origin}/icon-512.png`,
+        },
+        {
+          "@type": "WebSite",
+          name: navT("brand"),
+          url: origin,
+          inLanguage: lang,
+          description: seoT("seo.home.websiteDescription"),
+        },
+      ],
+    };
+  }, [i18n.language, navT, seoT]);
+
   return (
     <div className="min-h-screen">
-      <SEOHead
-        title="AdminAI – hivatalos levelek és NAV iratok értelmezése (1 ingyenes próba)"
-        description="Töltsd fel a hivatalos levelet vagy NAV iratot: magyarázat, teendők, határidők. Egy ingyenes próbadokumentum, utána dokumentumonként vagy havi csomag. Számla OCR és könyvelés modul elérhető."
-        path="/"
-        keywords="NAV levél értelmezés, hivatalos levél magyarázat, adóhatóság, számla OCR, AdminAI"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "Organization",
-              name: "AdminAI",
-              url: getSiteOrigin(),
-              logo: `${getSiteOrigin()}/icon-512.png`,
-            },
-            {
-              "@type": "WebSite",
-              name: "AdminAI",
-              url: getSiteOrigin(),
-              inLanguage: "hu",
-            },
-          ],
-        }}
-      />
+      <PageSEO pageKey="home" path="/" structuredData={homeStructuredData} />
       {user ? (
         /* Dashboard for logged-in users */
         <div className="container mx-auto max-w-6xl py-12 px-4 flex flex-col gap-6">

@@ -1,4 +1,4 @@
-import { SEOHead } from "@/components/SEOHead";
+import { PageSEO } from "@/components/PageSEO";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -7,12 +7,7 @@ export default function ComparisonChatGptPage() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <SEOHead
-        title="AdminAI vs ChatGPT dokumentum értelmezésre"
-        description="AdminAI vs ChatGPT: miért jobb egy célzott magyar dokumentum-értelmező rendszer NAV levelekhez, határidőkhöz és számla OCR-hez."
-        path="/adminai-vs-chatgpt"
-        keywords="AdminAI vs ChatGPT, dokumentum értelmezés AI, NAV levél ChatGPT helyett"
-      />
+      <PageSEO pageKey="comparisonChatgpt" path="/adminai-vs-chatgpt" />
       <div className="container mx-auto max-w-4xl space-y-6">
         <h1 className="text-4xl font-bold">AdminAI vs ChatGPT dokumentum értelmezésre</h1>
         <p className="text-muted-foreground text-lg">
