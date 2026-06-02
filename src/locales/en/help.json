@@ -20,7 +20,7 @@
     {
       "category": "Upload",
       "question": "How long does analysis take?",
-      "answer": "Usually 30\u201360 seconds. Complex or multi-page notices can take longer."
+      "answer": "Usually 30–60 seconds. Complex or multi-page notices can take longer."
     },
     {
       "category": "Upload",
@@ -60,7 +60,23 @@
     {
       "category": "Billing",
       "question": "Is there a free trial?",
-      "answer": "Yes\u2014one trial analysis per account. After that, pay per document or choose a monthly plan on Pricing."
+      "answer": "Yes—one trial analysis per account. After that, pay per document or choose a monthly plan on Pricing."
     }
-  ]
+  ],
+  "allCategories": "All",
+  "stillNeedHelp": "Still need help?",
+  "contactBlurb": "If you need more assistance, please contact us.",
+  "backHome": "Back to home",
+  "uploadDocument": "Upload a document",
+  "categories": {
+    "General": "General",
+    "Upload": "Upload",
+    "Results": "Results",
+    "Archive": "Archive",
+    "Export": "Export",
+    "Deadlines": "Deadlines",
+    "Privacy": "Privacy",
+    "Billing": "Billing",
+    "Security": "Security"
+  }
 }

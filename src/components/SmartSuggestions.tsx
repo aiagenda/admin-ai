@@ -21,200 +21,182 @@ interface Suggestion {
 const categorySuggestions: Record<string, Suggestion[]> = {
   adozas: [
     {
-      title: "NAV Ügyfélportál",
-      description: "Adóbevallás, adófizetés, adóügyek kezelése",
-      url: "https://nav.gov.hu/ugyfeliranytu",
+      title: "IRS Online Account",
+      description: "View balance, payment history, and tax records",
+      url: "https://www.irs.gov/payments/your-online-account",
       icon: <Globe className="h-5 w-5" />,
       priority: "high",
     },
     {
-      title: "NAV Adatbázisok",
-      description: "Adószám lekérdezés, árverések, adóhiányosok",
-      url: "https://nav.gov.hu/adatbazisok",
-      icon: <BookOpen className="h-5 w-5" />,
-      priority: "medium",
+      title: "IRS Direct Pay",
+      description: "Pay your tax bill directly from your bank account",
+      url: "https://www.irs.gov/payments/direct-pay",
+      icon: <FileText className="h-5 w-5" />,
+      priority: "high",
     },
     {
-      title: "eBEV Online",
-      description: "Elektronikus bevallás benyújtása",
-      url: "https://ebev.nav.gov.hu/",
-      icon: <FileText className="h-5 w-5" />,
+      title: "IRS Payment Plans",
+      description: "Apply for an installment agreement online",
+      url: "https://www.irs.gov/payments/payment-plans-installment-agreements",
+      icon: <BookOpen className="h-5 w-5" />,
       priority: "medium",
     },
   ],
   egeszsegugy: [
     {
-      title: "NEAK - Egészségbiztosító",
-      description: "Egészségbiztosítási információk és ügyintézés",
-      url: "https://www.neak.gov.hu/",
+      title: "Medicare.gov",
+      description: "Medicare benefits, coverage, and claims",
+      url: "https://www.medicare.gov",
       icon: <Heart className="h-5 w-5" />,
       priority: "high",
     },
     {
-      title: "EESZT Portál",
-      description: "Elektronikus egészségügyi szolgáltatások",
-      url: "https://www.eeszt.gov.hu/",
+      title: "Healthcare.gov",
+      description: "Marketplace health insurance plans and enrollment",
+      url: "https://www.healthcare.gov",
       icon: <Heart className="h-5 w-5" />,
-      priority: "high",
+      priority: "medium",
     },
     {
-      title: "Kormányablak - TB ügyek",
-      description: "Társadalombiztosítási ügyintézés",
-      url: "https://kormanyablak.hu/hu/feladatkorok/172",
-      icon: <Globe className="h-5 w-5" />,
+      title: "Medicaid.gov",
+      description: "Medicaid coverage information and eligibility",
+      url: "https://www.medicaid.gov",
+      icon: <Building2 className="h-5 w-5" />,
       priority: "medium",
     },
   ],
   oktatas: [
     {
-      title: "Felvi.hu",
-      description: "Felsőoktatási felvételi információk",
-      url: "https://www.felvi.hu/",
+      title: "Federal Student Aid",
+      description: "FAFSA, student loans, and financial aid",
+      url: "https://studentaid.gov",
       icon: <GraduationCap className="h-5 w-5" />,
       priority: "high",
     },
     {
-      title: "Oktatási Hivatal",
-      description: "Oktatási információk és szolgáltatások",
-      url: "https://www.oktatas.hu/",
+      title: "NSLDS – Loan Lookup",
+      description: "Look up federal student loan balances",
+      url: "https://nslds.ed.gov",
       icon: <BookOpen className="h-5 w-5" />,
       priority: "medium",
-    },
-    {
-      title: "KRÉTA",
-      description: "Köznevelési regisztrációs és tanulmányi rendszer",
-      url: "https://kfranklinsulinaplo.e-kreta.hu/",
-      icon: <GraduationCap className="h-5 w-5" />,
-      priority: "low",
     },
   ],
   szocialis: [
     {
-      title: "Magyar Államkincstár",
-      description: "Családtámogatások, szociális ellátások",
-      url: "https://www.allamkincstar.gov.hu/",
-      icon: <Heart className="h-5 w-5" />,
-      priority: "high",
-    },
-    {
-      title: "Kormányablak - Családtámogatás",
-      description: "Családi pótlék és támogatások ügyintézése",
-      url: "https://kormanyablak.hu/hu/feladatkorok/7",
-      icon: <Heart className="h-5 w-5" />,
-      priority: "medium",
-    },
-    {
-      title: "Nyugdíjfolyósító",
-      description: "Nyugdíj információk és ügyintézés",
-      url: "https://www.allamkincstar.gov.hu/hu/koltsegvetesi-ugyek/nyugdijszakigazgatas",
-      icon: <HelpCircle className="h-5 w-5" />,
-      priority: "low",
-    },
-  ],
-  kozlekedes: [
-    {
-      title: "Közlekedési Alkalmassági Vizsgaközpont",
-      description: "Jogosítvány, gépjármű ügyintézés",
-      url: "https://www.kavk.hu/",
-      icon: <Car className="h-5 w-5" />,
-      priority: "high",
-    },
-    {
-      title: "Kormányablak - Közlekedés",
-      description: "Közlekedési ügyintézés információk",
-      url: "https://kormanyablak.hu/hu/feladatkorok/104",
-      icon: <Car className="h-5 w-5" />,
-      priority: "medium",
-    },
-    {
-      title: "eBEV - Gépjárműadó",
-      description: "Gépjárműadó bevallás és fizetés",
-      url: "https://nav.gov.hu/ugyfeliranytu/elethelyzetek-adozasa/gepjarmuado",
-      icon: <FileText className="h-5 w-5" />,
-      priority: "low",
-    },
-  ],
-  ingatlan: [
-    {
-      title: "E-ingatlan-nyilvántartás",
-      description: "Tulajdoni lap, ingatlan lekérdezés",
-      url: "https://www.foldhivatal.hu/",
-      icon: <Home className="h-5 w-5" />,
-      priority: "high",
-    },
-    {
-      title: "Kormányablak - Ingatlan",
-      description: "Ingatlan ügyintézés és tulajdonjog",
-      url: "https://kormanyablak.hu/hu/feladatkorok/91",
-      icon: <Home className="h-5 w-5" />,
-      priority: "medium",
-    },
-  ],
-  uzlet: [
-    {
-      title: "Céginfo - e-Cégjegyzék",
-      description: "Céginformációk lekérdezése",
-      url: "https://www.e-cegjegyzek.hu/",
+      title: "SSA – My Social Security",
+      description: "View Social Security benefits and statements",
+      url: "https://www.ssa.gov/myaccount/",
       icon: <Building2 className="h-5 w-5" />,
       priority: "high",
     },
     {
-      title: "NAV - Vállalkozások",
-      description: "Vállalkozói ügyintézés a NAV-nál",
-      url: "https://nav.gov.hu/ugyfeliranytu/elethelyzetek-adozasa/vallalkozas_inditas",
+      title: "Benefits.gov",
+      description: "Find federal benefit programs you may qualify for",
+      url: "https://www.benefits.gov",
+      icon: <Globe className="h-5 w-5" />,
+      priority: "medium",
+    },
+  ],
+  kozlekedes: [
+    {
+      title: "DMV.org",
+      description: "Driver's license, vehicle registration, and DMV services",
+      url: "https://www.dmv.org",
+      icon: <Car className="h-5 w-5" />,
+      priority: "high",
+    },
+    {
+      title: "FMCSA Safety",
+      description: "Federal motor carrier safety information",
+      url: "https://www.fmcsa.dot.gov",
+      icon: <Building2 className="h-5 w-5" />,
+      priority: "low",
+    },
+  ],
+  uzlet: [
+    {
+      title: "SBA – Small Business Admin",
+      description: "Business licenses, loans, and federal programs",
+      url: "https://www.sba.gov",
       icon: <Briefcase className="h-5 w-5" />,
+      priority: "high",
+    },
+    {
+      title: "IRS Business Center",
+      description: "EIN, business taxes, and employer info",
+      url: "https://www.irs.gov/businesses",
+      icon: <FileText className="h-5 w-5" />,
+      priority: "medium",
+    },
+  ],
+  szamla: [
+    {
+      title: "CFPB – Consumer Finance",
+      description: "Credit, debt collection, and billing disputes",
+      url: "https://www.consumerfinance.gov",
+      icon: <Building2 className="h-5 w-5" />,
+      priority: "high",
+    },
+  ],
+  hatosagi_level: [
+    {
+      title: "USA.gov – Government Help",
+      description: "Find the right federal or state agency for your issue",
+      url: "https://www.usa.gov/contact-your-government",
+      icon: <Globe className="h-5 w-5" />,
+      priority: "high",
+    },
+  ],
+  egyeb: [
+    {
+      title: "USA.gov",
+      description: "Official guide to U.S. government services",
+      url: "https://www.usa.gov",
+      icon: <Globe className="h-5 w-5" />,
       priority: "medium",
     },
   ],
 };
 
 const tagBasedSuggestions: Record<string, Suggestion[]> = {
-  hitel: [
-    {
-      title: "Magyar Nemzeti Bank",
-      description: "Hitel információk és fogyasztóvédelem",
-      url: "https://www.mnb.hu/fogyasztovedelem",
-      icon: <FileText className="h-5 w-5" />,
-      priority: "high",
-    },
-  ],
   bank: [
     {
-      title: "MNB - Pénzügyi Fogyasztóvédelem",
-      description: "Banki panaszok, fogyasztóvédelem",
-      url: "https://www.mnb.hu/fogyasztovedelem",
+      title: "CFPB – Banking Complaints",
+      description: "File a complaint about a bank or financial institution",
+      url: "https://www.consumerfinance.gov/complaint/",
       icon: <Building2 className="h-5 w-5" />,
       priority: "medium",
     },
   ],
-  fizetés: [
+  payment: [
     {
-      title: "NAV - Befizetés",
-      description: "Adófizetési módok és számlaszámok",
-      url: "https://nav.gov.hu/ugyfeliranytu/elethelyzetek-adozasa/befizetesek",
+      title: "IRS Direct Pay",
+      description: "Pay tax bills directly from your bank account",
+      url: "https://www.irs.gov/payments/direct-pay",
       icon: <FileText className="h-5 w-5" />,
       priority: "low",
     },
   ],
-  végrehajtás: [
+  collections: [
     {
-      title: "Bírósági Végrehajtók Kamarája",
-      description: "Végrehajtási ügyek, jogorvoslat",
-      url: "https://www.mbvk.hu/",
+      title: "CFPB – Debt Collection",
+      description: "Know your rights and how to dispute collections",
+      url: "https://www.consumerfinance.gov/consumer-tools/debt-collection/",
       icon: <FileText className="h-5 w-5" />,
       priority: "high",
     },
   ],
-  hiánypótlás: [
+  deadline: [
     {
-      title: "NAV Ügyféliránytű",
-      description: "Hiánypótlás, határidők, teendők",
-      url: "https://nav.gov.hu/ugyfeliranytu/eljarasi-kerdesek",
+      title: "IRS – Penalty Relief",
+      description: "Learn how to request first-time penalty abatement",
+      url: "https://www.irs.gov/payments/penalty-relief",
       icon: <FileText className="h-5 w-5" />,
       priority: "high",
     },
   ],
 };
+
 
 export function SmartSuggestions({ category, tags, severity }: SmartSuggestionsProps) {
   const suggestions: Suggestion[] = [];
@@ -257,10 +239,10 @@ export function SmartSuggestions({ category, tags, severity }: SmartSuggestionsP
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Lightbulb className="h-5 w-5 text-primary" />
-          Hasznos linkek és javaslatok
+          Helpful Links & Resources
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          A dokumentum típusa alapján ajánlott oldalak és információk
+          Recommended resources based on your document type
         </p>
       </CardHeader>
       <CardContent>
@@ -287,7 +269,7 @@ export function SmartSuggestions({ category, tags, severity }: SmartSuggestionsP
                   onClick={() => window.open(suggestion.url, "_blank", "noopener,noreferrer")}
                 >
                   <ExternalLink className="h-4 w-4 mr-1" />
-                  Megnyitás
+                  Open
                 </Button>
               </div>
             ))}
@@ -296,14 +278,14 @@ export function SmartSuggestions({ category, tags, severity }: SmartSuggestionsP
           <div className="text-center py-6 text-muted-foreground">
             <p className="text-sm">
               {category || tags?.length ? (
-                <>Nincs elérhető javaslat a dokumentum típusához.</>
+                <>No suggestions available for this document type.</>
               ) : (
-                <>A dokumentum kategorizálása után itt jelennek meg a releváns linkek és javaslatok.</>
+                <>Relevant resources will appear here once the document is categorized.</>
               )}
             </p>
             {!category && !tags?.length && (
               <p className="text-xs mt-2 opacity-75">
-                Kategória: {category || "nincs"} | Címkék: {tags?.length || 0}
+                Category: {category || "none"} | Tags: {tags?.length || 0}
               </p>
             )}
           </div>

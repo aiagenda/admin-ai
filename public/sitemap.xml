@@ -1,129 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Core pages -->
   <url>
-    <loc>https://adminai.hu/</loc>
-    <lastmod>2026-04-28</lastmod>
+    <loc>https://noticeiq.io/</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://adminai.hu/arak</loc>
-    <lastmod>2026-04-28</lastmod>
+    <loc>https://noticeiq.io/pricing</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://adminai.hu/pricing</loc>
-    <lastmod>2026-04-28</lastmod>
+    <loc>https://noticeiq.io/help</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://noticeiq.io/blog</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- US solution pages -->
   <url>
-    <loc>https://adminai.hu/nav-hatarozat-ertelmezes</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://adminai.hu/szamla-ocr</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://adminai.hu/dokumentum-archivum</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://adminai.hu/gyik</loc>
-    <lastmod>2026-04-28</lastmod>
+    <loc>https://noticeiq.io/irs-notices</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.75</priority>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://adminai.hu/blog</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://noticeiq.io/state-tax-letters</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://noticeiq.io/ssa-letters</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Legal -->
   <url>
-    <loc>https://adminai.hu/blog/mit-jelent-a-nav-felszolitas</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://adminai.hu/blog/hogyan-kell-szamlat-konyvelonek-kuldeni</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://adminai.hu/blog/legjobb-iratkezelo-szoftver-kkv-2026</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://adminai.hu/help</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://adminai.hu/adminai-vs-chatgpt</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://adminai.hu/adminai-vs-billingo</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://adminai.hu/adminai-vs-szamlazz</loc>
-    <lastmod>2026-04-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://adminai.hu/legal/privacy</loc>
-    <lastmod>2026-04-28</lastmod>
+    <loc>https://noticeiq.io/legal/privacy</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.35</priority>
   </url>
   <url>
-    <loc>https://adminai.hu/legal/cookies</loc>
-    <lastmod>2026-04-28</lastmod>
+    <loc>https://noticeiq.io/legal/cookies</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.35</priority>
   </url>
   <url>
-    <loc>https://adminai.hu/legal/terms</loc>
-    <lastmod>2026-04-28</lastmod>
+    <loc>https://noticeiq.io/legal/terms</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.35</priority>
   </url>
   <url>
-    <loc>https://adminai.hu/legal/dpa</loc>
-    <lastmod>2026-04-28</lastmod>
+    <loc>https://noticeiq.io/legal/dpa</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://adminai.hu/legal/imprint</loc>
-    <lastmod>2026-04-28</lastmod>
+    <loc>https://noticeiq.io/legal/imprint</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.35</priority>
+    <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://adminai.hu/legal/security</loc>
-    <lastmod>2026-04-28</lastmod>
+    <loc>https://noticeiq.io/legal/security</loc>
+    <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
+
 </urlset>

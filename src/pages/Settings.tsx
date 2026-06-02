@@ -83,7 +83,7 @@ export default function Settings() {
             .single();
           if (createError) {
             console.error("Error creating profile:", createError);
-            toast.error("Hiba a profil létrehozása során");
+            toast.error("Failed to create profile");
             setLoading(false);
             return;
           }
@@ -120,7 +120,7 @@ export default function Settings() {
         }
       } catch (error: any) {
         console.error("Error fetching profile:", error);
-        toast.error("Hiba a profil betöltése során");
+        toast.error("Failed to load profile");
       } finally {
         setLoading(false);
       }
@@ -168,7 +168,7 @@ export default function Settings() {
 
       if (notifError) throw notifError;
 
-      toast.success("Beállítások mentve!");
+      toast.success("Settings saved!");
       
       // Update local profile state
       setProfile({
@@ -181,7 +181,7 @@ export default function Settings() {
     } catch (error: any) {
       console.error("Error saving settings:", error?.message ?? error);
       if (error?.code) console.error("Supabase code:", error.code, "details:", error.details);
-      toast.error("Hiba a beállítások mentése során");
+      toast.error("Failed to save settings");
     } finally {
       setSaving(false);
     }
@@ -189,7 +189,7 @@ export default function Settings() {
 
   const handleSendTestEmail = async () => {
     if (!accountantEmail || !accountantEmail.trim()) {
-      toast.error("Először adj meg egy könyvelő email címet");
+      toast.error("Enter an accountant email first");
       return;
     }
 
@@ -221,13 +221,13 @@ export default function Settings() {
       const result = await response.json();
 
       if (!response.ok || !result?.success) {
-        throw new Error(result?.error || "Hiba a teszt email küldése során");
+        throw new Error(result?.error || "Failed to send test email");
       }
 
-      toast.success(`Teszt email elküldve a következő címre: ${accountantEmail}`);
+      toast.success(`Test email sent to ${accountantEmail}`);
     } catch (error: any) {
       console.error("Error sending test email:", error);
-      toast.error(error.message || "Hiba a teszt email küldése során");
+      toast.error(error.message || "Failed to send test email");
     } finally {
       setSendingTest(false);
     }
@@ -238,7 +238,7 @@ export default function Settings() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Betöltés...</p>
+          <p className="text-muted-foreground">Loading…</p>
         </div>
       </div>
     );
@@ -248,21 +248,21 @@ export default function Settings() {
     <div className="min-h-screen py-12 px-4">
       <div className="container mx-auto max-w-3xl space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Beállítások</h1>
+          <h1 className="text-3xl font-bold">Settings</h1>
           <p className="text-muted-foreground mt-2">
-            Kezelje a könyvelő export beállításait és egyéb preferenciáit
+            Manage export, notifications, and home screen layout
           </p>
         </div>
 
-        {/* Főoldal kártyák sorrendje */}
+        {/* Home card order */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <LayoutGrid className="h-5 w-5" />
-              <CardTitle>Kártyák sorrendje (főoldal)</CardTitle>
+              <CardTitle>Home screen card order</CardTitle>
             </div>
             <CardDescription>
-              Állítsd be, milyen sorrendben jelenjenek meg a blokkok a főoldalon. Különösen mobilon hasznos.
+              Drag to reorder blocks on your dashboard. Especially useful on mobile.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -270,29 +270,29 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-                {/* Könyvelő Export Beállítások */}
+                {/* Accountant export */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <CardTitle>Könyvelő Export Beállítások</CardTitle>
+              <CardTitle>Accountant Export</CardTitle>
               <HelpTooltip 
-                content="Állítsa be a könyvelő email címét és az automatikus havi jelentés küldés beállításait. A jelentések tartalmazni fogják az adott hónap dokumentumait."
-                helpPageAnchor="beallitasok"
+                content="Set your accountant email and optional monthly report delivery."
+                helpPageAnchor="settings"
               />
             </div>
             <CardDescription>
-              Konfigurálja az automatikus könyvelő jelentések küldését
+              Configure automatic monthly report delivery
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Könyvelő Email */}
+            {/* Accountant email */}
             <div className="space-y-2">
-              <Label htmlFor="accountant-email">Könyvelő email címe</Label>
+              <Label htmlFor="accountant-email">Accountant email</Label>
               <div className="flex gap-2">
                 <Input
                   id="accountant-email"
                   type="email"
-                  placeholder="konyvelo@example.com"
+                  placeholder="accountant@example.com"
                   value={accountantEmail}
                   onChange={(e) => setAccountantEmail(e.target.value)}
                   className="flex-1"
@@ -302,7 +302,7 @@ export default function Settings() {
                   size="icon"
                   onClick={handleSendTestEmail}
                   disabled={!accountantEmail || sendingTest}
-                  title="Teszt email küldése"
+                  title="Send test email"
                 >
                   {sendingTest ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -312,19 +312,19 @@ export default function Settings() {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                A könyvelő email címe, ahova a havi jelentéseket küldjük
+                Email address where monthly reports are sent
               </p>
             </div>
 
             <Separator />
 
-            {/* Automatikus Küldés */}
+            {/* Auto-send */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="auto-send">Automatikus havi jelentés küldés</Label>
+                  <Label htmlFor="auto-send">Send monthly report automatically</Label>
                   <p className="text-sm text-muted-foreground">
-                    Minden hónapban automatikusan küldjön jelentést a könyvelőnek
+                    Email a report to your accountant each month
                   </p>
                 </div>
                 <Switch
@@ -336,7 +336,7 @@ export default function Settings() {
 
               {autoSendEnabled && (
                 <div className="space-y-2 pl-6 border-l-2">
-                  <Label htmlFor="auto-send-day">Küldés napja a hónapban</Label>
+                  <Label htmlFor="auto-send-day">Day of month to send</Label>
                   <Select value={autoSendDay} onValueChange={setAutoSendDay}>
                     <SelectTrigger id="auto-send-day">
                       <SelectValue />
@@ -350,7 +350,7 @@ export default function Settings() {
                     </SelectContent>
                   </Select>
                   <p className="text-sm text-muted-foreground">
-                    A jelentés ezen a napon lesz elküldve minden hónapban
+                    The report is sent on this day each month
                   </p>
                 </div>
               )}
@@ -358,46 +358,46 @@ export default function Settings() {
 
             <Separator />
 
-            {/* Export Formátum */}
+            {/* Export format */}
             <div className="space-y-2">
-              <Label htmlFor="export-format">Export formátum</Label>
+              <Label htmlFor="export-format">Export format</Label>
               <Select value={exportFormat} onValueChange={(value: "csv" | "excel") => setExportFormat(value)}>
                 <SelectTrigger id="export-format">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="csv">CSV (könyvelő programokkal kompatibilis)</SelectItem>
+                  <SelectItem value="csv">CSV (compatible with most tools)</SelectItem>
                   <SelectItem value="excel">Excel (XLSX)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground">
-                A jelentések ebben a formátumban lesznek generálva
+                Reports are generated in this format
               </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Értesítési Beállítások */}
+        {/* Notifications */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <CardTitle>Határidő Emlékeztetők</CardTitle>
+              <CardTitle>Deadline Reminders</CardTitle>
               <HelpTooltip 
-                content="Állítsa be, hogy mikor és milyen módon szeretne emlékeztetőket kapni a közelgő határidőkről."
-                helpPageAnchor="beallitasok"
+                content="Choose when to receive email and push reminders before deadlines."
+                helpPageAnchor="settings"
               />
             </div>
             <CardDescription>
-              Email és Push értesítések beállítása a határidők előtt
+              Email and push notifications before deadlines
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Email Értesítések */}
+            {/* Email notifications */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Mail className="h-5 w-5" />
-                  <Label htmlFor="email-enabled">Email értesítések</Label>
+                  <Label htmlFor="email-enabled">Email notifications</Label>
                 </div>
                 <Switch
                   id="email-enabled"
@@ -409,7 +409,7 @@ export default function Settings() {
               {emailEnabled && (
                 <div className="space-y-3 pl-6 border-l-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="email-7-days">7 nappal a határidő előtt</Label>
+                    <Label htmlFor="email-7-days">7 days before deadline</Label>
                     <Switch
                       id="email-7-days"
                       checked={email7Days}
@@ -417,7 +417,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="email-3-days">3 nappal a határidő előtt</Label>
+                    <Label htmlFor="email-3-days">3 days before deadline</Label>
                     <Switch
                       id="email-3-days"
                       checked={email3Days}
@@ -425,7 +425,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="email-1-day">1 nappal a határidő előtt</Label>
+                    <Label htmlFor="email-1-day">1 day before deadline</Label>
                     <Switch
                       id="email-1-day"
                       checked={email1Day}
@@ -433,7 +433,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="email-on-deadline">A határidő napján</Label>
+                    <Label htmlFor="email-on-deadline">On the deadline date</Label>
                     <Switch
                       id="email-on-deadline"
                       checked={emailOnDeadline}
@@ -446,12 +446,12 @@ export default function Settings() {
 
             <Separator />
 
-            {/* Push Értesítések */}
+            {/* Push notifications */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bell className="h-5 w-5" />
-                  <Label htmlFor="push-enabled">Push értesítések</Label>
+                  <Label htmlFor="push-enabled">Push notifications</Label>
                 </div>
                 <Switch
                   id="push-enabled"
@@ -475,14 +475,14 @@ export default function Settings() {
 
               {!pushSupported && (
                 <p className="text-sm text-muted-foreground">
-                  A böngésző nem támogatja a push értesítéseket
+                  Your browser does not support push notifications
                 </p>
               )}
 
               {pushEnabled && pushSubscribed && (
                 <div className="space-y-3 pl-6 border-l-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="push-7-days">7 nappal a határidő előtt</Label>
+                    <Label htmlFor="push-7-days">7 days before deadline</Label>
                     <Switch
                       id="push-7-days"
                       checked={push7Days}
@@ -490,7 +490,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="push-3-days">3 nappal a határidő előtt</Label>
+                    <Label htmlFor="push-3-days">3 days before deadline</Label>
                     <Switch
                       id="push-3-days"
                       checked={push3Days}
@@ -498,7 +498,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="push-1-day">1 nappal a határidő előtt</Label>
+                    <Label htmlFor="push-1-day">1 day before deadline</Label>
                     <Switch
                       id="push-1-day"
                       checked={push1Day}
@@ -506,7 +506,7 @@ export default function Settings() {
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="push-on-deadline">A határidő napján</Label>
+                    <Label htmlFor="push-on-deadline">On the deadline date</Label>
                     <Switch
                       id="push-on-deadline"
                       checked={pushOnDeadline}
@@ -519,45 +519,45 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Információ */}
+        {/* Info */}
         <Card>
           <CardHeader>
-            <CardTitle>Információ</CardTitle>
+            <CardTitle>Notes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>
-              • A havi jelentések tartalmazni fogják az adott hónapban feltöltött és elemzett dokumentumokat.
+              • Monthly reports include documents uploaded and analyzed that month.
             </p>
             <p>
-              • A jelentések CSV vagy Excel formátumban lesznek generálva, a beállított formátum szerint.
+              • Reports are generated as CSV or Excel based on your selection.
             </p>
             <p>
-              • Az automatikus küldés csak akkor működik, ha meg van adva a könyvelő email címe.
+              • Auto-send requires a valid accountant email address.
             </p>
             <p>
-              • A teszt email küldésével ellenőrizheti, hogy a beállított email cím elérhető-e.
+              • Use Send test email to verify the address works.
             </p>
             <p>
-              • Az email értesítések automatikusan működnek, ha engedélyezve vannak.
+              • Email reminders work when enabled above.
             </p>
             <p>
-              • A Push értesítések csak akkor működnek, ha a böngésző támogatja és engedélyezted őket.
+              • Push notifications require browser permission.
             </p>
           </CardContent>
         </Card>
 
-        {/* Egyetlen mentés gomb a lap alján */}
+        {/* Save button */}
         <div className="flex justify-end pt-4 pb-6">
           <Button onClick={handleSave} disabled={saving} size="lg">
             {saving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Mentés...
+                Saving…
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Beállítások mentése
+                Save settings
               </>
             )}
           </Button>

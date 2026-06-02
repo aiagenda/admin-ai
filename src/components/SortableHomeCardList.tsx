@@ -17,7 +17,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import type { HomeCardId } from "@/lib/home-cards";
-import { HOME_CARD_LABELS } from "@/lib/home-cards";
+import { getHomeCardLabel } from "@/lib/home-cards";
 
 function SortableRow({ id, label }: { id: HomeCardId; label: string }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -36,7 +36,7 @@ function SortableRow({ id, label }: { id: HomeCardId; label: string }) {
         className="touch-none p-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
         {...attributes}
         {...listeners}
-        aria-label="Átrendezés"
+        aria-label="Reorder"
       >
         <GripVertical className="h-4 w-4" />
       </button>
@@ -72,7 +72,7 @@ export function SortableHomeCardList({ order, onOrderChange }: Props) {
       <SortableContext items={order} strategy={verticalListSortingStrategy}>
         <div className="space-y-2">
           {order.map((id) => (
-            <SortableRow key={id} id={id} label={HOME_CARD_LABELS[id]} />
+            <SortableRow key={id} id={id} label={getHomeCardLabel(id as HomeCardId)} />
           ))}
         </div>
       </SortableContext>

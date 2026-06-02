@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 
-# Private/authenticated routes should not be indexed
+# Authenticated / private routes — do not index
 Disallow: /admin/
 Disallow: /auth
 Disallow: /auth/callback
@@ -13,4 +13,13 @@ Disallow: /checkout
 Disallow: /checkout/
 Disallow: /invoices/
 
-Sitemap: https://adminai.hu/sitemap.xml
+# Hungarian-market routes (not relevant for US crawlers)
+Disallow: /arak
+Disallow: /gyik
+Disallow: /nav-hatarozat-ertelmezes
+Disallow: /szamla-ocr
+Disallow: /dokumentum-archivum
+Disallow: /adminai-vs-billingo
+Disallow: /adminai-vs-szamlazz
+
+Sitemap: https://noticeiq.io/sitemap.xml

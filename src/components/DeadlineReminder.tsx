@@ -6,7 +6,8 @@ import { Calendar, AlertCircle, Download, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, differenceInDays, isPast, addDays } from "date-fns";
-import { hu } from "date-fns/locale";
+import { getAppDateLocale } from "@/lib/dateLocale";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 interface UpcomingDeadline {
@@ -20,6 +21,9 @@ interface UpcomingDeadline {
 }
 
 export function DeadlineReminder() {
+  const { t } = useTranslation("common");
+  const dl = "deadlines";
+  const dateLoc = getAppDateLocale();
   const [upcomingDeadlines, setUpcomingDeadlines] = useState<UpcomingDeadline[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -93,15 +97,15 @@ export function DeadlineReminder() {
 
     const icalContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//AdminAI//Deadline Reminder//EN
+PRODID:-//NoticeIQ//Deadline Reminder//EN
 BEGIN:VEVENT
 UID:${deadline.id}@adminai.hu
 DTSTAMP:${formatDate(new Date())}
 DTSTART:${formatDate(startDate)}
 DTEND:${formatDate(endDate)}
-SUMMARY:Határidő: ${deadline.filename}
-DESCRIPTION:Dokumentum határidője: ${deadline.filename}\\nAdminAI - ${window.location.origin}/result/${deadline.analysis_id}
-LOCATION:AdminAI
+SUMMARY:Deadline: ${deadline.filename}
+DESCRIPTION:Document deadline: ${deadline.filename}\\nAdminAI - ${window.location.origin}/result/${deadline.analysis_id}
+LOCATION:NoticeIQ
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`;
@@ -124,7 +128,7 @@ END:VCALENDAR`;
 
     let icalContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//AdminAI//Deadline Reminders//EN
+PRODID:-//NoticeIQ//Deadline Reminders//EN
 `;
 
     upcomingDeadlines.forEach((deadline) => {
@@ -136,9 +140,9 @@ UID:${deadline.id}@adminai.hu
 DTSTAMP:${formatDate(new Date())}
 DTSTART:${formatDate(startDate)}
 DTEND:${formatDate(endDate)}
-SUMMARY:Határidő: ${deadline.filename}
-DESCRIPTION:Dokumentum határidője: ${deadline.filename}\\nAdminAI - ${window.location.origin}/result/${deadline.analysis_id}
-LOCATION:AdminAI
+SUMMARY:Deadline: ${deadline.filename}
+DESCRIPTION:Document deadline: ${deadline.filename}\\nAdminAI - ${window.location.origin}/result/${deadline.analysis_id}
+LOCATION:NoticeIQ
 STATUS:CONFIRMED
 END:VEVENT
 `;
@@ -163,11 +167,11 @@ END:VEVENT
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Közelgő határidők
+            {t(`${dl}.title`)}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4 text-muted-foreground">Betöltés...</div>
+          <div className="text-center py-4 text-muted-foreground">{t("loading")}</div>
         </CardContent>
       </Card>
     );
@@ -179,12 +183,12 @@ END:VEVENT
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Közelgő határidők
+            {t(`${dl}.title`)}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-4 text-muted-foreground">
-            Nincs közelgő határidő a következő 30 napban.
+            {t(`${dl}.empty`)}
           </div>
         </CardContent>
       </Card>
@@ -200,12 +204,12 @@ END:VEVENT
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Közelgő határidők ({upcomingDeadlines.length})
+            {t(`${dl}.title`)} ({upcomingDeadlines.length})
           </CardTitle>
           {upcomingDeadlines.length > 0 && (
             <Button variant="outline" size="sm" onClick={exportAllToCalendar}>
               <Download className="h-4 w-4 mr-2" />
-              Összes exportálása
+              {t(`${dl}.exportAll`)}
             </Button>
           )}
         </div>
@@ -215,7 +219,7 @@ END:VEVENT
           <div>
             <h4 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4" />
-              Sürgős (7 napon belül)
+              {t(`${dl}.urgentSection`)}
             </h4>
             <div className="space-y-2">
               {urgentDeadlines.map((deadline) => (
@@ -229,13 +233,13 @@ END:VEVENT
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant="destructive">
                         {deadline.daysUntil === 0
-                          ? "Ma"
+                          ? t(`${dl}.today`)
                           : deadline.daysUntil === 1
-                            ? "Holnap"
-                            : `${deadline.daysUntil} nap`}
+                            ? t(`${dl}.tomorrow`)
+                            : t(`${dl}.daysCount`, { count: deadline.daysUntil })}
                       </Badge>
                       <span className="text-sm text-muted-foreground">
-                        {format(new Date(deadline.deadline), "yyyy. MMMM d.", { locale: hu })}
+                        {format(new Date(deadline.deadline), "yyyy. MMMM d.", { locale: dateLoc })}
                       </span>
                     </div>
                   </div>
@@ -257,7 +261,7 @@ END:VEVENT
 
         {soonDeadlines.length > 0 && (
           <div>
-            <h4 className="text-sm font-semibold mb-2">Következő 30 nap</h4>
+            <h4 className="text-sm font-semibold mb-2">{t(`${dl}.next30`)}</h4>
             <div className="space-y-2">
               {soonDeadlines.map((deadline) => (
                 <div
@@ -269,10 +273,10 @@ END:VEVENT
                     <p className="font-medium truncate">{deadline.filename}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant={deadline.daysUntil <= 14 ? "default" : "secondary"}>
-                        {deadline.daysUntil} nap
+                        {t(`${dl}.daysCount`, { count: deadline.daysUntil })}
                       </Badge>
                       <span className="text-sm text-muted-foreground">
-                        {format(new Date(deadline.deadline), "yyyy. MMMM d.", { locale: hu })}
+                        {format(new Date(deadline.deadline), "yyyy. MMMM d.", { locale: dateLoc })}
                       </span>
                     </div>
                   </div>

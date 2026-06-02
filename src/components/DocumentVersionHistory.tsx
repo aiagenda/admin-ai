@@ -68,7 +68,7 @@ export function DocumentVersionHistory({ documentId, currentVersion = 1 }: Docum
         }
       } catch (error: any) {
         console.error("Error fetching version history:", error);
-        toast.error("Hiba a verzió előzmények betöltése során");
+        toast.error("Failed to load version history");
       } finally {
         setLoading(false);
       }
@@ -85,7 +85,7 @@ export function DocumentVersionHistory({ documentId, currentVersion = 1 }: Docum
   const handleDownloadVersion = async (version: DocumentVersion) => {
     try {
       if (version.file_url === "text_content") {
-        toast.info("Ez a verzió csak szöveges tartalom");
+        toast.info("This version has text content only");
         return;
       }
 
@@ -104,10 +104,10 @@ export function DocumentVersionHistory({ documentId, currentVersion = 1 }: Docum
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast.success("Verzió letöltve");
+      toast.success("Version downloaded");
     } catch (error: any) {
       console.error("Error downloading version:", error);
-      toast.error("Hiba a verzió letöltése során");
+      toast.error("Failed to download version");
     }
   };
 
@@ -132,10 +132,10 @@ export function DocumentVersionHistory({ documentId, currentVersion = 1 }: Docum
       <CardHeader>
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-primary" />
-          <CardTitle>Verzió előzmények</CardTitle>
+          <CardTitle>Version History</CardTitle>
         </div>
         <CardDescription>
-          {versions.length} verzió található
+          {versions.length} version(s)
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -159,8 +159,8 @@ export function DocumentVersionHistory({ documentId, currentVersion = 1 }: Docum
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium truncate">{version.filename}</p>
                     <Badge variant={version.version_number === currentVersion ? "default" : "secondary"}>
-                      Verzió {version.version_number}
-                      {version.version_number === currentVersion && " (aktuális)"}
+                      Version {version.version_number}
+                      {version.version_number === currentVersion && " (current)"}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
@@ -179,7 +179,7 @@ export function DocumentVersionHistory({ documentId, currentVersion = 1 }: Docum
                   variant="ghost"
                   size="icon"
                   onClick={() => handleViewVersion(version)}
-                  title="Verzió megtekintése"
+                  title="View version"
                 >
                   <Eye className="h-4 w-4" />
                 </Button>
@@ -187,7 +187,7 @@ export function DocumentVersionHistory({ documentId, currentVersion = 1 }: Docum
                   variant="ghost"
                   size="icon"
                   onClick={() => handleDownloadVersion(version)}
-                  title="Verzió letöltése"
+                  title="Download version"
                 >
                   <Download className="h-4 w-4" />
                 </Button>

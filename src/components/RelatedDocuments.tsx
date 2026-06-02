@@ -32,11 +32,11 @@ interface RelatedDocumentsProps {
 }
 
 const RELATION_TYPES = {
-  related: "Kapcsolódó",
-  revision: "Módosítás",
-  response: "Válasz",
-  attachment: "Melléklet",
-  duplicate: "Duplikátum",
+  related: "Related",
+  revision: "Revision",
+  response: "Response",
+  attachment: "Attachment",
+  duplicate: "Duplicate",
 };
 
 export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
@@ -66,7 +66,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
       setRelatedDocs((data || []) as RelatedDocument[]);
     } catch (error: any) {
       console.error("Error fetching related documents:", error);
-      toast.error("Hiba a kapcsolódó dokumentumok betöltése során");
+      toast.error("Failed to load related documents");
     } finally {
       setLoading(false);
     }
@@ -90,7 +90,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
       setAvailableDocuments(data || []);
     } catch (error: any) {
       console.error("Error fetching available documents:", error);
-      toast.error("Hiba a dokumentumok betöltése során");
+      toast.error("Failed to load documents");
     } finally {
       setLoadingDocuments(false);
     }
@@ -98,7 +98,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
 
   const handleAddRelation = async () => {
     if (!selectedDocumentId) {
-      toast.error("Válasszon ki egy dokumentumot");
+      toast.error("Please select a document");
       return;
     }
 
@@ -113,7 +113,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
 
       if (error) throw error;
 
-      toast.success("Kapcsolat létrehozva");
+      toast.success("Link created");
       setShowAddDialog(false);
       setSelectedDocumentId("");
       setRelationType("related");
@@ -121,12 +121,12 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
       fetchRelatedDocuments();
     } catch (error: any) {
       console.error("Error creating relation:", error);
-      toast.error("Hiba a kapcsolat létrehozása során");
+      toast.error("Failed to create link");
     }
   };
 
   const handleRemoveRelation = async (relationId: string) => {
-    if (!confirm("Biztosan törölni szeretné ezt a kapcsolatot?")) return;
+    if (!confirm("Remove this link?")) return;
 
     try {
       const { error } = await supabase
@@ -136,11 +136,11 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
 
       if (error) throw error;
 
-      toast.success("Kapcsolat törölve");
+      toast.success("Link removed");
       fetchRelatedDocuments();
     } catch (error: any) {
       console.error("Error removing relation:", error);
-      toast.error("Hiba a kapcsolat törlése során");
+      toast.error("Failed to remove link");
     }
   };
 
@@ -150,16 +150,16 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
 
   const getCategoryLabel = (category: string | null) => {
     const labels: Record<string, string> = {
-      adozas: "Adóügyek",
-      egeszsegugy: "Egészségügy",
-      oktatas: "Oktatás",
-      szocialis: "Szociális",
-      kozlekedes: "Közlekedés",
+      adozas: "Tax",
+      egeszsegugy: "Health",
+      oktatas: "Education",
+      szocialis: "Social Services",
+      kozlekedes: "Transportation",
       ingatlan: "Ingatlan",
-      uzlet: "Üzlet",
-      szamla: "Számla",
-      hatosagi_level: "Hatósági levél",
-      egyeb: "Egyéb",
+      uzlet: "Business",
+      szamla: "Invoice",
+      hatosagi_level: "Official Notice",
+      egyeb: "Other",
     };
     return category ? labels[category] || category : null;
   };
@@ -182,7 +182,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-primary" />
-            <CardTitle>Kapcsolódó dokumentumok</CardTitle>
+            <CardTitle>Related Documents</CardTitle>
           </div>
           <Dialog open={showAddDialog} onOpenChange={(open) => {
             setShowAddDialog(open);
@@ -193,14 +193,14 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
             <DialogTrigger asChild>
               <Button size="sm" variant="outline">
                 <Plus className="h-4 w-4 mr-2" />
-                Hozzáadás
+                Add
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Kapcsolódó dokumentum hozzáadása</DialogTitle>
+                <DialogTitle>Add Related Document</DialogTitle>
                 <DialogDescription>
-                  Válasszon ki egy dokumentumot, amelyet kapcsolni szeretne ehhez a dokumentumhoz
+                  Select a document to link to this one
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -212,7 +212,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
                     disabled={loadingDocuments}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={loadingDocuments ? "Betöltés..." : "Válasszon dokumentumot"} />
+                      <SelectValue placeholder={loadingDocuments ? "Loading…" : "Select a document"} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableDocuments.map((doc) => (
@@ -224,7 +224,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Kapcsolat típusa</label>
+                  <label className="text-sm font-medium mb-2 block">Link Type</label>
                   <Select value={relationType} onValueChange={setRelationType}>
                     <SelectTrigger>
                       <SelectValue />
@@ -239,36 +239,36 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Leírás (opcionális)</label>
+                  <label className="text-sm font-medium mb-2 block">Description (optional)</label>
                   <Textarea
                     value={relationDescription}
                     onChange={(e) => setRelationDescription(e.target.value)}
-                    placeholder="Rövid leírás a kapcsolatról..."
+                    placeholder="Brief description of the link…"
                     rows={3}
                   />
                 </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-                  Mégse
+                  Cancel
                 </Button>
                 <Button onClick={handleAddRelation} disabled={!selectedDocumentId}>
-                  Hozzáadás
+                  Add
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
         <CardDescription>
-          {relatedDocs.length} kapcsolódó dokumentum
+          {relatedDocs.length} related document(s)
         </CardDescription>
       </CardHeader>
       <CardContent>
         {relatedDocs.length === 0 ? (
           <div className="text-center py-6 text-muted-foreground">
             <Link2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Még nincs kapcsolódó dokumentum</p>
-            <p className="text-sm mt-2">Kattintson a "Hozzáadás" gombra a kapcsolatok létrehozásához</p>
+            <p>No related documents yet</p>
+            <p className="text-sm mt-2">Click "Add" to link documents together</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -311,7 +311,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleViewDocument(related.related_document_id)}
-                    title="Dokumentum megtekintése"
+                    title="View document"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
@@ -319,7 +319,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleRemoveRelation(related.id)}
-                    title="Kapcsolat törlése"
+                    title="Remove link"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

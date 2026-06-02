@@ -183,7 +183,7 @@ export function Navbar() {
         Blog
       </Link>
       <Link to={isUsMarket() ? "/help" : "/gyik"} className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
-        {t("faq")}
+        {isUsMarket() ? t("helpFaq") : t("faq")}
       </Link>
     </>
   );
@@ -194,18 +194,18 @@ export function Navbar() {
         Dashboard
       </Link>
       <Link to="/upload" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
-        Feltöltés
+        {t("upload")}
       </Link>
       <Link to="/archive" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
-        Archívum
+        {t("archive")}
       </Link>
       <Link to="/search" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
-        Keresés
+        {t("search")}
       </Link>
-      {(hasInvoiceAccess || isAdmin) && (
+      {!isUsMarket() && (hasInvoiceAccess || isAdmin) && (
         <Link to="/invoices" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2 gap-1">
           <Receipt className="h-4 w-4" />
-          Könyvelés
+          {t("accounting")}
         </Link>
       )}
       {!checkingAdmin && isAdmin && (
@@ -234,8 +234,8 @@ export function Navbar() {
           <NavLink to="/">{t("home")}</NavLink>
           <NavLink to={isUsMarket() ? "/pricing" : "/arak"}>{t("pricing")}</NavLink>
           <NavLink to="/blog">{t("blog")}</NavLink>
-          <NavLink to={isUsMarket() ? "/help" : "/gyik"}>{t("faq")}</NavLink>
-          <NavLink to="/help">{t("help")}</NavLink>
+          <NavLink to={isUsMarket() ? "/help" : "/gyik"}>{isUsMarket() ? t("helpFaq") : t("faq")}</NavLink>
+          {!isUsMarket() && <NavLink to="/help">{t("help")}</NavLink>}
           <SolutionsDropdown mobile />
         </>
       ) : (
@@ -247,8 +247,8 @@ export function Navbar() {
           {!isUsMarket() && (hasInvoiceAccess || isAdmin) && <NavLink to="/invoices">{t("accounting")}</NavLink>}
           <NavLink to="/settings">{t("settings")}</NavLink>
           <NavLink to="/blog">{t("blog")}</NavLink>
-          <NavLink to={isUsMarket() ? "/help" : "/gyik"}>{t("faq")}</NavLink>
-          <NavLink to="/help">{t("help")}</NavLink>
+          <NavLink to={isUsMarket() ? "/help" : "/gyik"}>{isUsMarket() ? t("helpFaq") : t("faq")}</NavLink>
+          {!isUsMarket() && <NavLink to="/help">{t("help")}</NavLink>}
           {!checkingAdmin && isAdmin && (
             <>
               <p className="text-xs uppercase tracking-wide text-muted-foreground px-2 pt-2">{t("admin")}</p>
@@ -300,11 +300,20 @@ export function Navbar() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => navigate("/upload")}>{t("uploadDoc")}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>{t("settings")}</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate(isUsMarket() ? "/help" : "/gyik")}>{t("faq")}</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/help")}>
-                    <HelpCircle className="h-4 w-4 mr-2" />
-                    {t("helpCoach")}
-                  </DropdownMenuItem>
+                  {isUsMarket() ? (
+                    <DropdownMenuItem onClick={() => navigate("/help")}>
+                      <HelpCircle className="h-4 w-4 mr-2" />
+                      {t("helpFaq")}
+                    </DropdownMenuItem>
+                  ) : (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate("/gyik")}>{t("faq")}</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/help")}>
+                        <HelpCircle className="h-4 w-4 mr-2" />
+                        {t("helpCoach")}
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuItem onClick={signOut} className="text-destructive">
                     <LogOut className="h-4 w-4 mr-2" />
                     {t("signOut")}
@@ -342,7 +351,9 @@ export function Navbar() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => navigate("/upload")}>{t("uploadDoc")}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>{t("settings")}</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/help")}>{t("helpCoach")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(isUsMarket() ? "/help" : "/gyik")}>
+                    {isUsMarket() ? t("helpFaq") : t("helpCoach")}
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut} className="text-destructive">
                     <LogOut className="h-4 w-4 mr-2" />
                     {t("signOut")}

@@ -28,6 +28,18 @@
 
   <body>
     <div id="root"></div>
+        <script>
+      (function () {
+        var h = window.location.hash || "";
+        if (
+          (h.indexOf("access_token=") !== -1 || h.indexOf("error=") !== -1) &&
+          window.location.pathname !== "/auth/callback"
+        ) {
+          window.location.replace("/auth/callback" + h + window.location.search);
+        }
+      })();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

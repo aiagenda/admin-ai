@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface UsageData {
   can_upload: boolean;
@@ -18,6 +19,8 @@ interface UsageData {
 }
 
 export function UsageLimit() {
+  const { t } = useTranslation("common");
+  const u = "usageLimit";
   const { user } = useAuth();
   const navigate = useNavigate();
   const [usage, setUsage] = useState<UsageData | null>(null);
@@ -62,7 +65,7 @@ export function UsageLimit() {
           return;
         }
         console.error("Error fetching usage:", error);
-        toast.error("Hiba a használati adatok betöltése során");
+        toast.error(t(`${u}.loadError`));
       } finally {
         setLoading(false);
       }
@@ -90,17 +93,12 @@ export function UsageLimit() {
 
   const getPlanLabel = (planType: string) => {
     switch (planType) {
-      case "pro":
-        return "Pro (régi)";
-      case "enterprise":
-        return "Professzionális";
+      case "pro": return t(`${u}.planProLegacy`);
+      case "enterprise": return t(`${u}.planEnterprise`);
       case "monthly":
-      case "basic":
-        return "Havi 10";
-      case "business":
-        return "Business 50";
-      default:
-        return "Ingyenes";
+      case "basic": return t(`${u}.planMonthly`);
+      case "business": return t(`${u}.planBusiness`);
+      default: return t(`${u}.planFree`);
     }
   };
 
@@ -114,7 +112,7 @@ export function UsageLimit() {
             ) : (
               <CheckCircle2 className="h-4 w-4 text-primary" />
             )}
-            Kvóta / egyenleg ({getPlanLabel(usage.plan_type)})
+            {t(`${u}.quotaTitle`, { plan: getPlanLabel(usage.plan_type) })}
           </CardTitle>
           {isAtLimit && <AlertTriangle className="h-4 w-4 text-destructive" />}
         </div>
@@ -122,14 +120,14 @@ export function UsageLimit() {
       <CardContent className="space-y-3">
         {hasPrepaid && (
           <p className="text-sm text-muted-foreground">
-            Előre vásárolt: <span className="font-medium text-foreground">{pb}</span> alap ·{" "}
+            {t(`${u}.prepaid`, { basic: pb, pro: pp }).split(":")[0] + ":"} <span className="font-medium text-foreground">{pb}</span> alap ·{" "}
             <span className="font-medium text-foreground">{pp}</span> pro elemzés
           </p>
         )}
 
         {usage.plan_type === "free" && !hasPrepaid && (
           <p className="text-sm text-muted-foreground">
-            Ingyenes: 1 próba dokumentum (életen át), ha még nem használtad.
+            {t(`${u}.freeTrial`)}
           </p>
         )}
 
@@ -137,14 +135,14 @@ export function UsageLimit() {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">
-                {usage.current_usage} / {usage.limit_amount} dokumentum ebben a hónapban
+                {t(`${u}.monthlyUsage`, { used: usage.current_usage, limit: usage.limit_amount })}
               </span>
               <span
                 className={
                   isAtLimit ? "text-destructive font-semibold" : isNearLimit ? "text-warning font-semibold" : "text-muted-foreground"
                 }
               >
-                {isAtLimit ? 0 : remaining} maradt
+                {t(`${u}.remaining`, { count: isAtLimit ? 0 : remaining })}
               </span>
             </div>
             <Progress value={Math.min(100, percentage)} className={isAtLimit ? "bg-destructive" : isNearLimit ? "bg-warning" : ""} />
@@ -153,7 +151,7 @@ export function UsageLimit() {
 
         {isAtLimit && (
           <div className="pt-2 border-t">
-            <p className="text-sm text-destructive mb-3">Nincs további feltöltési lehetőség. Vásárolj csomagot vagy krediteket.</p>
+            <p className="text-sm text-destructive mb-3">{t(`${u}.atLimit`)}</p>
             <Button size="sm" onClick={() => navigate("/pricing")} className="w-full">
               Árak
             </Button>
@@ -162,7 +160,7 @@ export function UsageLimit() {
 
         {isNearLimit && !isAtLimit && (
           <div className="pt-2 border-t">
-            <p className="text-sm text-warning mb-3">Közel a havi limithez.</p>
+            <p className="text-sm text-warning mb-3">{t(`${u}.nearLimit`)}</p>
             <Button size="sm" variant="outline" onClick={() => navigate("/pricing")} className="w-full">
               Csomagok
             </Button>
@@ -171,7 +169,7 @@ export function UsageLimit() {
 
         {usage.plan_type === "free" && usage.can_upload && !hasPrepaid && (
           <div className="pt-2 border-t">
-            <p className="text-xs text-muted-foreground mb-2">Több dokumentum? Vásárolj egyszeri elemezést vagy havi csomagot.</p>
+            <p className="text-xs text-muted-foreground mb-2">{t(`${u}.freeHint`)}</p>
             <Button size="sm" variant="outline" onClick={() => navigate("/pricing")} className="w-full">
               Árak
             </Button>

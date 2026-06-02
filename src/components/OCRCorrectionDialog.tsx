@@ -60,8 +60,8 @@ export function OCRCorrectionDialog({
 
       toast.success(
         wasCorrected
-          ? "Javítás mentve! Köszönjük, hogy segít az AI tanulásában."
-          : "Visszajelzés mentve! Köszönjük!"
+          ? "Correction saved! Thank you for helping improve accuracy."
+          : "Feedback saved! Thank you!"
       );
 
       setOpen(false);
@@ -71,7 +71,7 @@ export function OCRCorrectionDialog({
       setComment("");
     } catch (error: any) {
       console.error("Error saving OCR feedback:", error);
-      toast.error("Hiba történt a visszajelzés mentése során");
+      toast.error("Failed to save feedback");
     }
   };
 
@@ -87,7 +87,7 @@ export function OCRCorrectionDialog({
           size="icon"
           onClick={() => {
             navigator.clipboard.writeText(extractedValue);
-            toast.success("Kimásolva!");
+            toast.success("Copied!");
           }}
         >
           <Copy className="h-4 w-4" />
@@ -100,19 +100,19 @@ export function OCRCorrectionDialog({
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>OCR javítás - {label}</DialogTitle>
+              <DialogTitle>OCR Correction – {label}</DialogTitle>
               <DialogDescription>
-                Ha a dokumentumban kézzel írott számok vannak és az AI nem ismerte fel helyesen, javíthatja az értéket. Ez segít az AI tanulásában.
+                If the AI misread a handwritten value, you can correct it here. This helps improve accuracy.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>AI által kinyert érték</Label>
+                <Label>AI-extracted value</Label>
                 <Input value={extractedValue} disabled className="font-mono" />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="correct-value">Helyes érték (ha eltér)</Label>
+                <Label htmlFor="correct-value">Correct value (if different)</Label>
                 <Input
                   id="correct-value"
                   value={correctValue}
@@ -123,7 +123,7 @@ export function OCRCorrectionDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="handwritten">Kézzel írott számok vannak a dokumentumban?</Label>
+                <Label htmlFor="handwritten">Does the document contain handwritten numbers?</Label>
                 <Select
                   value={hasHandwrittenNumbers ? "yes" : "no"}
                   onValueChange={(value) => setHasHandwrittenNumbers(value === "yes")}
@@ -139,37 +139,37 @@ export function OCRCorrectionDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="accuracy">Felismerés pontossága</Label>
+                <Label htmlFor="accuracy">Recognition accuracy</Label>
                 <Select value={accuracy} onValueChange={(value: any) => setAccuracy(value)}>
                   <SelectTrigger id="accuracy">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="excellent">Kiváló</SelectItem>
-                    <SelectItem value="good">Jó</SelectItem>
-                    <SelectItem value="fair">Közepes</SelectItem>
+                    <SelectItem value="excellent">Excellent</SelectItem>
+                    <SelectItem value="good">Good</SelectItem>
+                    <SelectItem value="fair">Fair</SelectItem>
                     <SelectItem value="poor">Gyenge</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="comment">Megjegyzés (opcionális)</Label>
+                <Label htmlFor="comment">Comment (optional)</Label>
                 <Textarea
                   id="comment"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="További információ a felismerésről..."
+                  placeholder="Additional notes about the recognition…"
                   rows={3}
                 />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
-                Mégse
+                Cancel
               </Button>
               <Button onClick={handleSubmit}>
-                Mentés
+                Save
               </Button>
             </DialogFooter>
           </DialogContent>

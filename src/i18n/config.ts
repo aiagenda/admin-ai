@@ -10,6 +10,9 @@ import enNav from "../locales/en/nav.json";
 import enTranslation from "../locales/en/translation.json";
 import huLegal from "../locales/hu/legal.json";
 import enLegal from "../locales/en/legal.json";
+import enPricing from "../locales/en/pricing.json";
+import enHelp from "../locales/en/help.json";
+import huPricing from "../locales/hu/pricing.json";
 import { isUsMarket } from "@/lib/market";
 
 const usOnly = isUsMarket();
@@ -17,23 +20,23 @@ const usOnly = isUsMarket();
 const initOptions = usOnly
   ? {
       resources: {
-        en: { common: enCommon, nav: enNav, translation: enTranslation, legal: enLegal },
+        en: { common: enCommon, nav: enNav, translation: enTranslation, legal: enLegal, pricing: enPricing, help: enHelp },
       },
       lng: "en",
       fallbackLng: "en",
       supportedLngs: ["en"] as const,
-      ns: ["common", "nav", "translation", "legal"],
+      ns: ["common", "nav", "translation", "legal", "pricing", "help"],
       defaultNS: "nav",
       interpolation: { escapeValue: false },
     }
   : {
       resources: {
-        hu: { common: huCommon, nav: huNav, translation: huTranslation, legal: huLegal },
-        en: { common: enCommon, nav: enNav, translation: enTranslation, legal: enLegal },
+        hu: { common: huCommon, nav: huNav, translation: huTranslation, legal: huLegal, pricing: huPricing },
+        en: { common: enCommon, nav: enNav, translation: enTranslation, legal: enLegal, pricing: enPricing, help: enHelp },
       },
       fallbackLng: "hu",
       supportedLngs: ["hu", "en"] as const,
-      ns: ["common", "nav", "translation", "legal"],
+      ns: ["common", "nav", "translation", "legal", "pricing"],
       defaultNS: "nav",
       interpolation: { escapeValue: false },
       detection: {

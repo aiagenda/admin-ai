@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { isUsMarket } from "@/lib/market";
 
 interface SearchResult {
   type: "document" | "analysis" | "form";
@@ -29,6 +31,8 @@ interface SearchResponse {
 }
 
 export function AISearch() {
+  const { t } = useTranslation("common");
+  const s = "aiSearch";
   const { user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -80,10 +84,7 @@ export function AISearch() {
       // Filter results based on AI response - if AI says no results, don't show irrelevant ones
       const aiResponse = data.response?.toLowerCase() || "";
       const hasNoResults = 
-        aiResponse.includes("nem találtam") || 
-        aiResponse.includes("nincs") || 
-        aiResponse.includes("nincsenek") ||
-        aiResponse.includes("nincs találat");
+        aiResponse.includes("nem találtam") || aiResponse.includes("nincs") || aiResponse.includes("nincsenek") || aiResponse.includes("nincs találat") || aiResponse.includes("no results") || aiResponse.includes("could not find") || aiResponse.includes("did not find");
 
       // If AI explicitly says no results, only show results if they're truly relevant
       if (hasNoResults && data.results && data.results.length > 0) {
@@ -117,7 +118,7 @@ export function AISearch() {
       }
     } catch (error: any) {
       console.error("Search error:", error);
-      toast.error("Keresési hiba: " + (error.message || "Ismeretlen hiba"));
+      toast.error(t(`${s}.searchError`, { msg: error.message || "Unknown" }));
     } finally {
       setSearching(false);
     }
@@ -144,11 +145,11 @@ export function AISearch() {
   const getResultTypeLabel = (type: string) => {
     switch (type) {
       case "document":
-        return "Dokumentum";
+        return t(`${s}.typeDocument`, { defaultValue: "Document" });
       case "form":
         return "Űrlap";
       default:
-        return "Eredmény";
+        return "Result";
     }
   };
 
@@ -159,7 +160,7 @@ export function AISearch() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Search className="h-5 w-5" />
-            AI Keresés
+            {t(`${s}.title`)}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -169,7 +170,7 @@ export function AISearch() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Kérdezz bármit... pl. 'Volt-e már ilyen dokumentummal dolgunk?', 'Keresse meg az összes NAV-tól kapott levelet'"
+              placeholder={t(`${s}.placeholder`)}
               className="flex-1"
               disabled={searching}
             />
@@ -183,7 +184,7 @@ export function AISearch() {
           </div>
           {!user && (
             <p className="text-sm text-muted-foreground mt-2">
-              Be kell jelentkezned a kereséshez.
+              {t(`${s}.signInRequired`)}
             </p>
           )}
         </CardContent>
@@ -209,7 +210,7 @@ export function AISearch() {
         <Card>
           <CardHeader>
             <CardTitle>
-              Találatok ({results.length})
+              {t(`${s}.results`, { count: results.length })}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -257,15 +258,15 @@ export function AISearch() {
                               className="text-xs"
                             >
                               {result.metadata.severity === "urgent"
-                                ? "Sürgős"
+                                ? t(`${s}.severityUrgent`)
                                 : result.metadata.severity === "action_needed"
-                                  ? "Intézkedés szükséges"
-                                  : "Információ"}
+                                  ? t(`${s}.severityAction`)
+                                  : t(`${s}.severityInfo`)}
                             </Badge>
                           )}
                           {result.metadata.deadline && (
                             <Badge variant="outline" className="text-xs">
-                              Határidő: {new Date(result.metadata.deadline).toLocaleDateString("hu-HU")}
+                              {t(`${s}.deadlineLabel`, { date: new Date(result.metadata.deadline).toLocaleDateString(isUsMarket() ? "en-US" : "hu-HU") })}
                             </Badge>
                           )}
                         </div>
@@ -280,7 +281,7 @@ export function AISearch() {
                           navigate(result.url!);
                         }}
                       >
-                        Megnyitás
+                        Open
                       </Button>
                     )}
                   </div>
@@ -295,7 +296,7 @@ export function AISearch() {
       {searchHistory.length > 0 && results.length === 0 && !searching && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Korábbi keresések</CardTitle>
+            <CardTitle className="text-sm">{t(`${s}.history`)}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -311,7 +312,7 @@ export function AISearch() {
                 >
                   <p className="text-sm font-medium">{item.query}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {item.results.length} találat
+                    {t(`${s}.hits`, { count: item.results.length })}
                   </p>
                 </div>
               ))}

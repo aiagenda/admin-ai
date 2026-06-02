@@ -11,10 +11,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedNumber } from "@/components/AnimatedNumber";
 import { format, startOfMonth, endOfMonth } from "date-fns";
-import { hu } from "date-fns/locale";
+import { getAppDateLocale, formatMoney } from "@/lib/dateLocale";
 import { getHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
 import { Link } from "react-router-dom";
 import { PageSEO } from "@/components/PageSEO";
+import { HomeLanding } from "@/components/HomeLanding";
 import { useTranslation } from "react-i18next";
 import { isUsMarket } from "@/lib/market";
 import { getSiteOrigin } from "@/lib/site";
@@ -191,6 +192,7 @@ export default function Home() {
 
   const visibleCardOrder = useMemo(() => {
     const order = getHomeCardOrder();
+    if (isUsMarket()) return order.filter((id) => id !== "invoices");
     return order.filter((id) => id !== "invoices" || hasInvoiceAccess);
   }, [hasInvoiceAccess]);
 
@@ -200,13 +202,14 @@ export default function Home() {
     return map;
   }, [visibleCardOrder]);
 
+  const { t: tc } = useTranslation("common");
   const { t: seoT } = useTranslation("translation");
   const { t: navT } = useTranslation("nav");
   const { i18n } = useTranslation();
 
   const homeStructuredData = useMemo(() => {
     const origin = getSiteOrigin();
-    const lang = i18n.language?.startsWith("en") ? "en-US" : "hu-HU";
+    const lang = isUsMarket() || i18n.language?.startsWith("en") ? "en-US" : "hu-HU";
     return {
       "@context": "https://schema.org",
       "@graph": [
@@ -240,15 +243,15 @@ export default function Home() {
                 {getGreeting(tc).text}, {user.email?.split("@")[0]}! 
                 <span className="text-2xl">{getGreeting(tc).emoji}</span>
               </h1>
-              <p className="text-muted-foreground mt-1">Itt van a mai áttekintésed</p>
+              <p className="text-muted-foreground mt-1">{tc("homePage.dashboardOverview")}</p>
             </div>
           </div>
 
           {!welcomeDismissed && (
             <div className="rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <p className="text-sm text-muted-foreground">
-                Itt láthatja a mai áttekintését. A kártyákon a dokumentumok, elemzések és a közelgő határidők összesítése jelenik meg. Részletek:{" "}
-                <Link to="/help" className="text-primary font-medium underline underline-offset-2 hover:no-underline">Segítő oldal</Link>.
+                {tc("homePage.welcomeHint")}{" "}
+                <Link to="/help" className="text-primary font-medium underline underline-offset-2 hover:no-underline">{tc("homePage.helpLink")}</Link>.
               </p>
               <div className="flex items-center gap-2 shrink-0">
                 <Button
@@ -261,7 +264,7 @@ export default function Home() {
                     }
                   }}
                 >
-                  Megértettem
+                  {tc("homePage.welcomeDismiss")}
                 </Button>
               </div>
             </div>
@@ -276,7 +279,7 @@ export default function Home() {
               <CardContent className="pt-6 relative">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-blue-600/70 dark:text-blue-400/70 font-medium">Összes dokumentum</p>
+                    <p className="text-sm text-blue-600/70 dark:text-blue-400/70 font-medium">{tc("homePage.statDocuments")}</p>
                     <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">
                       <AnimatedNumber 
                         value={stats.totalDocuments} 
@@ -298,7 +301,7 @@ export default function Home() {
               <CardContent className="pt-6 relative">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-emerald-600/70 dark:text-emerald-400/70 font-medium">Befejezett elemzések</p>
+                    <p className="text-sm text-emerald-600/70 dark:text-emerald-400/70 font-medium">{tc("homePage.statAnalyses")}</p>
                     <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">
                       <AnimatedNumber 
                         value={stats.completedAnalyses} 
@@ -330,7 +333,7 @@ export default function Home() {
                       stats.urgentDeadlines > 0 
                         ? "text-red-600/70 dark:text-red-400/70" 
                         : "text-amber-600/70 dark:text-amber-400/70"
-                    }`}>Sürgős határidők</p>
+                    }`}>{tc("homePage.statUrgentDeadlines")}</p>
                     <p className={`text-3xl font-bold ${
                       stats.urgentDeadlines > 0 
                         ? "text-red-700 dark:text-red-300" 
@@ -377,8 +380,8 @@ export default function Home() {
                   <Upload className="h-7 w-7 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">Új dokumentum feltöltése</h3>
-                  <p className="text-sm text-muted-foreground">Töltsd fel PDF dokumentumod elemzéshez</p>
+                  <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{tc("homePage.quickUploadTitle")}</h3>
+                  <p className="text-sm text-muted-foreground">{tc("homePage.quickUploadDesc")}</p>
                 </div>
                 <ArrowRight className="h-5 w-5 text-muted-foreground opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
               </div>
@@ -395,8 +398,8 @@ export default function Home() {
                   <Archive className="h-7 w-7 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">Dokumentum archívum</h3>
-                  <p className="text-sm text-muted-foreground">Tekintsd meg az összes dokumentumod</p>
+                  <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{tc("homePage.quickArchiveTitle")}</h3>
+                  <p className="text-sm text-muted-foreground">{tc("homePage.quickArchiveDesc")}</p>
                 </div>
                 <ArrowRight className="h-5 w-5 text-muted-foreground opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
               </div>
@@ -405,7 +408,7 @@ export default function Home() {
 
           {/* Invoice/Bookkeeping Summary Widget - Only for enterprise/admin */}
           <div className="flex flex-col" style={{ order: cardOrderMap["invoices"] ?? 3 }} data-tour="invoices">
-          {hasInvoiceAccess && (
+          {hasInvoiceAccess && !isUsMarket() && (
             <div 
               className="relative overflow-hidden rounded-xl cursor-pointer group transition-all hover:scale-[1.01] hover:shadow-xl"
               onClick={() => navigate("/invoices")}
@@ -423,9 +426,9 @@ export default function Home() {
                       <Receipt className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-white">Könyvelési összefoglaló</h3>
+                      <h3 className="font-semibold text-white">{tc("homePage.invoiceSummary")}</h3>
                       <p className="text-sm text-purple-200/70">
-                        {format(new Date(), "yyyy. MMMM", { locale: hu })}
+                        {format(new Date(), "yyyy. MMMM", { locale: getAppDateLocale() })}
                       </p>
                     </div>
                   </div>
@@ -443,21 +446,21 @@ export default function Home() {
                   <div className="col-span-4 sm:col-span-1 bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/10">
                     <p className="text-xs text-purple-200/70 mb-1 flex items-center gap-1.5">
                       <PieChart className="h-3.5 w-3.5" />
-                      Havi ÁFA
+                      {tc("homePage.monthlyVat")}
                     </p>
                     <p className="text-2xl font-bold text-white" style={{ color: "#fff" }}>
-                      {invoiceStats.monthlyVat.toLocaleString("hu-HU")}
-                      <span className="text-base font-normal text-white/90 ml-1">Ft</span>
+                      {invoiceStats.monthlyVat/*money*/}
+                      
                     </p>
                   </div>
 
                   {/* Other stats - simpler */}
                   <div className="col-span-4 sm:col-span-3 grid grid-cols-3 gap-3">
                     <div className="text-center sm:text-left p-3">
-                      <p className="text-xs text-purple-200/60 mb-0.5">Számlák</p>
+                      <p className="text-xs text-purple-200/60 mb-0.5">{tc("homePage.invoicesLabel")}</p>
                       <p className="text-lg font-semibold text-white" style={{ color: "#fff" }}>
                         {invoiceStats.invoiceCount}
-                        <span className="text-sm font-normal text-white/90 ml-1">db</span>
+                        <span className="text-sm font-normal text-white/90 ml-1"> docs</span>
                       </p>
                       {invoiceStats.invoiceCount > invoiceStats.completedCount && (
                         <p className="text-xs text-amber-400">
@@ -467,17 +470,17 @@ export default function Home() {
                     </div>
 
                     <div className="text-center sm:text-left p-3">
-                      <p className="text-xs text-purple-200/60 mb-0.5">Nettó</p>
+                      <p className="text-xs text-purple-200/60 mb-0.5">{tc("homePage.netLabel", { defaultValue: "Net" })}</p>
                       <p className="text-lg font-semibold text-white" style={{ color: "#fff" }}>
-                        {invoiceStats.monthlyNet.toLocaleString("hu-HU")}
+                        {invoiceStats.monthlyNet/*money*/}
                         <span className="text-sm font-normal text-white/90 ml-1">Ft</span>
                       </p>
                     </div>
 
                     <div className="text-center sm:text-left p-3">
-                      <p className="text-xs text-purple-200/60 mb-0.5">Bruttó</p>
+                      <p className="text-xs text-purple-200/60 mb-0.5">{tc("homePage.grossLabel", { defaultValue: "Gross" })}</p>
                       <p className="text-lg font-semibold text-white" style={{ color: "#fff" }}>
-                        {invoiceStats.monthlyGross.toLocaleString("hu-HU")}
+                        {invoiceStats.monthlyGross/*money*/}
                         <span className="text-sm font-normal text-white/90 ml-1">Ft</span>
                       </p>
                     </div>
@@ -509,23 +512,21 @@ export default function Home() {
                   <Search className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold">AI Keresés</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Kérdezz bármit a dokumentumaidról természetes nyelven
-                  </p>
+                  <h3 className="text-lg font-semibold">{tc("aiSearch.title")}</h3>
+                  <p className="text-sm text-muted-foreground">{tc("aiSearch.subtitle")}</p>
                 </div>
               </div>
               <AISearch />
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-xs text-muted-foreground">Példák:</span>
+                <span className="text-xs text-muted-foreground">{tc("homePage.searchExamples")}</span>
                 <Badge variant="secondary" className="text-xs font-normal cursor-pointer hover:bg-secondary/80">
-                  "NAV levelek"
+                  {tc("homePage.searchBadgeIrs")}
                 </Badge>
                 <Badge variant="secondary" className="text-xs font-normal cursor-pointer hover:bg-secondary/80">
-                  "fizetési határidők"
+                  {tc("homePage.searchBadgeDeadlines")}
                 </Badge>
                 <Badge variant="secondary" className="text-xs font-normal cursor-pointer hover:bg-secondary/80">
-                  "adóbevallás"
+                  {tc("homePage.searchBadgeState")}
                 </Badge>
               </div>
             </div>
@@ -533,238 +534,7 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        /* Public landing page */
-        <>
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/5 via-background to-accent/5 py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center space-y-6">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
-              Hivatalos dokumentumok{" "}
-              <span className="text-primary">AI-alapú értelmezése magyarul</span>
-            </h1>
-
-            {/* ÚJ SZLOGEN BLOKK */}
-            <p className="text-md sm:text-lg text-foreground font-medium max-w-2xl mx-auto">
-              A ChatGPT-nek elmagyarázhatod, mit kaptál.
-              <br />
-              Az <span className="font-semibold text-primary">AdminAI</span> viszont
-              elmagyarázza <span className="font-semibold">neked</span>, mit kaptál.
-            </p>
-            {/* --- VÉGE --- */}
-
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-4">
-              <Button
-                size="lg"
-                onClick={() => navigate(user ? "/upload" : "/auth")}
-                className="w-full sm:w-auto text-lg px-8 min-h-[48px] touch-manipulation"
-              >
-                <FileText className="mr-2 h-5 w-5" />
-                Dokumentum feltöltése
-              </Button>
-
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => navigate("/pricing")}
-                className="w-full sm:w-auto text-lg px-8 min-h-[48px] touch-manipulation"
-              >
-                Árak megtekintése
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Hogyan értelmezi az AdminAI a hivatal leveleit?</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">Töltse fel</h3>
-                <p className="text-muted-foreground">
-                  Töltse fel PDF vagy szöveges dokumentumát egyszerűen
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">Elemzés</h3>
-                <p className="text-muted-foreground">
-                  AI rendszerünk elemzi és értelmezi a dokumentumot
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">Lépések</h3>
-                <p className="text-muted-foreground">
-                  Megkapja a teendőket és határidőket egyszerűen
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Receipt className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">Számlák & könyvelés</h3>
-                <p className="text-muted-foreground">
-                  Fotózd le a számlát – OCR, kategorizálás, Excel export, könyvelőnek küldés egy helyen
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="bg-muted/50 py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Számla OCR és dokumentumkezelés kis- és középvállalkozásoknak</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="flex gap-4">
-              <Shield className="h-8 w-8 text-primary flex-shrink-0" />
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Biztonságos</h3>
-                <p className="text-muted-foreground">
-                  Dokumentumai biztonságosan tárolva, csak Ön férhet hozzá
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <Sparkles className="h-8 w-8 text-primary flex-shrink-0" />
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Gyors elemzés</h3>
-                <p className="text-muted-foreground">
-                  Percek alatt megkapja az egyszerű magyarázatot
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <Clock className="h-8 w-8 text-primary flex-shrink-0" />
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Határidők</h3>
-                <p className="text-muted-foreground">
-                  Automatikus határidő figyelmeztetés, hogy ne maradjon le semmiről
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <FileText className="h-8 w-8 text-primary flex-shrink-0" />
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Archívum</h3>
-                <p className="text-muted-foreground">
-                  Minden dokumentum és elemzés egy helyen megtalálható
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <ScanLine className="h-8 w-8 text-primary flex-shrink-0" />
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Számla felismerés (OCR)</h3>
-                <p className="text-muted-foreground">
-                  Fotózd le a számlát – az AI kiolvassa az összegeket, ÁFA-t, szállítót, kézírást is
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <FileSpreadsheet className="h-8 w-8 text-primary flex-shrink-0" />
-              <div>
-                <h3 className="text-xl font-semibold mb-2">Excel export, könyvelőnek</h3>
-                <p className="text-muted-foreground">
-                  Számla adatok egy kattintással Excelbe vagy közvetlenül a könyvelődnek
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 px-4">
-        <div className="container mx-auto max-w-5xl">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Részletes megoldások dokumentumtípus szerint</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Link to="/nav-hatarozat-ertelmezes" className="rounded-lg border p-4 hover:border-primary transition-colors">
-              <h3 className="font-semibold mb-1">NAV határozat értelmezés</h3>
-              <p className="text-sm text-muted-foreground">Mit jelent a levél és mi a következő lépés?</p>
-            </Link>
-            <Link to="/szamla-ocr" className="rounded-lg border p-4 hover:border-primary transition-colors">
-              <h3 className="font-semibold mb-1">Számla OCR</h3>
-              <p className="text-sm text-muted-foreground">Számla felismerés és könyvelőbarát export.</p>
-            </Link>
-            <Link to="/dokumentum-archivum" className="rounded-lg border p-4 hover:border-primary transition-colors">
-              <h3 className="font-semibold mb-1">Dokumentum archívum</h3>
-              <p className="text-sm text-muted-foreground">Visszakereshető iratkezelés KKV-knak.</p>
-            </Link>
-            <Link to="/gyik" className="rounded-lg border p-4 hover:border-primary transition-colors">
-              <h3 className="font-semibold mb-1">GYIK</h3>
-              <p className="text-sm text-muted-foreground">Leggyakoribb kérdések az AdminAI használatáról.</p>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="pb-10 px-4">
-        <div className="container mx-auto max-w-5xl">
-          <h2 className="text-2xl font-bold text-center mb-6">Összehasonlítások</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            <Link to="/adminai-vs-chatgpt" className="rounded-lg border p-4 hover:border-primary transition-colors">
-              <h3 className="font-semibold mb-1">AdminAI vs ChatGPT</h3>
-              <p className="text-sm text-muted-foreground">Általános AI vs célzott dokumentum-értelmezés.</p>
-            </Link>
-            <Link to="/adminai-vs-billingo" className="rounded-lg border p-4 hover:border-primary transition-colors">
-              <h3 className="font-semibold mb-1">AdminAI vs Billingo</h3>
-              <p className="text-sm text-muted-foreground">Kimenő számlázás vs bejövő dokumentum értelmezés.</p>
-            </Link>
-            <Link to="/adminai-vs-szamlazz" className="rounded-lg border p-4 hover:border-primary transition-colors">
-              <h3 className="font-semibold mb-1">AdminAI vs Számlázz.hu</h3>
-              <p className="text-sm text-muted-foreground">Piacvezető számlázó és az AdminAI eltérő fókusza.</p>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-4xl text-center space-y-6">
-          <h2 className="text-3xl font-bold">Kezdje el most!</h2>
-          <p className="text-lg text-muted-foreground">
-            Nincs több bonyolult hivatali nyelv - érthető magyarázatok percek alatt
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Az AdminAI tájékoztató jellegű AI-rendszer, nem minősül egyedi jogi tanácsadásnak.
-          </p>
-
-          <Button
-            size="lg"
-            onClick={() => navigate(user ? "/upload" : "/auth")}
-            className="text-lg px-8"
-          >
-            Első dokumentum feltöltése
-          </Button>
-        </div>
-      </section>
-        </>
+        <HomeLanding />
       )}
     </div>
   );

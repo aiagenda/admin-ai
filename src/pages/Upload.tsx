@@ -167,7 +167,7 @@ export default function Upload() {
     });
 
     if (validFiles.length === 0) {
-      toast.error("Csak PDF vagy kép (JPG, PNG, HEIC) tölthető fel, max 20MB méretig");
+      toast.error(t("uploadPage.fileTypeError"));
       return;
     }
 
@@ -193,7 +193,7 @@ export default function Upload() {
           toast.error("A HEIC kép feldolgozása sikertelen. Kérlek válassz JPG/PNG fájlt, vagy használd az egyszerű fotó opciót.");
           return;
         }
-        toast.warning("Kép optimalizálás sikertelen, eredeti fájl használata");
+        toast.warning(t("uploadPage.imageOptimizeWarn"));
       }
     }
 
@@ -268,7 +268,7 @@ export default function Upload() {
           `Elérte a havi kvóta limitjét (${quota.current_usage}/${quota.limit_amount}). Kérjük, frissítse előfizetését.`,
           {
             action: {
-              label: "Előfizetés",
+              label: t("uploadPage.subscribeLabel"),
               onClick: () => window.location.href = "/pricing",
             },
           }
@@ -350,7 +350,7 @@ export default function Upload() {
           const result = await res.json();
           if (!res.ok || !result?.success) {
             console.error("Edge Function error:", result);
-            const details = result?.error || result?.message || "Ismeretlen backend hiba";
+            const details = result?.error || result?.message || t("uploadPage.unknownBackend");
             toast.error(`Elemzési hiba: ${details}`);
             // Don't throw here - let polling handle status updates
             // The Edge Function will update status to "error" if it fails
@@ -374,7 +374,7 @@ export default function Upload() {
       // Set processing state and subscribe to status updates
       setProcessingDocId(doc.id);
       setProcessingStatus("processing");
-      setFile(null); // Clear file selection
+      // Keep file + preview visible during processing
 
       // Polling function as fallback (more reliable than realtime)
       let pollCount = 0;
@@ -402,12 +402,12 @@ export default function Upload() {
                 .single();
 
               if (!analysisError && analysisData) {
-                toast.success("Elemzés befejezve!");
+                toast.success(t("uploadPage.analysisCompleteToast"));
                 navigate(`/result/${analysisData.id}`);
                 return true; // Stop polling
               }
             } else if (currentStatus === "error") {
-              toast.error("Hiba történt az elemzés során");
+              toast.error(t("uploadPage.analysisErrorToast"));
               setProcessingDocId(null);
               setProcessingStatus("");
               setProcessingElapsedSec(0);
@@ -418,7 +418,7 @@ export default function Upload() {
           // Continue polling if still processing
           pollCount++;
           if (pollCount >= maxPolls) {
-            toast.error("Az elemzés túl sokáig tart. Kérjük, ellenőrizze az archívumot később.");
+            toast.error(t("uploadPage.analysisTimeoutToast"));
             setProcessingDocId(null);
             setProcessingStatus("");
             setProcessingElapsedSec(0);
@@ -465,13 +465,13 @@ export default function Upload() {
                   .single()
                   .then(({ data: analysisData }) => {
                     if (analysisData) {
-                      toast.success("Elemzés befejezve!");
+                      toast.success(t("uploadPage.analysisCompleteToast"));
                       navigate(`/result/${analysisData.id}`);
                     }
                   });
               } else if (newStatus === "error") {
                 clearInterval(pollInterval); // Stop polling
-                toast.error("Hiba történt az elemzés során");
+                toast.error(t("uploadPage.analysisErrorToast"));
                 setProcessingDocId(null);
                 setProcessingStatus("");
                 setProcessingElapsedSec(0);
@@ -491,7 +491,7 @@ export default function Upload() {
       }
     } catch (err: any) {
       console.error("UPLOAD ERROR:", err);
-      toast.error(err.message || "Hiba történt");
+      toast.error(err.message || t("uploadPage.genericError"));
     } finally {
       setLoading(false);
     }
@@ -511,8 +511,7 @@ export default function Upload() {
           <div className="flex flex-wrap items-center justify-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-bold">{t("uploadPage.title")}</h1>
             <HelpTooltip 
-              content="Töltsön fel PDF dokumentumot vagy képet (JPG, PNG, HEIC). Az elemzés általában 30-60 másodpercig tart."
-              helpPageAnchor="feltöltés"
+              content={t("uploadPage.tooltipHelp")}
             />
           </div>
           <p className="text-muted-foreground">{t("uploadPage.subtitle")}</p>
@@ -553,7 +552,7 @@ export default function Upload() {
                     ) : filePreview ? (
                       <img
                         src={filePreview}
-                        alt="Dokumentum előnézet"
+                        alt={t("uploadPage.previewAlt")}
                         className="w-full h-auto max-h-[50vh] sm:max-h-[400px] object-contain mx-auto"
                         onError={(e) => {
                           e.currentTarget.style.display = "none";
@@ -564,7 +563,7 @@ export default function Upload() {
                     ) : null}
                     <div className="hidden flex-col items-center justify-center py-12 text-muted-foreground">
                       <FileText className="h-16 w-16 mb-2" />
-                      <p>Kép előnézet nem elérhető</p>
+                      <p>{t("uploadPage.previewUnavailable")}</p>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground text-center">
@@ -611,7 +610,7 @@ export default function Upload() {
                   className="w-full min-h-[44px] touch-manipulation"
                 >
                   <FileText className="mr-2 h-4 w-4 shrink-0" />
-                  <span className="truncate">Fájl kiválasztása</span>
+                  <span className="truncate">{t("uploadPage.selectFile")}</span>
                 </Button>
                 <Button
                   type="button"
@@ -630,7 +629,7 @@ export default function Upload() {
                   className="w-full text-muted-foreground min-h-[44px] touch-manipulation"
                 >
                   <Camera className="mr-2 h-4 w-4 shrink-0" />
-                  <span className="truncate">Gyors fotó</span>
+                  <span className="truncate">{t("uploadPage.quickPhoto")}</span>
                 </Button>
               </div>
               </>
@@ -644,13 +643,13 @@ export default function Upload() {
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold">
-                        {processingStatus === "completed" ? "✓ Elemzés kész!" : "Dokumentum feldolgozása..."}
+                        {processingStatus === "completed" ? `✓ ${t("uploadPage.processingDone")}` : t("uploadPage.processing")}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         {getProcessingMessage(processingStatus, processingElapsedSec, t)}
                       </p>
                       {processingStatus === "processing" && processingElapsedSec >= 10 && (
-                        <p className="text-xs text-muted-foreground/80 mt-1">Eltelt idő: ~{processingElapsedSec} mp</p>
+                        <p className="text-xs text-muted-foreground/80 mt-1">{t("uploadPage.elapsed", { sec: processingElapsedSec })}</p>
                       )}
                     </div>
                   </div>
@@ -664,31 +663,26 @@ export default function Upload() {
                   >
                     {loading ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Feltöltés...
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t("uploadPage.uploading")}
                       </>
                     ) : (
                       <>
-                        <UploadIcon className="mr-2 h-5 w-5" /> Elemzés indítása
+                        <UploadIcon className="mr-2 h-5 w-5" /> {t("uploadPage.startAnalysis")}
                       </>
                     )}
                   </Button>
                   <p className="mt-3 text-xs text-center text-muted-foreground">
-                    A feltöltés folytatásával elfogadod az {" "}
-                    <Link className="underline text-primary" to="/legal/privacy">
-                      adatkezelési tájékoztatót
-                    </Link>
-                    {" "}es az {" "}
-                    <Link className="underline text-primary" to="/legal/terms">
-                      ÁSZF-et
-                    </Link>
-                    .
+                    {t("uploadPage.consentPrefix")}{" "}
+                    <Link className="underline text-primary" to="/legal/privacy">{t("legalLinks.privacy")}</Link>
+                    {" "}{t("uploadPage.consentAnd")}{" "}
+                    <Link className="underline text-primary" to="/legal/terms">{t("legalLinks.terms")}</Link>.
                   </p>
                 </>
               )}
 
               <div className="mt-6 rounded-xl border bg-muted/30 p-4 space-y-3">
                 <p className="text-sm">
-                  Biztonság: TLS kapcsolat, jogosultságalapú hozzáférés, naplózott feldolgozás.
+                  {t("uploadPage.securityNote")}
                 </p>
                 <LegalQuickLinks />
               </div>

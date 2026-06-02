@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle, ChevronDown, ChevronUp, FileText, Upload, Archive, GitCompare, Tag, Calendar, CheckSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PageSEO } from "@/components/PageSEO";
+import { useTranslation } from "react-i18next";
+import { isUsMarket } from "@/lib/market";
 
 interface FAQItem {
   question: string;
@@ -99,19 +101,13 @@ const faqData: FAQItem[] = [
   },
 ];
 
-const helpFaqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": faqData.map((f) => ({
-    "@type": "Question",
-    "name": f.question,
-    "acceptedAnswer": { "@type": "Answer", "text": f.answer },
-  })),
-};
-
 const categories = ["Általános", "Feltöltés", "Eredmények", "Archívum", "Exportálás", "Határidők", "Biztonság"];
 
 export default function Help() {
+  const { t: th } = useTranslation("help");
+  const us = isUsMarket();
+  const i18nFaq = us ? (th("faq", { returnObjects: true }) as FAQItem[]) : null;
+  const activeFaqData = i18nFaq && Array.isArray(i18nFaq) && i18nFaq.length > 0 ? i18nFaq : faqData;
   const [openItems, setOpenItems] = useState<Set<number>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -125,45 +121,67 @@ export default function Help() {
     setOpenItems(newOpen);
   };
 
+  const categoryList = us ? [...new Set(activeFaqData.map((f) => f.category))] : categories;
   const filteredFAQs = selectedCategory === "all" 
-    ? faqData 
-    : faqData.filter((faq) => faq.category === selectedCategory);
+    ? activeFaqData 
+    : activeFaqData.filter((faq) => faq.category === selectedCategory);
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "Feltöltés":
+      case "Upload":
         return <Upload className="h-5 w-5" />;
       case "Eredmények":
+      case "Results":
         return <FileText className="h-5 w-5" />;
       case "Archívum":
+      case "Archive":
         return <Archive className="h-5 w-5" />;
       case "Exportálás":
+      case "Export":
         return <FileText className="h-5 w-5" />;
       case "Határidők":
+      case "Deadlines":
         return <Calendar className="h-5 w-5" />;
       case "Biztonság":
+      case "Security":
+      case "Privacy":
+      case "Billing":
         return <HelpCircle className="h-5 w-5" />;
+      case "Általános":
+      case "General":
       default:
         return <HelpCircle className="h-5 w-5" />;
     }
   };
 
+  const categoryLabel = (cat: string) =>
+    us ? th(`categories.${cat}`, { defaultValue: cat }) : cat;
+
   return (
     <div className="min-h-screen py-12 px-4">
-      <PageSEO pageKey="help" path="/help" structuredData={helpFaqJsonLd} />
+      <PageSEO pageKey="help" path="/help" structuredData={{
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: activeFaqData.map((f) => ({
+          "@type": "Question",
+          name: f.question,
+          acceptedAnswer: { "@type": "Answer", text: f.answer },
+        })),
+      }} />
       <div className="container mx-auto max-w-4xl space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <HelpCircle className="h-8 w-8 text-primary" />
-            Segítség és GYIK
+{us ? th("pageTitle") : "Segítség és GYIK"}
           </h1>
           <p className="text-muted-foreground mt-2">
-            Keresse meg a választ kérdéseire, vagy ismerkedjen meg az AdminAI funkcióival
+            {us ? th("pageSubtitle") : "Keresse meg a választ kérdéseire, vagy ismerkedjen meg az AdminAI funkcióival"}
           </p>
         </div>
 
-        {/* Quick Links */}
+        {!us && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedCategory("Feltöltés")}>
             <CardContent className="pt-6">
@@ -214,6 +232,8 @@ export default function Help() {
           </Card>
         </div>
 
+        )}
+
         {/* Category Filter */}
         <div className="flex flex-wrap gap-2">
           <Button
@@ -221,9 +241,9 @@ export default function Help() {
             size="sm"
             onClick={() => setSelectedCategory("all")}
           >
-            Összes
+            {us ? th("allCategories") : "Összes"}
           </Button>
-          {categories.map((cat) => (
+          {categoryList.map((cat) => (
             <Button
               key={cat}
               variant={selectedCategory === cat ? "default" : "outline"}
@@ -231,7 +251,7 @@ export default function Help() {
               onClick={() => setSelectedCategory(cat)}
             >
               {getCategoryIcon(cat)}
-              <span className="ml-2">{cat}</span>
+              <span className="ml-2">{categoryLabel(cat)}</span>
             </Button>
           ))}
         </div>
@@ -239,7 +259,7 @@ export default function Help() {
         {/* FAQ List */}
         <div className="space-y-4">
           {filteredFAQs.map((faq, index) => {
-            const globalIndex = faqData.findIndex((f) => f === faq);
+            const globalIndex = activeFaqData.findIndex((f) => f === faq);
             const isOpen = openItems.has(globalIndex);
 
             return (
@@ -273,18 +293,18 @@ export default function Help() {
         {/* Contact Section */}
         <Card className="bg-primary/5 border-primary/20">
           <CardHeader>
-            <CardTitle>Még mindig nem találja a választ?</CardTitle>
+            <CardTitle>{us ? th("stillNeedHelp") : "Még mindig nem találja a választ?"}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Ha további segítségre van szüksége, kérjük, lépjen kapcsolatba velünk.
+              {us ? th("contactBlurb") : "Ha további segítségre van szüksége, kérjük, lépjen kapcsolatba velünk."}
             </p>
             <div className="flex gap-3">
               <Button variant="outline" asChild>
-                <Link to="/">Vissza a főoldalra</Link>
+                <Link to="/">{us ? th("backHome") : "Vissza a főoldalra"}</Link>
               </Button>
               <Button asChild>
-                <Link to="/upload">Dokumentum feltöltése</Link>
+                <Link to="/upload">{us ? th("uploadDocument") : "Dokumentum feltöltése"}</Link>
               </Button>
             </div>
           </CardContent>

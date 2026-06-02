@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,7 @@ import html2canvas from "html2canvas";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { hu } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -73,6 +74,7 @@ interface Form {
 }
 
 export default function Result() {
+  const { t: tr } = useTranslation("common");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -150,11 +152,10 @@ export default function Result() {
           }
         }
 
-        // Részletfizetés / fizetési könnyítés: NAV nyomtatványok, ha adózás + kulcsszavak
+        // US market: payment relief section disabled
         const summaryText = [analysisData.simple_summary, analysisData.legal_summary].filter(Boolean).join(" ") || "";
         const needsPaymentRelief =
-          docCategory === "adozas" &&
-          /részletfizetés|átvezetés|fizetési könnyítés|végrehajtás/i.test(summaryText);
+          false // US market: payment relief NAV forms not applicable;
         if (needsPaymentRelief) {
           const { data: reliefForms } = await supabase
             .from("forms")
@@ -197,7 +198,7 @@ export default function Result() {
         }
       } catch (error: any) {
         console.error("Error fetching analysis:", error);
-        toast.error("Hiba az elemzés betöltése során");
+        toast.error("Failed to load analysis");
       } finally {
         setLoading(false);
       }
@@ -234,19 +235,19 @@ export default function Result() {
     switch (severity) {
       case "urgent":
         return {
-          label: "Sürgős",
+          label: tr("resultPage.severityUrgent"),
           icon: AlertCircle,
           className: "bg-destructive text-destructive-foreground",
         };
       case "action_needed":
         return {
-          label: "Teendő",
+          label: tr("resultPage.severityAction"),
           icon: AlertTriangle,
           className: "bg-warning text-warning-foreground",
         };
       default:
         return {
-          label: "Információ",
+          label: tr("resultPage.severityInfo"),
           icon: Info,
           className: "bg-info text-info-foreground",
         };
@@ -259,7 +260,7 @@ export default function Result() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Be kell jelentkezned");
+        toast.error("Please sign in");
         return;
       }
 
@@ -305,10 +306,10 @@ export default function Result() {
 
       setFeedbackGiven(true);
       setFeedbackType(type);
-      toast.success("Köszönjük a visszajelzést!");
+      toast.success("Thanks for your feedback!");
     } catch (error: any) {
       console.error("Feedback error:", error);
-      toast.error("Hiba a visszajelzés küldése során");
+      toast.error("Failed to submit feedback");
     }
   };
 
@@ -319,7 +320,7 @@ export default function Result() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Be kell jelentkezned");
+        toast.error("Please sign in");
         return;
       }
 
@@ -343,13 +344,13 @@ export default function Result() {
       }));
 
       if (newCompleted) {
-        toast.success("Teendő bejelölve!");
+        toast.success("Step marked complete!");
       } else {
-        toast.success("Teendő visszavonva");
+        toast.success("Step unmarked");
       }
     } catch (error: any) {
       console.error("Todo toggle error:", error);
-      toast.error("Hiba a teendő frissítése során");
+      toast.error("Failed to update step");
     }
   };
 
@@ -358,7 +359,7 @@ export default function Result() {
     if (!analysis) return;
 
     try {
-      toast.info("PDF generálása...");
+      toast.info("Generating PDF…");
       
       // Create a hidden container for PDF content
       const pdfContainer = document.createElement("div");
@@ -373,9 +374,9 @@ export default function Result() {
       
       // Build HTML content
       const severityLabels: Record<string, string> = {
-        urgent: "Sürgős",
-        action_needed: "Teendő",
-        info: "Információ"
+        urgent: tr("resultPage.severityUrgent"),
+        action_needed: tr("resultPage.severityAction"),
+        info: tr("resultPage.severityInfo"),
       };
       const severityColors: Record<string, string> = {
         urgent: "#dc2626",
@@ -383,7 +384,7 @@ export default function Result() {
         info: "#3b82f6"
       };
       
-      const severityLabel = severityLabels[analysis.severity] || "Információ";
+      const severityLabel = severityLabels[analysis.severity] || tr("resultPage.severityInfo");
       const severityColor = severityColors[analysis.severity] || "#3b82f6";
       const todoList = parseTodoList(analysis.todo_simple, analysis.what_to_do);
       const progressPercentage = todoSimple.length > 0
@@ -401,7 +402,7 @@ export default function Result() {
       pdfContainer.innerHTML = `
         <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 30px 20px; margin: -20mm -20mm 30px -20mm; color: white;">
           <h1 style="margin: 0; font-size: 32px; font-weight: bold;">AdminAI</h1>
-          <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Dokumentum Elemzés</p>
+          <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Document Analysis</p>
         </div>
         
         <div style="margin-bottom: 25px;">
@@ -412,14 +413,14 @@ export default function Result() {
         
         ${analysis.simple_summary ? `
           <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
-            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #1e293b;">Egyszerű Magyarázat</h2>
+            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #1e293b;">{tr("resultPage.simpleTab")}</h2>
             <p style="margin: 0; font-size: 13px; color: #334155; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(analysis.simple_summary)}</p>
           </div>
         ` : ''}
         
         ${analysis.legal_summary ? `
           <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
-            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #1e293b;">Részletes Magyarázat</h2>
+            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #1e293b;">{tr("resultPage.legalTab")}</h2>
             <p style="margin: 0; font-size: 13px; color: #334155; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(analysis.legal_summary)}</p>
           </div>
         ` : ''}
@@ -427,7 +428,7 @@ export default function Result() {
         ${todoList.length > 0 ? `
           <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-              <h2 style="margin: 0; font-size: 18px; font-weight: bold; color: #1e293b;">Mit kell tennie?</h2>
+              <h2 style="margin: 0; font-size: 18px; font-weight: bold; color: #1e293b;">What to do?</h2>
               <div style="display: flex; align-items: center; gap: 10px;">
                 <div style="width: 100px; height: 8px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;">
                   <div style="width: ${progressPercentage}%; height: 100%; background-color: #3b82f6;"></div>
@@ -453,29 +454,29 @@ export default function Result() {
         
         ${analysis.deadline ? `
           <div style="margin-bottom: 30px; padding: 15px; background-color: #f9fafb; border-radius: 6px; border-left: 4px solid #3b82f6;">
-            <p style="margin: 0 0 5px 0; font-size: 12px; font-weight: bold; color: #1e293b;">Határidő</p>
-            <p style="margin: 0; font-size: 14px; color: #334155;">${format(new Date(analysis.deadline), "yyyy. MMMM d.", { locale: hu })}</p>
+            <p style="margin: 0 0 5px 0; font-size: 12px; font-weight: bold; color: #1e293b;">Deadline</p>
+            <p style="margin: 0; font-size: 14px; color: #334155;">${format(new Date(analysis.deadline), "yyyy. MMMM d.", { locale: enUS })}</p>
           </div>
         ` : ''}
         
         ${(analysis.bank_account || analysis.amount) ? `
           <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
-            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #1e293b;">Fizetési Adatok</h2>
+            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #1e293b;">Payment Details</h2>
             ${analysis.recipient_name ? `
               <div style="margin-bottom: 12px;">
-                <p style="margin: 0 0 4px 0; font-size: 11px; color: #64748b; font-weight: 500;">Kedvezményezett</p>
+                <p style="margin: 0 0 4px 0; font-size: 11px; color: #64748b; font-weight: 500;">Payee</p>
                 <p style="margin: 0; font-size: 13px; color: #334155; font-weight: 600; font-family: monospace;">${escapeHtml(analysis.recipient_name)}</p>
               </div>
             ` : ''}
             ${analysis.bank_account ? `
               <div style="margin-bottom: 12px;">
-                <p style="margin: 0 0 4px 0; font-size: 11px; color: #64748b; font-weight: 500;">Bankszámlaszám</p>
+                <p style="margin: 0 0 4px 0; font-size: 11px; color: #64748b; font-weight: 500;">Account / Reference</p>
                 <p style="margin: 0; font-size: 13px; color: #334155; font-weight: 600; font-family: monospace;">${escapeHtml(analysis.bank_account)}</p>
               </div>
             ` : ''}
             ${analysis.amount ? `
               <div style="margin-bottom: 12px;">
-                <p style="margin: 0 0 4px 0; font-size: 11px; color: #64748b; font-weight: 500;">Összeg</p>
+                <p style="margin: 0 0 4px 0; font-size: 11px; color: #64748b; font-weight: 500;">Amount</p>
                 <p style="margin: 0; font-size: 13px; color: #334155; font-weight: 600; font-family: monospace;">${escapeHtml(analysis.amount)}</p>
               </div>
             ` : ''}
@@ -484,7 +485,7 @@ export default function Result() {
         
         <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #e2e8f0; text-align: center;">
           <p style="margin: 0; font-size: 10px; color: #94a3b8;">
-            AdminAI - ${window.location.origin} | Generálva: ${format(new Date(), "yyyy. MMMM d. HH:mm", { locale: hu })}
+            AdminAI - ${window.location.origin} | Generated: ${format(new Date(), "yyyy. MMMM d. HH:mm", { locale: enUS })}
           </p>
         </div>
       `;
@@ -523,13 +524,13 @@ export default function Result() {
       doc.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
       
       // Save PDF
-      const fileName = `adminai-elemzes-${id?.substring(0, 8) || "unknown"}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      const fileName = `noticeiq-analysis-${id?.substring(0, 8) || "unknown"}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
       console.log("Saving PDF:", fileName, "Image dimensions:", imgWidth, "x", imgHeight);
       doc.save(fileName);
-      toast.success("PDF letöltve!");
+      toast.success("PDF downloaded!");
     } catch (error) {
       console.error("PDF export error:", error);
-      toast.error("Hiba a PDF generálása során");
+      toast.error("Failed to generate PDF");
       
       // Clean up container if error - find by style attribute
       const containers = document.querySelectorAll('[style*="left: -9999px"]');
@@ -553,7 +554,7 @@ export default function Result() {
       setShowShareDialog(true);
     } catch (error) {
       console.error("Share link error:", error);
-      toast.error("Hiba a megosztási link létrehozása során");
+      toast.error("Failed to create share link");
     }
   };
 
@@ -564,7 +565,7 @@ export default function Result() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Be kell jelentkezned");
+        toast.error("Please sign in");
         return;
       }
 
@@ -602,12 +603,12 @@ export default function Result() {
       }
 
       setFeedbackGiven(true);
-      toast.success("Köszönjük a visszajelzést!");
+      toast.success("Thanks for your feedback!");
       setShowCommentDialog(false);
       setComment("");
     } catch (error: any) {
       console.error("Feedback error:", error);
-      toast.error("Hiba a visszajelzés küldése során");
+      toast.error("Failed to submit feedback");
     }
   };
 
@@ -616,7 +617,7 @@ export default function Result() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Betöltés...</p>
+          <p className="text-muted-foreground">Loading…</p>
         </div>
       </div>
     );
@@ -627,12 +628,12 @@ export default function Result() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="max-w-md w-full">
           <CardHeader>
-            <CardTitle>Elemzés nem található</CardTitle>
-            <CardDescription>A keresett elemzés nem létezik vagy még feldolgozás alatt áll</CardDescription>
+            <CardTitle>Analysis not found</CardTitle>
+            <CardDescription>This analysis does not exist or is still being processed.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => navigate("/archive")} className="w-full">
-              Vissza az archívumhoz
+              {tr("resultPage.back")}
             </Button>
           </CardContent>
         </Card>
@@ -685,15 +686,15 @@ export default function Result() {
       <div className="container mx-auto max-w-4xl space-y-6">
         <Button variant="ghost" onClick={() => navigate("/archive")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Vissza az archívumhoz
+          {tr("resultPage.back")}
         </Button>
 
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-4">
               <div className="space-y-2 min-w-0">
-                <CardTitle className="text-xl sm:text-2xl">Elemzés eredménye</CardTitle>
-                <CardDescription>A dokumentum részletes elemzése és teendők</CardDescription>
+                <CardTitle className="text-xl sm:text-2xl">{tr("resultPage.title")}</CardTitle>
+                <CardDescription>{tr("resultPage.subtitle")}</CardDescription>
               </div>
               <Badge className={severityConfig.className}>
                 <SeverityIcon className="mr-1 h-3 w-3" />
@@ -706,10 +707,10 @@ export default function Result() {
             {/* Summary Section with Tabs */}
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2 min-w-0">
-                <h3 className="text-lg font-semibold break-words">Miről szól ez a dokumentum?</h3>
+                <h3 className="text-lg font-semibold break-words">{tr("resultPage.aboutTitle")}</h3>
                 <HelpTooltip 
-                  content="Az 'Egyszerű magyarázat' mindennapi nyelven, példákkal segít megérteni. A 'Részletes magyarázat' professzionális, pontosabb értelmezés."
-                  helpPageAnchor="eredmenyek"
+                  content={tr("resultPage.tabTooltip")}
+                  helpPageAnchor="results"
                 />
               </div>
               {legalSummary ? (
@@ -721,12 +722,12 @@ export default function Result() {
                 >
                   <TabsList className="grid w-full grid-cols-2 min-h-[44px] h-auto">
                     <TabsTrigger value="simple" className="min-h-[44px] touch-manipulation whitespace-normal text-center text-xs sm:text-sm px-2 py-2">
-                      <span className="hidden sm:inline">Egyszerű magyarázat</span>
-                      <span className="sm:hidden">Egyszerű</span>
+                      <span className="hidden sm:inline">{tr("resultPage.simpleTab")}</span>
+                      <span className="sm:hidden">{tr("resultPage.simpleTabShort", { defaultValue: tr("resultPage.simpleTab") })}</span>
                     </TabsTrigger>
                     <TabsTrigger value="legal" className="min-h-[44px] touch-manipulation whitespace-normal text-center text-xs sm:text-sm px-2 py-2">
-                      <span className="hidden sm:inline">Részletes magyarázat</span>
-                      <span className="sm:hidden">Részletes</span>
+                      <span className="hidden sm:inline">{tr("resultPage.legalTab")}</span>
+                      <span className="sm:hidden">{tr("resultPage.legalTabShort", { defaultValue: tr("resultPage.legalTab") })}</span>
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="simple" className="mt-4">
@@ -743,7 +744,7 @@ export default function Result() {
               {/* Feedback Section */}
               {legalSummary && (
                 <div className="flex flex-wrap items-center gap-2 pt-4 border-t">
-                  <span className="text-sm text-muted-foreground">Hasznos volt ez az információ?</span>
+                  <span className="text-sm text-muted-foreground">{tr("resultPage.feedbackQuestion")}</span>
                   <div className="flex items-center gap-2">
                     {!feedbackGiven ? (
                       <>
@@ -777,19 +778,19 @@ export default function Result() {
                         {feedbackType === "helpful" && (
                           <>
                             <ThumbsUp className="h-4 w-4 text-green-600" />
-                            <span>Köszönjük a visszajelzést!</span>
+                            <span>Thanks for your feedback!</span>
                           </>
                         )}
                         {feedbackType === "not_helpful" && (
                           <>
                             <ThumbsDown className="h-4 w-4 text-red-600" />
-                            <span>Köszönjük a visszajelzést!</span>
+                            <span>Thanks for your feedback!</span>
                           </>
                         )}
                         {feedbackType === "confusing" && (
                           <>
                             <MessageSquare className="h-4 w-4 text-orange-600" />
-                            <span>Köszönjük a visszajelzést!</span>
+                            <span>Thanks for your feedback!</span>
                           </>
                         )}
                       </div>
@@ -803,14 +804,14 @@ export default function Result() {
             <Dialog open={showCommentDialog} onOpenChange={setShowCommentDialog}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Visszajelzés</DialogTitle>
+                  <DialogTitle>Feedback</DialogTitle>
                   <DialogDescription>
-                    {feedbackType === "not_helpful" && "Miért nem volt hasznos ez az információ?"}
-                    {feedbackType === "confusing" && "Mi volt zavaros? Hogyan tehetnénk érthetőbbé?"}
+                    {feedbackType === "not_helpful" && "Why was this information not helpful?"}
+                    {feedbackType === "confusing" && "What was confusing? How could we improve?"}
                   </DialogDescription>
                 </DialogHeader>
                 <Textarea
-                  placeholder="Írja le a visszajelzését..."
+                  placeholder="Describe your feedback…"
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   className="min-h-[100px]"
@@ -820,10 +821,10 @@ export default function Result() {
                     setShowCommentDialog(false);
                     setComment("");
                   }}>
-                    Mégse
+                    Cancel
                   </Button>
                   <Button onClick={submitFeedbackWithComment}>
-                    Küldés
+                    Submit
                   </Button>
                 </div>
               </DialogContent>
@@ -833,10 +834,10 @@ export default function Result() {
             <div className="border-t pt-6 space-y-3">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold">Mit kell tennie?</h3>
+                  <h3 className="text-lg font-semibold">What to do?</h3>
                   <HelpTooltip 
-                    content="Jelölje be a lépéseket, ahogy halad. A haladás százalékos mutatóval követhető."
-                    helpPageAnchor="eredmenyek"
+                    content="Check off each step as you go. Your progress is tracked as a percentage."
+                    helpPageAnchor="results"
                   />
                 </div>
                 {todoSimple.length > 0 && (
@@ -880,13 +881,13 @@ export default function Result() {
                   })}
                 </div>
               ) : (
-                <p className="text-muted-foreground">Nincs teendő lista</p>
+                <p className="text-muted-foreground">No action items</p>
               )}
             </div>
 
             {requiredForms.length > 0 && (
               <div className="border-t pt-6 space-y-3">
-                <h3 className="text-lg font-semibold">Szükséges nyomtatványok</h3>
+                <h3 className="text-lg font-semibold">Required Forms</h3>
                 <div className="space-y-4">
                   {requiredForms.map((formItem) => (
                     <FormCard key={formItem.id} form={formItem} />
@@ -897,9 +898,9 @@ export default function Result() {
 
             {paymentReliefForms.length > 0 && (
               <div className="border-t pt-6 space-y-3">
-                <h3 className="text-lg font-semibold">Részletfizetés vagy fizetési könnyítés – nyomtatványok</h3>
+                <h3 className="text-lg font-semibold">Payment Plan / Relief – Forms</h3>
                 <p className="text-sm text-muted-foreground">
-                  A dokumentum alapján érdemes megfontolni az Átvezetési kérelmet vagy a Fizetési könnyítés iránti kérelmet. Letöltheti a nyomtatványokat a NAV oldaláról.
+                  Based on this document, consider requesting a payment plan or penalty relief. Download the relevant forms below.
                 </p>
                 <div className="space-y-4">
                   {paymentReliefForms.map((formItem) => (
@@ -911,7 +912,7 @@ export default function Result() {
 
             {form && (
               <div className="border-t pt-6 space-y-3">
-                <h3 className="text-lg font-semibold">Szükséges hivatalos űrlap</h3>
+                <h3 className="text-lg font-semibold">Required Official Form</h3>
                 <FormCard form={form} />
               </div>
             )}
@@ -922,9 +923,9 @@ export default function Result() {
                   <div className="flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="font-medium">Határidő</p>
+                    <p className="font-medium">Deadline</p>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(analysis.deadline), "yyyy. MMMM d.", { locale: hu })}
+                      {format(new Date(analysis.deadline), "yyyy. MMMM d.", { locale: enUS })}
                     </p>
                   </div>
                   </div>
@@ -947,8 +948,8 @@ UID:${id}@adminai.hu
 DTSTAMP:${formatDate(new Date())}
 DTSTART:${formatDate(deadlineDate)}
 DTEND:${formatDate(endDate)}
-SUMMARY:Határidő: ${analysis.simple_summary?.substring(0, 50) || "Dokumentum határidője"}
-DESCRIPTION:Dokumentum határidője\\nAdminAI - ${window.location.origin}/result/${id}
+SUMMARY:Deadline: ${analysis.simple_summary?.substring(0, 50) || "Document deadline"}
+DESCRIPTION:Document deadline\\nNoticeIQ - ${window.location.origin}/result/${id}
 LOCATION:AdminAI
 STATUS:CONFIRMED
 END:VEVENT
@@ -958,37 +959,37 @@ END:VCALENDAR`;
                       const url = URL.createObjectURL(blob);
                       const link = document.createElement("a");
                       link.href = url;
-                      link.download = `hatarido-${format(deadlineDate, "yyyy-MM-dd")}.ics`;
+                      link.download = `deadline-${format(deadlineDate, "yyyy-MM-dd")}.ics`;
                       document.body.appendChild(link);
                       link.click();
                       document.body.removeChild(link);
                       URL.revokeObjectURL(url);
-                      toast.success("Naptár esemény letöltve!");
+                      toast.success("Calendar event downloaded!");
                     }}
                   >
                     <CalendarDays className="h-4 w-4 mr-2" />
-                    Naptárhoz hozzáadás
+                    Add to Calendar
                   </Button>
                 </div>
               </div>
             )}
 
-            {/* Fizetési adatok csak akkor jelenik meg, ha van bankszámlaszám VAGY összeg (ténylegesen van fizetési kötelezettség) */}
+            {/* Payment details – shown only when account or amount is present */}
             {(analysis.bank_account || analysis.amount) && (
               <div className="border-t pt-6 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Fizetési adatok</h3>
+                  <h3 className="text-lg font-semibold">Payment Details</h3>
                   <HelpTooltip 
-                    content="Ha kézzel írott számokat talált a dokumentumban és az AI nem ismerte fel helyesen, javíthatja az értékeket. Ez segít az AI tanulásában."
-                    helpPageAnchor="eredmenyek"
+                    content="If the AI misread any handwritten values, you can correct them here. This helps improve accuracy."
+                    helpPageAnchor="results"
                   />
                 </div>
                 
-                {/* Kedvezményezett csak akkor jelenik meg, ha van fizetési adat is mellette */}
+                {/* Payee shown only when payment info is present */}
                 {analysis.recipient_name && (
                   <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-muted-foreground">Kedvezményezett</p>
+                      <p className="text-sm font-medium text-muted-foreground">Payee</p>
                       <p className="font-mono">{analysis.recipient_name}</p>
                     </div>
                     <Button
@@ -996,7 +997,7 @@ END:VCALENDAR`;
                       size="icon"
                       onClick={() => {
                         navigator.clipboard.writeText(analysis.recipient_name!);
-                        toast.success("Kimásolva!");
+                        toast.success("Copied!");
                       }}
                     >
                       <Copy className="h-4 w-4" />
@@ -1006,7 +1007,7 @@ END:VCALENDAR`;
 
                 {analysis.bank_account && (
                   <OCRCorrectionDialog
-                    label="Bankszámlaszám"
+                    label="Account / Reference"
                     extractedValue={analysis.bank_account}
                     analysisId={analysis.id || id || ""}
                     documentId={analysis.document_id || ""}
@@ -1016,7 +1017,7 @@ END:VCALENDAR`;
 
                 {analysis.amount && (
                   <OCRCorrectionDialog
-                    label="Összeg"
+                    label="Amount"
                     extractedValue={analysis.amount}
                     analysisId={analysis.id || id || ""}
                     documentId={analysis.document_id || ""}
@@ -1063,17 +1064,17 @@ END:VCALENDAR`;
         <div className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <Button onClick={() => navigate("/upload")} className="flex-1 min-h-[44px] touch-manipulation">
-            Új dokumentum feltöltése
+            Upload New Document
           </Button>
           <Button onClick={() => navigate("/archive")} variant="outline" className="flex-1 min-h-[44px] touch-manipulation">
-            Archívum megtekintése
+            View Archive
           </Button>
         </div>
           
           <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
             <Button onClick={exportAsPDF} variant="outline" size="sm" className="min-h-[44px] touch-manipulation w-full sm:w-auto">
               <FileDown className="h-4 w-4 mr-2" />
-              Exportálás PDF-ként
+              Export as PDF
             </Button>
             <Button
               type="button"
@@ -1083,15 +1084,15 @@ END:VCALENDAR`;
               className="min-h-[44px] touch-manipulation w-full sm:w-auto"
             >
               <FileSpreadsheet className="h-4 w-4 mr-2" />
-              CSV / Excel könyvelőnek
+              CSV / Excel Export
             </Button>
             <Button onClick={generateShareLink} variant="outline" size="sm" className="min-h-[44px] touch-manipulation w-full sm:w-auto">
               <Share2 className="h-4 w-4 mr-2" />
-              Megosztás
+              Share
             </Button>
           </div>
           <p className="text-xs text-muted-foreground text-center sm:text-left">
-            A könyvelőnek szánt táblázatot az archívumban állíthatod össze (szűrés, dátum, összeg, határidő).
+            Build an accountant-ready spreadsheet in Archive (filter by date, amount, or deadline).
           </p>
         </div>
 
@@ -1099,9 +1100,9 @@ END:VCALENDAR`;
         <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Megosztási link</DialogTitle>
+              <DialogTitle>Share Link</DialogTitle>
               <DialogDescription>
-                Másolja ki ezt a linket, hogy megossza az elemzést másokkal
+                Copy this link to share the analysis with others
               </DialogDescription>
             </DialogHeader>
             <div className="flex gap-2">
@@ -1113,7 +1114,7 @@ END:VCALENDAR`;
               <Button
                 onClick={() => {
                   navigator.clipboard.writeText(shareLink);
-                  toast.success("Link másolva!");
+                  toast.success("Link copied!");
                 }}
               >
                 <Copy className="h-4 w-4" />

@@ -2,6 +2,11 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { isUsMarket } from "@/lib/market";
+
+const t = isUsMarket()
+  ? { checking: "Checking access…", denied: "Access denied", deniedDesc: "This page requires administrator permissions.", backHome: "Back to home" }
+  : { checking: "Ellenőrzés…",      denied: "Hozzáférés megtagadva", deniedDesc: "Ehhez az oldalhoz adminisztrátori jogosultság szükséges.", backHome: "Vissza a kezdőlapra" };
 
 export function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
@@ -15,24 +20,21 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
         setLoading(false);
         return;
       }
-
       try {
-        const { data, error } = await supabase.rpc('is_admin');
-
+        const { data, error } = await supabase.rpc("is_admin");
         if (error) {
-          console.error('Error checking admin role:', error);
+          console.error("Error checking admin role:", error);
           setIsAdmin(false);
         } else {
           setIsAdmin(data === true);
         }
       } catch (error) {
-        console.error('Error checking admin role:', error);
+        console.error("Error checking admin role:", error);
         setIsAdmin(false);
       } finally {
         setLoading(false);
       }
     }
-
     checkAdminRole();
   }, [user]);
 
@@ -41,7 +43,7 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Ellenőrzés...</p>
+          <p className="text-muted-foreground">{t.checking}</p>
         </div>
       </div>
     );
@@ -55,15 +57,10 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center max-w-md p-8">
-          <h1 className="text-2xl font-bold mb-4">Hozzáférés megtagadva</h1>
-          <p className="text-muted-foreground mb-6">
-            Ehhez az oldalhoz adminisztrátori jogosultság szükséges.
-          </p>
-          <a 
-            href="/" 
-            className="text-primary hover:underline"
-          >
-            Vissza a kezdőlapra
+          <h1 className="text-2xl font-bold mb-4">{t.denied}</h1>
+          <p className="text-muted-foreground mb-6">{t.deniedDesc}</p>
+          <a href="/" className="text-primary hover:underline">
+            {t.backHome}
           </a>
         </div>
       </div>

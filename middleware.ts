@@ -1,6 +1,26 @@
 import { next } from "@vercel/functions";
 
-const REALM = "Admin Hungarian Helper";
+const REALM = "NoticeIQ";
+
+/** Static/PWA assets must stay public even when SITE_ACCESS_PASSWORD is set (otherwise manifest/sw 401). */
+const PUBLIC_PATH_PREFIXES = [
+  "/manifest.json",
+  "/robots.txt",
+  "/sitemap.xml",
+  "/sw.js",
+  "/favicon.ico",
+  "/apple-touch-icon.png",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/coming-soon.html",
+];
+
+function isPublicAsset(pathname: string): boolean {
+  if (PUBLIC_PATH_PREFIXES.some((p) => pathname === p)) return true;
+  if (pathname.startsWith("/assets/")) return true;
+  if (pathname.startsWith("/.well-known/")) return true;
+  return false;
+}
 
 function unauthorized(): Response {
   return new Response("Authentication required.", {
@@ -13,7 +33,6 @@ function unauthorized(): Response {
   });
 }
 
-/** Decodes Basic auth and returns the password part (username is ignored). */
 function basicAuthPassword(authorization: string | null): string | null {
   if (!authorization) return null;
   const prefix = "basic ";
@@ -31,14 +50,15 @@ function basicAuthPassword(authorization: string | null): string | null {
 }
 
 /**
- * Site-wide Basic Auth for **staging / closed previews only**.
- *
- * - If `SITE_ACCESS_PASSWORD` is **unset or empty** → middleware passes through (**public site**, normal production).
- * - If set → all matched routes require Basic Auth with this password (username ignored).
- *
- * Do **not** set `SITE_ACCESS_PASSWORD` on the public US/production domain unless you intentionally want the entire site behind a password (SEO and sign-up will break).
+ * Basic Auth only when SITE_ACCESS_PASSWORD is set (staging).
+ * Public assets (manifest, icons, sw) are always reachable.
  */
 export default function middleware(request: Request): Response {
+  const url = new URL(request.url);
+  if (isPublicAsset(url.pathname)) {
+    return next();
+  }
+
   const expected = process.env.SITE_ACCESS_PASSWORD;
   if (expected == null || expected === "") {
     return next();

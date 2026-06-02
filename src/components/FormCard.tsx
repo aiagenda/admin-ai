@@ -44,15 +44,15 @@ export function FormCard({ form, showInstructions = true }: FormCardProps) {
             <CardTitle className="text-lg">{form.name}</CardTitle>
             {form.institution && (
               <CardDescription className="mt-1">
-                Intézmény: {form.institution}
+                Institution: {form.institution}
               </CardDescription>
             )}
           </div>
           {form.form_type && (
             <Badge variant="outline" className="ml-2">
-              {form.form_type === "form" && "Űrlap"}
-              {form.form_type === "letter" && "Levél"}
-              {form.form_type === "guide" && "Útmutató"}
+              {form.form_type === "form" && "Form"}
+              {form.form_type === "letter" && "Letter"}
+              {form.form_type === "guide" && "Guide"}
               {form.form_type === "template" && "Sablon"}
             </Badge>
           )}
@@ -84,7 +84,7 @@ export function FormCard({ form, showInstructions = true }: FormCardProps) {
             <div className="flex items-start gap-2">
               <Info className="h-4 w-4 mt-0.5 text-primary" />
               <div className="flex-1">
-                <p className="text-sm font-medium mb-1">Kitöltési útmutató</p>
+                <p className="text-sm font-medium mb-1">Filing Instructions</p>
                 <p className="text-sm text-muted-foreground whitespace-pre-line">
                   {form.instructions}
                 </p>
@@ -102,7 +102,7 @@ export function FormCard({ form, showInstructions = true }: FormCardProps) {
 
         {form.required_documents && form.required_documents.length > 0 && (
           <div className="space-y-1">
-            <p className="text-sm font-medium">Szükséges mellékletek:</p>
+            <p className="text-sm font-medium">Required attachments:</p>
             <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
               {form.required_documents.map((doc, index) => (
                 <li key={index}>{doc}</li>
@@ -119,7 +119,7 @@ export function FormCard({ form, showInstructions = true }: FormCardProps) {
             className="flex-1 sm:flex-initial"
           >
             <Download className="h-4 w-4 mr-2" />
-            Letöltés
+            Download
           </Button>
 
           <Button
@@ -129,7 +129,7 @@ export function FormCard({ form, showInstructions = true }: FormCardProps) {
             className="flex-1 sm:flex-initial"
           >
             <Printer className="h-4 w-4 mr-2" />
-            Nyomtatás
+            Print
           </Button>
 
           {(form.fillable_url || form.online_url) && (
@@ -139,7 +139,7 @@ export function FormCard({ form, showInstructions = true }: FormCardProps) {
               className="flex-1 sm:flex-initial"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              Online kitöltés
+              Fill Online
             </Button>
           )}
 
@@ -151,7 +151,7 @@ export function FormCard({ form, showInstructions = true }: FormCardProps) {
               className="flex-1 sm:flex-initial"
             >
               <FileText className="h-4 w-4 mr-2" />
-              Megtekintés
+              View
             </Button>
           )}
         </div>
@@ -165,7 +165,7 @@ export function FormCard({ form, showInstructions = true }: FormCardProps) {
               className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
             >
               <ExternalLink className="h-3 w-3" />
-              Hivatalos forrás
+              Official Source
             </a>
           </div>
         )}

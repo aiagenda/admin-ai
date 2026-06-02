@@ -6,6 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ExternalLink, Scale, BookOpen, CheckCircle2, AlertTriangle, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { isUsMarket } from "@/lib/market";
+import { formatPlaybookName } from "@/lib/displayLabels";
 import { useTranslation } from "react-i18next";
 
 interface LawReference {
@@ -156,13 +157,13 @@ export function LegalReferencesPanel({
 
   return (
     <div className="space-y-4">
-      {/* Playbook: Lépésről lépésre útmutató */}
+      {/* Playbook: step-by-step guide */}
       {playbook && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <BookOpen className="h-5 w-5 text-primary" />
-              {playbook.name}
+              {formatPlaybookName(playbook.name)}
             </CardTitle>
             {playbook.description && (
               <CardDescription>{playbook.description}</CardDescription>
@@ -237,7 +238,7 @@ export function LegalReferencesPanel({
         </Card>
       )}
 
-      {/* Ellenőrzés: Jogszabály hivatkozások */}
+      {/* Verification: law references */}
       {lawReferences.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
@@ -308,7 +309,7 @@ export function LegalReferencesPanel({
             </div>
             
             <p className="text-xs text-muted-foreground mt-4 text-center">
-              ⚠️ Mindig a hatályos jogszabályszöveget ellenőrizd az {t("legalPanel.sourceLink")}-n
+              ⚠️ Always verify the current legal text at the {t("legalPanel.sourceLink")} official source
             </p>
           </CardContent>
         </Card>

@@ -3,6 +3,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface AuthContextType {
   user: User | null;
@@ -16,6 +17,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation("common");
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,11 +49,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) throw error;
-      toast.success("Sikeres bejelentkezés!");
+      toast.success(t("authPage.signIn") + " ✓");
       navigate("/");
       return { error: null };
     } catch (error: any) {
-      toast.error(error.message || "Hiba a bejelentkezés során");
+      toast.error(error.message || t("authPage.toastSignInFailed"));
       return { error };
     }
   };
@@ -69,10 +71,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) throw error;
-      toast.success("Sikeres regisztráció! Ellenőrizd az emailed!");
+      toast.success(t("authPage.signUp") + " — check your email");
       return { error: null };
     } catch (error: any) {
-      toast.error(error.message || "Hiba a regisztráció során");
+      toast.error(error.message || t("authPage.toastSignUpFailed"));
       return { error };
     }
   };
@@ -80,10 +82,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      toast.success("Sikeres kijelentkezés!");
+      toast.success(t("authPage.signOutSuccess", { defaultValue: "Signed out" }));
       navigate("/");
     } catch {
-      toast.error("Hiba a kijelentkezés során");
+      toast.error(t("authPage.toastAuthError"));
     }
   };
 

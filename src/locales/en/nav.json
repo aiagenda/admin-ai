@@ -20,7 +20,7 @@
   "sol_docArchive": "Document archive",
   "sol_vsChatgpt": "NoticeIQ vs ChatGPT",
   "sol_vsBillingo": "NoticeIQ vs Billingo",
-  "sol_vsSzamlazz": "NoticeIQ vs Sz\u00e1ml\u00e1zz.hu",
+  "sol_vsSzamlazz": "NoticeIQ vs Számlázz.hu",
   "home": "Home",
   "login": "Sign in",
   "loginShort": "Sign in",
@@ -39,5 +39,6 @@
   "langEn": "English",
   "sol_irsNotices": "IRS notices",
   "sol_stateTax": "State tax letters",
-  "sol_ssa": "Social Security letters"
+  "sol_ssa": "Social Security letters",
+  "helpFaq": "Help & FAQ"
 }

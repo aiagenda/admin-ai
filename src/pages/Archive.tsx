@@ -13,7 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format, differenceInDays, isPast } from "date-fns";
-import { hu } from "date-fns/locale";
+import { getAppDateLocale } from "@/lib/dateLocale";
+import { formatCategoryLabel, formatTagLabel } from "@/lib/displayLabels";
 
 interface DocumentWithAnalysis {
   id: string;
@@ -123,7 +124,7 @@ export default function Archive() {
         setDocuments(docsWithAnalyses);
       } catch (error: any) {
         console.error("Error fetching documents:", error);
-        toast.error("Hiba a dokumentumok betöltése során");
+        toast.error("Failed to load documents");
       } finally {
         setLoading(false);
       }
@@ -213,23 +214,23 @@ export default function Archive() {
   const deleteSelected = async () => {
     if (selectedDocs.length === 0) return;
 
-    const ok = confirm(`${selectedDocs.length} dokumentum törlése?`);
+    const ok = confirm(`${selectedDocs.length} document(s)?`);
     if (!ok) return;
 
     try {
-      // Gyűjtés a törléshez
+      // collect for delete
       const docsToDelete = documents.filter((d) => selectedDocs.includes(d.id));
 
       for (const doc of docsToDelete) {
-        // 1) analyses törlés
+        // 1) delete analyses
         await supabase.from("analyses").delete().eq("document_id", doc.id);
 
-        // 2) storage törlés
+        // 2) delete storage
         if (doc.file_url !== "text_content") {
           await supabase.storage.from("documents").remove([doc.file_url]);
         }
 
-        // 3) document törlés
+        // 3) delete document
         await supabase.from("documents").delete().eq("id", doc.id);
       }
 
@@ -237,10 +238,10 @@ export default function Archive() {
       setDocuments((prev) => prev.filter((d) => !selectedDocs.includes(d.id)));
       setSelectedDocs([]);
 
-      toast.success("Kiválasztott dokumentumok törölve");
+      toast.success("Selected documents deleted");
     } catch (err) {
       console.error(err);
-      toast.error("Hiba történt a tömeges törlés során");
+      toast.error("Bulk delete failed");
     }
   };
 
@@ -251,7 +252,7 @@ export default function Archive() {
       const docsToExport = documents.filter((d) => selectedDocs.includes(d.id));
       
       // CSV header
-      const headers = ["Fájlnév", "Feltöltés dátuma", "Státusz", "Kategória", "Súlyosság", "Határidő", "Összeg", "Bankszámla", "Kedvezményezett", "Összefoglaló"];
+      const headers = ["Filename", "Upload date", "Status", "Category", "Severity", "Deadline", "Amount", "Account", "Payee", "Summary"];
       
       // CSV rows
       const rows = docsToExport.map((doc) => [
@@ -281,42 +282,32 @@ export default function Archive() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `dokumentumok_export_${format(new Date(), "yyyy-MM-dd")}.csv`;
+      link.download = `documents_export_${format(new Date(), "yyyy-MM-dd")}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      toast.success(`${docsToExport.length} dokumentum exportálva`);
+      toast.success(`Exported ${docsToExport.length} document(s)`);
     } catch (err) {
       console.error(err);
-      toast.error("Hiba történt az exportálás során");
+      toast.error("Export failed");
     }
   };
 
   const getSeverityBadge = (severity?: string) => {
     switch (severity) {
       case "urgent":
-        return <Badge variant="destructive">Sürgős</Badge>;
+        return <Badge variant="destructive">Urgent</Badge>;
       case "action_needed":
-        return <Badge className="bg-warning text-warning-foreground">Teendő</Badge>;
+        return <Badge className="bg-warning text-warning-foreground">Action needed</Badge>;
       default:
-        return <Badge variant="secondary">Információ</Badge>;
+        return <Badge variant="secondary">Info</Badge>;
     }
   };
 
   const getCategoryLabel = (category: string | null) => {
-    const labels: Record<string, string> = {
-      adozas: "Adóügyek",
-      egeszsegugy: "Egészségügy",
-      oktatas: "Oktatás",
-      szocialis: "Szociális",
-      kozlekedes: "Közlekedés",
-      ingatlan: "Ingatlan",
-      uzlet: "Üzlet",
-      egyeb: "Egyéb",
-    };
-    return category ? labels[category] || category : null;
+    return category ? formatCategoryLabel(category) : null;
   };
 
   // Filter and sort documents
@@ -383,13 +374,13 @@ export default function Archive() {
     const isOverdue = isPast(deadlineDate);
 
     if (isOverdue) {
-      return <Badge variant="destructive" className="ml-2">Lejárt ({Math.abs(daysUntil)} napja)</Badge>;
+      return <Badge variant="destructive" className="ml-2">Overdue ({Math.abs(daysUntil)}d ago)</Badge>;
     } else if (daysUntil <= 7) {
-      return <Badge variant="destructive" className="ml-2">{daysUntil} nap van hátra</Badge>;
+      return <Badge variant="destructive" className="ml-2">{daysUntil} days left</Badge>;
     } else if (daysUntil <= 30) {
-      return <Badge className="bg-warning text-warning-foreground ml-2">{daysUntil} nap van hátra</Badge>;
+      return <Badge className="bg-warning text-warning-foreground ml-2">{daysUntil} days left</Badge>;
     } else {
-      return <Badge variant="secondary" className="ml-2">{daysUntil} nap van hátra</Badge>;
+      return <Badge variant="secondary" className="ml-2">{daysUntil} days left</Badge>;
     }
   };
 
@@ -448,10 +439,10 @@ export default function Archive() {
       setShowTagDialog(false);
       setEditingDocId(null);
       setEditingTags([]);
-      toast.success("Címkék frissítve");
+      toast.success("Tags updated");
     } catch (error: any) {
       console.error("Error saving tags:", error);
-      toast.error("Hiba a címkék mentése során");
+      toast.error("Failed to save tags");
     }
   };
 
@@ -477,10 +468,10 @@ export default function Archive() {
       setShowBulkCategoryDialog(false);
       setBulkCategory("");
       setSelectedDocs([]);
-      toast.success(`${selectedDocs.length} dokumentum kategóriája frissítve`);
+      toast.success(`Updated category for ${selectedDocs.length} document(s)`);
     } catch (error: any) {
       console.error("Error assigning category:", error);
-      toast.error("Hiba a kategória hozzárendelése során");
+      toast.error("Failed to assign category");
     }
   };
 
@@ -488,10 +479,10 @@ export default function Archive() {
   const handleCompareClick = (docId: string) => {
     if (!compareDoc1) {
       setCompareDoc1(docId);
-      toast.info("Válasszon ki egy második dokumentumot az összehasonlításhoz");
+      toast.info("Select a second document to compare");
     } else if (compareDoc1 === docId) {
       setCompareDoc1(null);
-      toast.info("Összehasonlítás törölve");
+      toast.info("Comparison cleared");
     } else {
       setCompareDoc2(docId);
       navigate(`/compare?doc1=${compareDoc1}&doc2=${docId}`);
@@ -510,7 +501,7 @@ export default function Archive() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Betöltés...</p>
+          <p className="text-muted-foreground">Loading…</p>
         </div>
       </div>
     );
@@ -519,19 +510,19 @@ export default function Archive() {
   return (
     <div className="min-h-screen py-12 px-4 overflow-x-hidden">
       <div className="container mx-auto max-w-6xl space-y-6 min-w-0">
-        {/* fejléc */}
+        {/* header */}
         <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-bold">Dokumentum archívum</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">Document Archive</h1>
               <HelpTooltip 
-                content="Itt találja az összes feltöltött dokumentumát. Kereshet, szűrhet, címkézhet és összehasonlíthat dokumentumokat."
-                helpPageAnchor="archivum"
+                content="All your uploaded documents. Search, filter, tag, and compare."
+                helpPageAnchor="archive"
               />
             </div>
               <p className="text-muted-foreground mt-2">
-                {filteredAndSortedDocuments.length} / {documents.length} dokumentum
+                {filteredAndSortedDocuments.length} / {documents.length} document(s)
               </p>
           </div>
 
@@ -548,7 +539,7 @@ export default function Archive() {
                 }}
               >
                 <GitCompare className="mr-2 h-4 w-4" />
-                {compareDoc2 ? "Összehasonlítás megnyitása" : "Összehasonlítás törlése"}
+                {compareDoc2 ? "Open comparison" : "Clear comparison"}
               </Button>
             )}
             {documents.length > 0 && (
@@ -563,21 +554,21 @@ export default function Archive() {
                       onClick={exportSelected}
                     >
                       <Download className="mr-2 h-4 w-4" />
-                      Exportálás ({selectedDocs.length})
+                      Export ({selectedDocs.length})
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => setShowBulkCategoryDialog(true)}
                     >
                       <FolderOpen className="mr-2 h-4 w-4" />
-                      Kategória ({selectedDocs.length})
+                      Category ({selectedDocs.length})
                     </Button>
                     <Button
                       variant="destructive"
                       onClick={deleteSelected}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Törlés ({selectedDocs.length})
+                      Delete ({selectedDocs.length})
                     </Button>
                   </>
                 )}
@@ -586,7 +577,7 @@ export default function Archive() {
 
             <Button onClick={() => navigate("/upload")}>
               <Upload className="mr-2 h-4 w-4" />
-              Új feltöltés
+              New upload
             </Button>
           </div>
           </div>
@@ -599,7 +590,7 @@ export default function Archive() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Keresés fájlnév alapján..."
+                    placeholder="Search by filename…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 min-h-[44px]"
@@ -620,57 +611,57 @@ export default function Archive() {
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="min-h-[44px]">
                     <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Státusz" />
+                    <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Összes státusz</SelectItem>
-                    <SelectItem value="completed">Befejezett</SelectItem>
-                    <SelectItem value="processing">Feldolgozás alatt</SelectItem>
-                    <SelectItem value="error">Hiba</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="error">Error</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {/* Category Filter */}
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="min-h-[44px]">
-                    <SelectValue placeholder="Kategória" />
+                    <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Összes kategória</SelectItem>
-                    <SelectItem value="adozas">Adóügyek</SelectItem>
-                    <SelectItem value="egeszsegugy">Egészségügy</SelectItem>
-                    <SelectItem value="oktatas">Oktatás</SelectItem>
-                    <SelectItem value="szocialis">Szociális</SelectItem>
-                    <SelectItem value="kozlekedes">Közlekedés</SelectItem>
-                    <SelectItem value="ingatlan">Ingatlan</SelectItem>
-                    <SelectItem value="uzlet">Üzlet</SelectItem>
-                    <SelectItem value="egyeb">Egyéb</SelectItem>
+                    <SelectItem value="all">All categories</SelectItem>
+                    <SelectItem value="adozas">Tax</SelectItem>
+                    <SelectItem value="egeszsegugy">Health</SelectItem>
+                    <SelectItem value="oktatas">Education</SelectItem>
+                    <SelectItem value="szocialis">Social Services</SelectItem>
+                    <SelectItem value="kozlekedes">Transportation</SelectItem>
+                    <SelectItem value="ingatlan">Real Estate</SelectItem>
+                    <SelectItem value="uzlet">Business</SelectItem>
+                    <SelectItem value="egyeb">Other</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {/* Severity Filter */}
                 <Select value={severityFilter} onValueChange={setSeverityFilter}>
                   <SelectTrigger className="min-h-[44px]">
-                    <SelectValue placeholder="Sürgősség" />
+                    <SelectValue placeholder="Urgency" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Összes sürgősség</SelectItem>
-                    <SelectItem value="urgent">Sürgős</SelectItem>
-                    <SelectItem value="action_needed">Teendő</SelectItem>
-                    <SelectItem value="info">Információ</SelectItem>
+                    <SelectItem value="all">All urgency levels</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                    <SelectItem value="action_needed">Action needed</SelectItem>
+                    <SelectItem value="info">Info</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {/* Tag Filter */}
                 <Select value={tagFilter} onValueChange={setTagFilter}>
                   <SelectTrigger className="min-h-[44px]">
-                    <SelectValue placeholder="Címke" />
+                    <SelectValue placeholder="Tag" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Összes címke</SelectItem>
+                    <SelectItem value="all">All tags</SelectItem>
                     {allTags.map((tag) => (
                       <SelectItem key={tag} value={tag}>
-                        {tag}
+                        {formatTagLabel(tag)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -679,13 +670,13 @@ export default function Archive() {
                 {/* Sort */}
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="min-h-[44px]">
-                    <SelectValue placeholder="Rendezés" />
+                    <SelectValue placeholder="Sort" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="date-desc">Dátum (újabb elől)</SelectItem>
-                    <SelectItem value="date-asc">Dátum (régebbi elől)</SelectItem>
-                    <SelectItem value="deadline-asc">Határidő (közelebbi elől)</SelectItem>
-                    <SelectItem value="severity">Sürgősség</SelectItem>
+                    <SelectItem value="date-desc">Date (newest first)</SelectItem>
+                    <SelectItem value="date-asc">Date (oldest first)</SelectItem>
+                    <SelectItem value="deadline-asc">Deadline (soonest first)</SelectItem>
+                    <SelectItem value="severity">Urgency</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -697,17 +688,17 @@ export default function Archive() {
           <Card>
             <CardContent className="py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Még nincs dokumentum</h3>
-              <p className="text-muted-foreground mb-6">Töltse fel első dokumentumát az elemzéshez</p>
-              <Button onClick={() => navigate("/upload")}>Dokumentum feltöltése</Button>
+              <h3 className="text-lg font-semibold mb-2">No documents yet</h3>
+              <p className="text-muted-foreground mb-6">Upload your first document to get started</p>
+              <Button onClick={() => navigate("/upload")}>Upload document</Button>
             </CardContent>
           </Card>
         ) : filteredAndSortedDocuments.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Nincs találat</h3>
-              <p className="text-muted-foreground mb-6">Próbáljon más keresési feltételeket</p>
+              <h3 className="text-lg font-semibold mb-2">No results</h3>
+              <p className="text-muted-foreground mb-6">Try different search or filters</p>
               <Button variant="outline" onClick={() => {
                 setSearchQuery("");
                 setStatusFilter("all");
@@ -715,20 +706,20 @@ export default function Archive() {
                 setCategoryFilter("all");
                 setTagFilter("all");
               }}>
-                Szűrők törlése
+                Clear filters
               </Button>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-4">
-            {/* Összes kijelölése */}
+            {/* select all */}
             <Card className="bg-muted/50 p-3 flex items-center gap-3 cursor-pointer" onClick={selectAll}>
               {selectedDocs.length === filteredAndSortedDocuments.length && filteredAndSortedDocuments.length > 0 ? (
                 <CheckSquare className="h-5 w-5 text-primary" />
               ) : (
                 <Square className="h-5 w-5 text-muted-foreground" />
               )}
-              <p className="font-medium">Összes kijelölése ({filteredAndSortedDocuments.length})</p>
+              <p className="font-medium">Select all ({filteredAndSortedDocuments.length})</p>
             </Card>
 
             {/* Dokumentum lista */}
@@ -763,7 +754,7 @@ export default function Archive() {
                           <h3 className="font-semibold truncate">{doc.filename}</h3>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                             <Calendar className="h-3 w-3 flex-shrink-0" />
-                            <span className="whitespace-nowrap">{format(new Date(doc.upload_date), "yyyy. MM. dd. HH:mm", { locale: hu })}</span>
+                            <span className="whitespace-nowrap">{format(new Date(doc.upload_date), "MMM d, yyyy h:mm a", { locale: getAppDateLocale() })}</span>
                           </div>
                         </div>
                       </div>
@@ -777,10 +768,10 @@ export default function Archive() {
                             if (doc.analyses) {
                               handleCompareClick(doc.id);
                             } else {
-                              toast.error("Ez a dokumentum még nincs elemzve");
+                              toast.error("This document has not been analyzed yet");
                             }
                           }}
-                          title="Összehasonlításhoz hozzáadás"
+                          title="Add to comparison"
                           disabled={!doc.analyses}
                         >
                           <GitCompare className="h-4 w-4" />
@@ -793,7 +784,7 @@ export default function Archive() {
                             e.stopPropagation();
                             openTagDialog(doc.id, doc.tags);
                           }}
-                          title="Címkék szerkesztése"
+                          title="Edit tags"
                         >
                           <Tag className="h-4 w-4" />
                         </Button>
@@ -811,7 +802,7 @@ export default function Archive() {
                           {doc.tags.slice(0, 3).map((tag) => (
                             <Badge key={tag} variant="secondary" className="text-xs max-w-[140px] truncate shrink-0">
                               <Tag className="h-3 w-3 mr-1 flex-shrink-0" />
-                              <span className="truncate">{tag}</span>
+                              <span className="truncate">{formatTagLabel(tag)}</span>
                             </Badge>
                           ))}
                           {doc.tags.length > 3 && (
@@ -823,16 +814,16 @@ export default function Archive() {
                       )}
                       {doc.analyses && getSeverityBadge(doc.analyses.severity)}
                       {doc.analyses?.deadline && getDeadlineBadge(doc.analyses.deadline)}
-                      {doc.status === "processing" && <Badge variant="outline">Feldolgozás alatt</Badge>}
+                      {doc.status === "processing" && <Badge variant="outline">Processing</Badge>}
                       {doc.related_documents_count && doc.related_documents_count > 0 && (
                         <Badge variant="outline" className="bg-primary/10 shrink-0">
                           <Link2 className="h-3 w-3 mr-1" />
-                          {doc.related_documents_count} kapcsolat
+                          {doc.related_documents_count} linked
                         </Badge>
                       )}
                       {isCompareSelected && (
                         <Badge variant="default" className="bg-primary shrink-0">
-                          Összehasonlításhoz kiválasztva
+                          Selected for comparison
                         </Badge>
                       )}
                     </div>
@@ -847,18 +838,18 @@ export default function Archive() {
         <Dialog open={showTagDialog} onOpenChange={setShowTagDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Címkék szerkesztése</DialogTitle>
+              <DialogTitle>Edit tags</DialogTitle>
               <DialogDescription>
-                Adjon hozzá vagy távolítson el címkéket a dokumentumhoz
+                Add or remove tags for this document
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               {/* Current tags */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Jelenlegi címkék</label>
+                <label className="text-sm font-medium mb-2 block">Current tags</label>
                 {editingTags.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nincs címke</p>
+                  <p className="text-sm text-muted-foreground">No tags</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {editingTags.map((tag) => (
@@ -879,10 +870,10 @@ export default function Archive() {
 
               {/* Add new tag */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Új címke hozzáadása</label>
+                <label className="text-sm font-medium mb-2 block">Add new tag</label>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Címke neve..."
+                    placeholder="Tag name…"
                     value={newTagInput}
                     onChange={(e) => setNewTagInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -901,10 +892,10 @@ export default function Archive() {
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowTagDialog(false)}>
-                Mégse
+                Cancel
               </Button>
               <Button onClick={saveTags}>
-                Mentés
+                Save
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -914,40 +905,40 @@ export default function Archive() {
         <Dialog open={showBulkCategoryDialog} onOpenChange={setShowBulkCategoryDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Kategória hozzárendelése</DialogTitle>
+              <DialogTitle>Assign category</DialogTitle>
               <DialogDescription>
-                {selectedDocs.length} dokumentum kategóriájának beállítása
+                {selectedDocs.length} document(s) category
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Kategória</label>
+                <label className="text-sm font-medium mb-2 block">Category</label>
                 <Select value={bulkCategory} onValueChange={setBulkCategory}>
                   <SelectTrigger className="min-h-[44px]">
-                    <SelectValue placeholder="Válassz kategóriát" />
+                    <SelectValue placeholder="Choose category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Kategória eltávolítása</SelectItem>
-                    <SelectItem value="adozas">Adóügyek</SelectItem>
-                    <SelectItem value="egeszsegugy">Egészségügy</SelectItem>
-                    <SelectItem value="oktatas">Oktatás</SelectItem>
-                    <SelectItem value="szocialis">Szociális</SelectItem>
-                    <SelectItem value="kozlekedes">Közlekedés</SelectItem>
-                    <SelectItem value="ingatlan">Ingatlan</SelectItem>
-                    <SelectItem value="uzlet">Üzlet</SelectItem>
-                    <SelectItem value="szamla">Számla</SelectItem>
-                    <SelectItem value="hatosagi_level">Hatósági levél</SelectItem>
-                    <SelectItem value="egyeb">Egyéb</SelectItem>
+                    <SelectItem value="none">Remove category</SelectItem>
+                    <SelectItem value="adozas">Tax</SelectItem>
+                    <SelectItem value="egeszsegugy">Health</SelectItem>
+                    <SelectItem value="oktatas">Education</SelectItem>
+                    <SelectItem value="szocialis">Social Services</SelectItem>
+                    <SelectItem value="kozlekedes">Transportation</SelectItem>
+                    <SelectItem value="ingatlan">Real Estate</SelectItem>
+                    <SelectItem value="uzlet">Business</SelectItem>
+                    <SelectItem value="szamla">Invoice</SelectItem>
+                    <SelectItem value="hatosagi_level">Official Notice</SelectItem>
+                    <SelectItem value="egyeb">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowBulkCategoryDialog(false)}>
-                Mégse
+                Cancel
               </Button>
               <Button onClick={assignBulkCategory} disabled={!bulkCategory}>
-                Hozzárendelés
+                Assign
               </Button>
             </DialogFooter>
           </DialogContent>

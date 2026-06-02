@@ -13,8 +13,12 @@ type Props = {
 };
 
 export function LanguageSwitcher({ className }: Props) {
-  if (isUsMarket()) return null;
+  // Hook must always be called — before any early return (Rules of Hooks)
   const { i18n, t } = useTranslation("nav");
+
+  // US market: single language, no switcher needed
+  if (isUsMarket()) return null;
+
   const value = i18n.language?.toLowerCase().startsWith("en") ? "en" : "hu";
 
   return (

@@ -1,3 +1,5 @@
+import { isUsMarket } from "@/lib/market";
+
 export const HOME_CARD_IDS = [
   "stats",
   "upload",
@@ -39,4 +41,19 @@ export function getHomeCardOrder(): HomeCardId[] {
 
 export function setHomeCardOrder(order: HomeCardId[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(order));
+}
+
+
+export const HOME_CARD_LABELS_EN: Record<HomeCardId, string> = {
+  stats: "Statistics (documents, analyses, deadlines)",
+  upload: "Upload new document",
+  archive: "Document archive",
+  invoices: "Bookkeeping summary",
+  deadlines: "Upcoming deadlines",
+  usage: "Usage limit",
+  search: "AI Search",
+};
+
+export function getHomeCardLabel(id: HomeCardId): string {
+  return isUsMarket() ? HOME_CARD_LABELS_EN[id] : HOME_CARD_LABELS[id];
 }
