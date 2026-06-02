@@ -128,6 +128,11 @@ export function SEOHead({
       document.head.appendChild(script);
     }
 
+    const gsc = import.meta.env.VITE_GOOGLE_SITE_VERIFICATION;
+    if (gsc) {
+      upsertMeta("google-site-verification", gsc);
+    }
+
     return () => {
       const existing = document.getElementById(scriptId);
       if (existing) existing.remove();
