@@ -7,6 +7,8 @@ import { HelpTooltip } from "@/components/HelpTooltip";
 import { UsageLimit } from "@/components/UsageLimit";
 import { LegalQuickLinks } from "@/components/LegalQuickLinks";
 import { PageSEO } from "@/components/PageSEO";
+import { useTranslation } from "react-i18next";
+import { isUsMarket } from "@/lib/market";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,20 +31,20 @@ function formatFileSize(bytes: number) {
 }
 
 
-function getProcessingMessage(status: string, elapsedSec: number) {
-  if (status === "completed") return "Átirányítás az eredményhez...";
-  if (status !== "processing") return "Hiba történt a feldolgozás során";
+function getProcessingMessage(status: string, elapsedSec: number, t: (k: string, t) => string) {
+  if (status === "completed") return t("uploadPage.processingRedirect");
+  if (status !== "processing") return t("uploadPage.processingError");
 
   if (elapsedSec >= 60) {
-    return "Még dolgozunk rajta. Összetettebb dokumentum esetén ez kicsit tovább tarthat.";
+    return t("uploadPage.processingWait");
   }
   if (elapsedSec >= 30) {
-    return "Már dolgozunk rajta, hamarosan kész.";
+    return t("uploadPage.processingSoon");
   }
   if (elapsedSec >= 10) {
-    return "Feldolgozás folyamatban, köszönjük a türelmed.";
+    return t("uploadPage.processingSoon");
   }
-  return "Az AI elemzi a dokumentumot. Ez eltarthat néhány másodpercig.";
+  return t("uploadPage.subtitle");
 }
 
 /**
@@ -107,6 +109,8 @@ async function optimizeImage(file: File): Promise<File> {
 }
 
 export default function Upload() {
+  const { t } = useTranslation("common");
+  const us = isUsMarket();
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -227,11 +231,11 @@ export default function Upload() {
 
   const handleSubmit = async () => {
     if (!user || !session?.access_token) {
-      toast.error("Jelentkezz be");
+      toast.error(t("uploadPage.signInRequired"));
       return;
     }
     if (!file) {
-      toast.error("Válassz fájlt");
+      toast.error(t("uploadPage.selectFile"));
       return;
     }
     if (file.size === 0) {
@@ -505,13 +509,13 @@ export default function Upload() {
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-bold">Dokumentum feltöltése</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">{t("uploadPage.title")}</h1>
             <HelpTooltip 
               content="Töltsön fel PDF dokumentumot vagy képet (JPG, PNG, HEIC). Az elemzés általában 30-60 másodpercig tart."
               helpPageAnchor="feltöltés"
             />
           </div>
-          <p className="text-muted-foreground">Tölts fel PDF-et vagy képet elemzéshez - az AI azonnal elkezdi feldolgozni</p>
+          <p className="text-muted-foreground">{t("uploadPage.subtitle")}</p>
         </div>
 
         {/* Usage Limit Widget */}
@@ -564,7 +568,7 @@ export default function Upload() {
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground text-center">
-                    ✓ Ellenőrizd a kivágást és olvashatóságot feltöltés előtt
+                    {t("uploadPage.previewCheck")}
                   </p>
                 </div>
               ) : (
@@ -584,9 +588,9 @@ export default function Upload() {
                 <div className="h-16 w-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-500/20 to-primary/20 flex items-center justify-center mb-4">
                   <UploadIcon className="h-8 w-8 text-primary" />
                 </div>
-                <p className="text-lg font-medium mb-2">Húzd ide a dokumentumot</p>
-                <p className="text-muted-foreground mb-4">vagy kattints a tallózáshoz</p>
-                <p className="text-sm text-muted-foreground">PDF, JPG, PNG, HEIC • Max 20MB</p>
+                <p className="text-lg font-medium mb-2">{t("uploadPage.dropTitle")}</p>
+                <p className="text-muted-foreground mb-4">{t("uploadPage.dropHint")}</p>
+                <p className="text-sm text-muted-foreground">{t("uploadPage.formats")}</p>
                 <input
                   type="file"
                   accept="application/pdf,image/*,.heic,.heif"
@@ -643,7 +647,7 @@ export default function Upload() {
                         {processingStatus === "completed" ? "✓ Elemzés kész!" : "Dokumentum feldolgozása..."}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {getProcessingMessage(processingStatus, processingElapsedSec)}
+                        {getProcessingMessage(processingStatus, processingElapsedSec, t)}
                       </p>
                       {processingStatus === "processing" && processingElapsedSec >= 10 && (
                         <p className="text-xs text-muted-foreground/80 mt-1">Eltelt idő: ~{processingElapsedSec} mp</p>

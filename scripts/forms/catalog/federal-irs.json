@@ -1,0 +1,66 @@
+[
+  {
+    "key": "irs_form_9465",
+    "name": "Form 9465 \u2014 Installment Agreement",
+    "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f9465.pdf",
+    "onlineUrl": "https://www.irs.gov/forms-pubs/about-form-9465",
+    "jurisdiction": "federal",
+    "agency": "IRS"
+  },
+  {
+    "key": "irs_form_843",
+    "name": "Form 843 \u2014 Claim for Refund",
+    "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f843.pdf",
+    "onlineUrl": "https://www.irs.gov/forms-pubs/about-form-843",
+    "jurisdiction": "federal",
+    "agency": "IRS"
+  },
+  {
+    "key": "irs_form_433a",
+    "name": "Form 433-A",
+    "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f433a.pdf",
+    "onlineUrl": "https://www.irs.gov/forms-pubs/about-form-433-a",
+    "jurisdiction": "federal",
+    "agency": "IRS"
+  },
+  {
+    "key": "irs_form_433b",
+    "name": "Form 433-B",
+    "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f433b.pdf",
+    "onlineUrl": "https://www.irs.gov/forms-pubs/about-form-433-b",
+    "jurisdiction": "federal",
+    "agency": "IRS"
+  },
+  {
+    "key": "irs_form_12153",
+    "name": "Form 12153 \u2014 CDP Hearing",
+    "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f12153.pdf",
+    "onlineUrl": "https://www.irs.gov/forms-pubs/about-form-12153",
+    "jurisdiction": "federal",
+    "agency": "IRS"
+  },
+  {
+    "key": "irs_form_656",
+    "name": "Form 656 \u2014 Offer in Compromise",
+    "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f656.pdf",
+    "onlineUrl": "https://www.irs.gov/payments/offer-in-compromise",
+    "jurisdiction": "federal",
+    "agency": "IRS"
+  },
+  {
+    "key": "irs_form_2848",
+    "name": "Form 2848 \u2014 Power of Attorney",
+    "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f2848.pdf",
+    "onlineUrl": "https://www.irs.gov/forms-pubs/about-form-2848",
+    "jurisdiction": "federal",
+    "agency": "IRS"
+  },
+  {
+    "key": "irs_form_1040x",
+    "name": "Form 1040-X",
+    "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f1040x.pdf",
+    "onlineUrl": "https://www.irs.gov/forms-pubs/about-form-1040-x",
+    "jurisdiction": "federal",
+    "agency": "IRS"
+  }
+]

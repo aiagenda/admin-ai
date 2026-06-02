@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_NY_payment_plan",
+    "name": "New York \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://www.tax.ny.gov/",
+    "jurisdiction": "state",
+    "state_code": "NY",
+    "agency": "New York State Department of Taxation and Finance"
+  },
+  {
+    "key": "state_NY_appeal",
+    "name": "New York \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://www.tax.ny.gov/",
+    "jurisdiction": "state",
+    "state_code": "NY",
+    "agency": "New York State Department of Taxation and Finance"
+  }
+]

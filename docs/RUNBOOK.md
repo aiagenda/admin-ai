@@ -24,3 +24,16 @@
 
 Publish `support@` and `security@` addresses consistent with `src/config/siteLegal.ts` env-driven placeholders.
 
+
+
+## US smoke matrix
+
+| Document | Expected doc_type | Playbook |
+|----------|-------------------|----------|
+| IRS CP14 sample | irs_notice_balance_due | IRS balance due |
+| IRS LT11 sample | irs_notice_intent_to_levy | IRS levy |
+| State notice (CA) | state_tax_CA_balance_due | CA state tax |
+| SSA overpayment letter | ssa_overpayment | SSA overpayment |
+| Bank collection | bank_collection | Bank collection |
+
+After deploy: `MARKET=us`, apply migrations, `npm run forms:sync`, `npm run kb:sync`.

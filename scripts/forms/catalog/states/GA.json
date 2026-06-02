@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_GA_payment_plan",
+    "name": "Georgia \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://dor.georgia.gov/",
+    "jurisdiction": "state",
+    "state_code": "GA",
+    "agency": "Georgia Department of Revenue"
+  },
+  {
+    "key": "state_GA_appeal",
+    "name": "Georgia \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://dor.georgia.gov/",
+    "jurisdiction": "state",
+    "state_code": "GA",
+    "agency": "Georgia Department of Revenue"
+  }
+]

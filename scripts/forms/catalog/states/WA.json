@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_WA_payment_plan",
+    "name": "Washington \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://dor.wa.gov/",
+    "jurisdiction": "state",
+    "state_code": "WA",
+    "agency": "Washington Department of Revenue"
+  },
+  {
+    "key": "state_WA_appeal",
+    "name": "Washington \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://dor.wa.gov/",
+    "jurisdiction": "state",
+    "state_code": "WA",
+    "agency": "Washington Department of Revenue"
+  }
+]

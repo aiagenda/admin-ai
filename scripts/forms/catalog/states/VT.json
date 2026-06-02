@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_VT_payment_plan",
+    "name": "Vermont \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://tax.vermont.gov/",
+    "jurisdiction": "state",
+    "state_code": "VT",
+    "agency": "Vermont Department of Taxes"
+  },
+  {
+    "key": "state_VT_appeal",
+    "name": "Vermont \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://tax.vermont.gov/",
+    "jurisdiction": "state",
+    "state_code": "VT",
+    "agency": "Vermont Department of Taxes"
+  }
+]

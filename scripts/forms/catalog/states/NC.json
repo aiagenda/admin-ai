@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_NC_payment_plan",
+    "name": "North Carolina \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://www.ncdor.gov/",
+    "jurisdiction": "state",
+    "state_code": "NC",
+    "agency": "North Carolina Department of Revenue"
+  },
+  {
+    "key": "state_NC_appeal",
+    "name": "North Carolina \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://www.ncdor.gov/",
+    "jurisdiction": "state",
+    "state_code": "NC",
+    "agency": "North Carolina Department of Revenue"
+  }
+]

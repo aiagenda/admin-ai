@@ -20,7 +20,7 @@
   "sol_docArchive": "Document archive",
   "sol_vsChatgpt": "NoticeIQ vs ChatGPT",
   "sol_vsBillingo": "NoticeIQ vs Billingo",
-  "sol_vsSzamlazz": "NoticeIQ vs Számlázz.hu",
+  "sol_vsSzamlazz": "NoticeIQ vs Sz\u00e1ml\u00e1zz.hu",
   "home": "Home",
   "login": "Sign in",
   "loginShort": "Sign in",
@@ -36,5 +36,8 @@
   "themeDark": "Switch to dark theme",
   "language": "Language",
   "langHu": "Magyar",
-  "langEn": "English"
+  "langEn": "English",
+  "sol_irsNotices": "IRS notices",
+  "sol_stateTax": "State tax letters",
+  "sol_ssa": "Social Security letters"
 }

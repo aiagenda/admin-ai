@@ -16,18 +16,15 @@ import { getHomeCardOrder, type HomeCardId } from "@/lib/home-cards";
 import { Link } from "react-router-dom";
 import { PageSEO } from "@/components/PageSEO";
 import { useTranslation } from "react-i18next";
+import { isUsMarket } from "@/lib/market";
 import { getSiteOrigin } from "@/lib/site";
 
 // Time-based greeting
-function getGreeting(): { text: string; emoji: string } {
+function getGreeting(t: (k: string) => string): { text: string; emoji: string } {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) {
-    return { text: "Jó reggelt", emoji: "☀️" };
-  } else if (hour >= 12 && hour < 18) {
-    return { text: "Jó napot", emoji: "👋" };
-  } else {
-    return { text: "Jó estét", emoji: "🌙" };
-  }
+  if (hour >= 5 && hour < 12) return { text: t("homePage.greetingMorning"), emoji: "☀️" };
+  if (hour >= 12 && hour < 18) return { text: t("homePage.greetingAfternoon"), emoji: "👋" };
+  return { text: t("homePage.greetingEvening"), emoji: "🌙" };
 }
 
 const WELCOME_DISMISS_KEY = "adminai_welcome_dismissed";
@@ -240,8 +237,8 @@ export default function Home() {
           <div className="flex items-center gap-3" data-tour="welcome">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-2">
-                {getGreeting().text}, {user.email?.split("@")[0]}! 
-                <span className="text-2xl">{getGreeting().emoji}</span>
+                {getGreeting(tc).text}, {user.email?.split("@")[0]}! 
+                <span className="text-2xl">{getGreeting(tc).emoji}</span>
               </h1>
               <p className="text-muted-foreground mt-1">Itt van a mai áttekintésed</p>
             </div>

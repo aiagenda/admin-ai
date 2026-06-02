@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { isUsMarket } from "@/lib/market";
 import {
   Select,
   SelectContent,
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export function LanguageSwitcher({ className }: Props) {
+  if (isUsMarket()) return null;
   const { i18n, t } = useTranslation("nav");
   const value = i18n.language?.toLowerCase().startsWith("en") ? "en" : "hu";
 

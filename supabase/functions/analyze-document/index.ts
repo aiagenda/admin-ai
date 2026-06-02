@@ -23,6 +23,7 @@ type AnalysisResult = {
   detected_tags?: string[] | null; // Auto-detected tags
   mentioned_laws?: string[] | null; // Explicit law references found in document (e.g., ["Art. 123. §", "Áfa tv. 55. §"])
   doc_type?: string | null; // Document type for playbook matching (e.g., "nav_missing_info", "nav_fine", "execution")
+  state_code?: string | null; // US state code (e.g. CA, NY) when applicable
   issuer?: string | null; // Document issuer (e.g., "NAV", "bíróság", "önkormányzat")
   // Legacy fields for backward compatibility
   what_is_it?: string;
@@ -585,10 +586,55 @@ function normalizeDeadlines(deadlines: string[]): string[] {
   return [...new Set(normalized)].sort();
 }
 
+
+/** US launch: English-only analysis; Hungarian playbooks/KB stay in DB but are not used. */
+function isUsMarket(): boolean {
+  const m = (Deno.env.get("MARKET") || Deno.env.get("VITE_MARKET") || "us").toLowerCase();
+  return m === "us";
+}
+
+function getUsLanguagePrompt(todayStr: string): string {
+  return `You are an expert U.S. official and financial correspondence assistant. Analyze letters from federal agencies, state tax authorities, courts, banks, utilities, insurers, landlords, and employers. Respond strictly with JSON:
+
+{
+  "simple_summary": "Clear plain-English explanation for a non-expert. If the notice is addressed to the reader, explain their situation directly. Use present tense. Be supportive and actionable.",
+  "legal_summary": "Professional interpretation in English only. NO fictional names. Cite statutes only when explicitly in the document (IRC, 26 U.S.C., state revenue code, SSA, FCRA, etc.).",
+  "todo_simple": ["simple step 1", "simple step 2"],
+  "todo_legal": ["legal step 1", "legal step 2"],
+  "deadlines": ["YYYY-MM-DD"] or [],
+  "deadline_descriptions": ["relative or absolute date description"] or [],
+  "severity": "info" | "action_needed" | "urgent",
+  "bank_account": "string or null",
+  "amount": "string or null",
+  "recipient_name": "string or null",
+  "detected_category": "tax" | "healthcare" | "education" | "social" | "transport" | "property" | "business" | "other" or null,
+  "detected_tags": ["tag1", "tag2"] or [],
+  "mentioned_laws": ["26 U.S.C. §6331", "IRC §6651"] or [],
+  "doc_type": "irs_notice_balance_due" | "irs_notice_intent_to_levy" | "irs_notice_generic" | "state_tax_balance_due" | "state_tax_audit" | "state_tax_refund_offset" | "state_tax_generic" | "state_tax_CA_balance_due" (pattern: state_tax_XX_balance_due for any US state) | "ssa_overpayment" | "ssa_benefit_change" | "ssa_generic" | "uscis_rfe" | "uscis_biometrics" | "uscis_decision" | "medicare_premium" | "medicare_lis" | "medicare_generic" | "va_debt" | "va_benefit" | "unemployment_determination" | "court_summons" | "court_judgment" | "child_support" | "bank_collection" | "credit_card_chargeoff" | "mortgage_default" | "utility_disconnect" | "hoa_violation" | "eviction_notice" | "medical_bill" | "insurance_eob" | "official_letter_generic" | "unknown",
+  "state_code": "two-letter US state code or null (e.g. CA, NY, TX)",
+  "issuer": "irs" | "state_tax_authority" | "ssa" | "uscis" | "cms" | "va" | "court" | "bank" | "utility" | "hoa" | "landlord" | "hospital" | "insurer" | "employer" | "other" or null
+}
+
+IMPORTANT RULES:
+1. ALL output must be in English.
+2. doc_type: pick the best match from the enum. IRS mail → irs_notice_*; state department of revenue → state_tax_XX_balance_due where XX is the two-letter state code (e.g. state_tax_CA_balance_due); or state_tax_generic if state unknown; Social Security Administration → ssa_*; USCIS → uscis_*; Medicare → medicare_*; VA → va_*; unemployment office → unemployment_determination; court papers → court_* or child_support; debt collectors/banks → bank_*; utilities → utility_disconnect; medical → medical_bill or insurance_eob; unclear official letter → official_letter_generic or unknown.
+3. state_code: required when issuer is state_tax_authority or state unemployment; null for federal-only letters.
+4. mentioned_laws: explicit citations only. Empty array if none.
+5. deadlines: YYYY-MM-DD; compute relative dates from today (${todayStr}).
+6. PAYMENT DATA: fill bank_account, amount, recipient_name only for actual payment obligations.
+7. Not tax or legal advice—describe options and deadlines from the document text.`;
+}
+
+async function resolveAnalysisLanguage(text: string, openaiApiKey: string): Promise<string> {
+  if (isUsMarket()) return "en";
+  return detectLanguage(text, openaiApiKey);
+}
+
 /**
  * Detect document language using OpenAI (simple detection)
  */
 async function detectLanguage(text: string, openaiApiKey: string): Promise<string> {
+  if (isUsMarket()) return "en";
   try {
     // Use a small sample of text for language detection
     const sample = text.slice(0, 500);
@@ -643,7 +689,8 @@ async function searchKnowledgeBase(
   category: string | null,
   supabase: ReturnType<typeof createClient>,
   openaiApiKey: string,
-  limit: number = 5
+  limit: number = 5,
+  stateCode: string | null = null
 ): Promise<Array<{ chunk_text: string; document_title: string; similarity: number }>> {
   try {
     // Generate embedding for the query text
@@ -679,7 +726,9 @@ async function searchKnowledgeBase(
     const { data, error } = await supabase.rpc("search_knowledge_base", {
       _query_embedding: vectorString,
       _category: category,
-      _limit: limit * 2, // Get more results for filtering
+      _limit: limit * 2,
+      _market: isUsMarket() ? "us" : null,
+      _state_code: stateCode,
     });
 
     if (error) {
@@ -692,8 +741,15 @@ async function searchKnowledgeBase(
       return [];
     }
 
+    if (isUsMarket() && (!data || data.length === 0)) {
+      console.log("No US knowledge base chunks found");
+      return [];
+    }
+
+    const scopedData = data;
+
     // Filter by relevance threshold (cosine similarity > 0.7)
-    const relevantChunks = data
+    const relevantChunks = scopedData
       .filter((item: any) => item.similarity > 0.7)
       .slice(0, limit)
       .map((item: any) => ({
@@ -741,7 +797,7 @@ async function getRelevantContext(
 
     // Combine chunks into context
     const contextParts = chunks.map((chunk, index) => {
-      return `[Forrás ${index + 1}: ${chunk.document_title}]\n${chunk.chunk_text}`;
+      return `[${isUsMarket() ? "Source" : "Forrás"} ${index + 1}: ${chunk.document_title}]\n${chunk.chunk_text}`;
     });
 
     const context = contextParts.join("\n\n---\n\n");
@@ -763,8 +819,10 @@ function enhancePromptWithKB(basePrompt: string, kbContext: string): string {
 
   // Insert KB context before the important rules section
   const rulesIndex = basePrompt.indexOf("FONTOS SZABÁLYOK:");
-  if (rulesIndex !== -1) {
-    return basePrompt.slice(0, rulesIndex) + kbContext + "\n\n" + basePrompt.slice(rulesIndex);
+  const rulesIndexEn = basePrompt.indexOf("IMPORTANT RULES:");
+  const idx = rulesIndex !== -1 ? rulesIndex : rulesIndexEn;
+  if (idx !== -1) {
+    return basePrompt.slice(0, idx) + kbContext + "\n\n" + basePrompt.slice(idx);
   }
 
   // If no rules section, append at the end
@@ -923,6 +981,7 @@ ${rows.join("\n")}`;
 }
 
 function getLanguagePrompt(language: string, todayStr: string): string {
+  if (isUsMarket()) return getUsLanguagePrompt(todayStr);
   const languagePrompts: Record<string, string> = {
     hu: `You are an expert Hungarian administrative assistant. Analyze the provided document text and respond strictly with JSON containing:
 
@@ -1015,7 +1074,7 @@ WICHTIGE REGELN:
 8. ZAHLUNGSDATEN-REGEL: Füllen Sie "bank_account", "amount" und "recipient_name" NUR aus, wenn das Dokument eine TATSÄCHLICHE ZAHLUNGSPFLICHT enthält (z.B. Rechnung, Strafe, Zahlungsaufforderung, Schulden). Wenn das Dokument nur INFORMATIV oder eine BENACHRICHTIGUNG ist (z.B. Aufhebung von Vollstreckungsrechten, Berechtigungsbestätigung, Statusmeldung), sollten diese Felder NULL sein. "recipient_name" sollte NIEMALS allein ausgefüllt werden - nur wenn auch "bank_account" ODER "amount" vorhanden ist.`,
   };
 
-  return languagePrompts[language] || languagePrompts.hu;
+  return languagePrompts[language] || (isUsMarket() ? getUsLanguagePrompt(todayStr) : languagePrompts.hu);
 }
 
 /**
@@ -1032,7 +1091,7 @@ async function analyzeWithOpenAI(
   
   // Detect document language
   console.log("Detecting document language...");
-  const detectedLanguage = await detectLanguage(text, openaiApiKey);
+  const detectedLanguage = await resolveAnalysisLanguage(text, openaiApiKey);
   console.log(`✅ Detected language: ${detectedLanguage}`);
   
   // Get language-specific prompt
@@ -1095,7 +1154,7 @@ async function analyzeWithOpenAI(
         },
         {
           role: "user",
-          content: `Dokumentum szövege:\n\n${text.slice(0, 15000)}`,
+          content: `${isUsMarket() ? "Document text" : "Dokumentum szövege"}:\n\n${text.slice(0, 15000)}`,
         },
       ],
     }),
@@ -1336,6 +1395,9 @@ Deno.serve(async (req) => {
         _tags: analysis.detected_tags ?? null,
         _content_keywords: analysis.detected_tags ?? null,
         _doc_type: analysis.doc_type ?? null,
+        _state_code: analysis.state_code ?? null,
+        _agency: analysis.issuer ?? null,
+        _market: isUsMarket() ? "us" : "hu",
       });
       if (playbookErr) {
         console.warn("get_matching_playbook:", playbookErr.message);
@@ -1372,6 +1434,8 @@ Deno.serve(async (req) => {
         mentioned_laws: mentionedLaws,
         doc_type: analysis.doc_type || null,
         issuer: analysis.issuer || null,
+        state_code: analysis.state_code || null,
+        agency: analysis.issuer || null,
         deadline_descriptions: deadlineDesc,
         form_key: playbookFormKey,
         required_forms: playbookRequiredForms.length > 0 ? playbookRequiredForms : null,

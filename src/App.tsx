@@ -10,6 +10,7 @@ import { AdminRoute } from "@/components/AdminRoute";
 import { OwnerRoute } from "@/components/OwnerRoute";
 import { Navbar } from "@/components/Navbar";
 import { LangSync } from "@/components/LangSync";
+import { MarketRouteGuard } from "@/components/MarketRouteGuard";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import Home from "./pages/Home";
@@ -60,6 +61,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <MarketRouteGuard />
           <LangSync />
           <AuthProvider>
             <div className="min-h-screen flex flex-col">
@@ -72,6 +74,9 @@ const App = () => (
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/help" element={<Help />} />
+                <Route path="/irs-notices" element={<Help />} />
+                <Route path="/state-tax-letters" element={<Help />} />
+                <Route path="/ssa-letters" element={<Help />} />
                 <Route
                   path="/search"
                   element={

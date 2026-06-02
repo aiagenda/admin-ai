@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_IL_payment_plan",
+    "name": "Illinois \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://tax.illinois.gov/",
+    "jurisdiction": "state",
+    "state_code": "IL",
+    "agency": "Illinois Department of Revenue"
+  },
+  {
+    "key": "state_IL_appeal",
+    "name": "Illinois \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://tax.illinois.gov/",
+    "jurisdiction": "state",
+    "state_code": "IL",
+    "agency": "Illinois Department of Revenue"
+  }
+]

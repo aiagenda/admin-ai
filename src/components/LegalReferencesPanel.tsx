@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ExternalLink, Scale, BookOpen, CheckCircle2, AlertTriangle, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { isUsMarket } from "@/lib/market";
+import { useTranslation } from "react-i18next";
 
 interface LawReference {
   id: string;
@@ -49,6 +51,7 @@ export function LegalReferencesPanel({
   detectedCategory,
   docType,
 }: LegalReferencesPanelProps) {
+  const { t } = useTranslation("common");
   const [lawReferences, setLawReferences] = useState<LawReference[]>([]);
   const [playbook, setPlaybook] = useState<Playbook | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,8 +81,8 @@ export function LegalReferencesPanel({
           }
         }
 
-        // 2. Also fetch laws by topics (implicit laws based on detected_tags)
-        if (detectedTags && detectedTags.length > 0) {
+        // 2. Also fetch laws by topics (HU only)
+        if (!isUsMarket() && detectedTags && detectedTags.length > 0) {
           const { data: topicLaws } = await supabase.rpc("get_laws_by_topics", {
             _topics: detectedTags,
           });
@@ -100,12 +103,14 @@ export function LegalReferencesPanel({
         const { data: playbookData } = await supabase.rpc("get_matching_playbook", {
           _category: detectedCategory || null,
           _tags: detectedTags || null,
-          _content_keywords: detectedTags || null, // Use tags as keywords too
+          _content_keywords: detectedTags || null,
           _doc_type: docType || null,
+          _state_code: null,
+          _agency: null,
+          _market: isUsMarket() ? "us" : "hu",
         });
 
         if (playbookData && playbookData.length > 0) {
-          // Get the best matching playbook (highest match_score)
           const bestMatch = playbookData[0];
           setPlaybook({
             ...bestMatch,
@@ -238,10 +243,10 @@ export function LegalReferencesPanel({
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Scale className="h-5 w-5 text-primary" />
-              Ellenőrzés – Jogszabályok
+              {t("legalPanel.lawsTitle")}
             </CardTitle>
             <CardDescription>
-              Az alábbi jogszabályokban ellenőrizheted a részleteket
+              {t("legalPanel.lawsDesc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -267,7 +272,7 @@ export function LegalReferencesPanel({
                             rel="noopener noreferrer"
                           >
                             <ExternalLink className="h-3 w-3 mr-1" />
-                            NJT
+                            {t("legalPanel.sourceLink")}
                           </a>
                         </Button>
                       </div>
@@ -279,7 +284,7 @@ export function LegalReferencesPanel({
                       {law.typical_sections && Object.keys(law.typical_sections).length > 0 && (
                         <div className="mt-2">
                           <p className="text-xs font-medium text-muted-foreground mb-1">
-                            Mit ellenőrizz:
+                            {t("legalPanel.checkLabel")}
                           </p>
                           <div className="flex flex-wrap gap-1">
                             {Object.entries(law.typical_sections).slice(0, 4).map(([topic, section]) => (
@@ -303,7 +308,7 @@ export function LegalReferencesPanel({
             </div>
             
             <p className="text-xs text-muted-foreground mt-4 text-center">
-              ⚠️ Mindig a hatályos jogszabályszöveget ellenőrizd az NJT-n
+              ⚠️ Mindig a hatályos jogszabályszöveget ellenőrizd az {t("legalPanel.sourceLink")}-n
             </p>
           </CardContent>
         </Card>

@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_CO_payment_plan",
+    "name": "Colorado \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://tax.colorado.gov/",
+    "jurisdiction": "state",
+    "state_code": "CO",
+    "agency": "Colorado Department of Revenue"
+  },
+  {
+    "key": "state_CO_appeal",
+    "name": "Colorado \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://tax.colorado.gov/",
+    "jurisdiction": "state",
+    "state_code": "CO",
+    "agency": "Colorado Department of Revenue"
+  }
+]

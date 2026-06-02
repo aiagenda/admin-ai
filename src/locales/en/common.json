@@ -1,8 +1,8 @@
 {
   "loading": "Loading…",
   "shell": {
-    "htmlTitle": "AdminAI · NoticeIQ — AI document workspace",
-    "htmlDescription": "Hungarian (AdminAI) and English (NoticeIQ): official letters, invoices, and SMB workflows. The SPA sets detailed SEO per language and route."
+    "htmlTitle": "NoticeIQ — IRS & agency letter assistant",
+    "htmlDescription": "Upload IRS and federal notices. Get plain-English explanations, deadlines, and next steps. Not tax advice."
   },
   "imprint": {
     "legalEntity": "Legal entity:",
@@ -44,5 +44,44 @@
     "submitError": "Error:",
     "unknownError": "Unknown error",
     "footerHint": "This is a drafting aid only. Always verify deadlines, amounts, and line items against your notice and official IRS instructions. For tax advice, consult a qualified professional."
+  },
+  "legalPanel": {
+    "lawsTitle": "Reference laws",
+    "lawsDesc": "Verify details using the official sources below",
+    "checkLabel": "What to verify:",
+    "sourceLink": "Source",
+    "footerDisclaimer": "Always confirm amounts, deadlines, and citations against your notice and current IRS publications. This is not tax advice."
+  },
+  "uploadPage": {
+    "title": "Upload a document",
+    "subtitle": "Upload a PDF or image for analysis — processing usually takes 30–60 seconds.",
+    "dropTitle": "Drag your document here",
+    "dropHint": "or click to browse",
+    "formats": "PDF, JPG, PNG, HEIC • Max 20MB",
+    "previewCheck": "Check cropping and readability before uploading",
+    "signInRequired": "Please sign in",
+    "selectFile": "Choose a file",
+    "emptyFile": "File is empty. Take a new photo or choose another file.",
+    "processingRedirect": "Redirecting to results…",
+    "processingError": "Processing failed",
+    "processingWait": "Still working on it. Complex documents may take longer.",
+    "processingSoon": "Almost done…",
+    "analysisDone": "Analysis complete"
+  },
+  "resultPage": {
+    "back": "Back",
+    "loading": "Loading analysis…",
+    "simpleTab": "Plain English",
+    "legalTab": "Legal detail",
+    "todos": "What to do",
+    "deadlines": "Deadlines",
+    "forms": "Recommended forms"
+  },
+  "homePage": {
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "uploadCta": "Upload document",
+    "viewArchive": "Archive"
   }
 }

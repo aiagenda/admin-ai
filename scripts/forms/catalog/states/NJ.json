@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_NJ_payment_plan",
+    "name": "New Jersey \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://www.nj.gov/treasury/taxation/",
+    "jurisdiction": "state",
+    "state_code": "NJ",
+    "agency": "New Jersey Division of Taxation"
+  },
+  {
+    "key": "state_NJ_appeal",
+    "name": "New Jersey \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://www.nj.gov/treasury/taxation/",
+    "jurisdiction": "state",
+    "state_code": "NJ",
+    "agency": "New Jersey Division of Taxation"
+  }
+]

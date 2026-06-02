@@ -17,8 +17,8 @@
     "kb:verify": "tsx scripts/verify-knowledge-sources.ts",
     "generate-icons": "node scripts/generate-pwa-icons.mjs",
     "generate:legal": "python3 scripts/generate_legal_locales.py",
-    "forms:sync": "npx tsx scripts/sync-irs-forms.ts",
-    "forms:sync:dry": "npx tsx scripts/sync-irs-forms.ts --dry"
+    "forms:sync": "npx tsx scripts/sync-us-forms.ts",
+    "forms:sync:dry": "npx tsx scripts/sync-us-forms.ts --dry"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

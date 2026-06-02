@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_MN_payment_plan",
+    "name": "Minnesota \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://www.revenue.state.mn.us/",
+    "jurisdiction": "state",
+    "state_code": "MN",
+    "agency": "Minnesota Department of Revenue"
+  },
+  {
+    "key": "state_MN_appeal",
+    "name": "Minnesota \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://www.revenue.state.mn.us/",
+    "jurisdiction": "state",
+    "state_code": "MN",
+    "agency": "Minnesota Department of Revenue"
+  }
+]

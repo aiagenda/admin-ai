@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_NV_payment_plan",
+    "name": "Nevada \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://tax.nv.gov/",
+    "jurisdiction": "state",
+    "state_code": "NV",
+    "agency": "Nevada Department of Taxation"
+  },
+  {
+    "key": "state_NV_appeal",
+    "name": "Nevada \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://tax.nv.gov/",
+    "jurisdiction": "state",
+    "state_code": "NV",
+    "agency": "Nevada Department of Taxation"
+  }
+]

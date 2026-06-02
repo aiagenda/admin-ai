@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_OK_payment_plan",
+    "name": "Oklahoma \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://oklahoma.gov/tax.html",
+    "jurisdiction": "state",
+    "state_code": "OK",
+    "agency": "Oklahoma Tax Commission"
+  },
+  {
+    "key": "state_OK_appeal",
+    "name": "Oklahoma \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://oklahoma.gov/tax.html",
+    "jurisdiction": "state",
+    "state_code": "OK",
+    "agency": "Oklahoma Tax Commission"
+  }
+]

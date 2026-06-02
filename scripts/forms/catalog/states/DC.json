@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_DC_payment_plan",
+    "name": "District of Columbia \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://otr.cfo.dc.gov/",
+    "jurisdiction": "state",
+    "state_code": "DC",
+    "agency": "DC Office of Tax and Revenue"
+  },
+  {
+    "key": "state_DC_appeal",
+    "name": "District of Columbia \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://otr.cfo.dc.gov/",
+    "jurisdiction": "state",
+    "state_code": "DC",
+    "agency": "DC Office of Tax and Revenue"
+  }
+]

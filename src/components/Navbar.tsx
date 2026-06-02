@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { isUsMarket } from "@/lib/market";
 
 export function Navbar() {
   const { user, signOut } = useAuth();
@@ -63,7 +64,7 @@ export function Navbar() {
     checkAdminRole();
   }, [user]);
 
-  const invoiceAccessForAll = import.meta.env.VITE_INVOICE_ACCESS_FOR_ALL !== "false";
+  const invoiceAccessForAll = !isUsMarket() && import.meta.env.VITE_INVOICE_ACCESS_FOR_ALL !== "false";
   useEffect(() => {
     async function checkInvoiceAccess() {
       if (!user) {
@@ -122,12 +123,23 @@ export function Navbar() {
       return (
         <>
           <p className="text-xs uppercase tracking-wide text-muted-foreground px-2 pt-2">{t("solutions")}</p>
-          <NavLink to="/nav-hatarozat-ertelmezes">{t("sol_navDecision")}</NavLink>
-          <NavLink to="/szamla-ocr">{t("sol_invoiceOcr")}</NavLink>
-          <NavLink to="/dokumentum-archivum">{t("sol_docArchive")}</NavLink>
-          <NavLink to="/adminai-vs-chatgpt">{t("sol_vsChatgpt")}</NavLink>
-          <NavLink to="/adminai-vs-billingo">{t("sol_vsBillingo")}</NavLink>
-          <NavLink to="/adminai-vs-szamlazz">{t("sol_vsSzamlazz")}</NavLink>
+          {isUsMarket() ? (
+            <>
+              <NavLink to="/irs-notices">{t("sol_irsNotices")}</NavLink>
+              <NavLink to="/state-tax-letters">{t("sol_stateTax")}</NavLink>
+              <NavLink to="/ssa-letters">{t("sol_ssa")}</NavLink>
+              <NavLink to="/adminai-vs-chatgpt">{t("sol_vsChatgpt")}</NavLink>
+            </>
+          ) : (
+            <>
+              <NavLink to="/nav-hatarozat-ertelmezes">{t("sol_navDecision")}</NavLink>
+              <NavLink to="/szamla-ocr">{t("sol_invoiceOcr")}</NavLink>
+              <NavLink to="/dokumentum-archivum">{t("sol_docArchive")}</NavLink>
+              <NavLink to="/adminai-vs-chatgpt">{t("sol_vsChatgpt")}</NavLink>
+              <NavLink to="/adminai-vs-billingo">{t("sol_vsBillingo")}</NavLink>
+              <NavLink to="/adminai-vs-szamlazz">{t("sol_vsSzamlazz")}</NavLink>
+            </>
+          )}
         </>
       );
     }
@@ -141,12 +153,21 @@ export function Navbar() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={() => navigate("/nav-hatarozat-ertelmezes")}>{t("sol_navDecision")}</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/szamla-ocr")}>{t("sol_invoiceOcr")}</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/dokumentum-archivum")}>{t("sol_docArchive")}</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/adminai-vs-chatgpt")}>{t("sol_vsChatgpt")}</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/adminai-vs-billingo")}>{t("sol_vsBillingo")}</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate("/adminai-vs-szamlazz")}>{t("sol_vsSzamlazz")}</DropdownMenuItem>
+          {isUsMarket() ? (
+            <>
+              <DropdownMenuItem onClick={() => navigate("/irs-notices")}>{t("sol_irsNotices")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/adminai-vs-chatgpt")}>{t("sol_vsChatgpt")}</DropdownMenuItem>
+            </>
+          ) : (
+            <>
+              <DropdownMenuItem onClick={() => navigate("/nav-hatarozat-ertelmezes")}>{t("sol_navDecision")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/szamla-ocr")}>{t("sol_invoiceOcr")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/dokumentum-archivum")}>{t("sol_docArchive")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/adminai-vs-chatgpt")}>{t("sol_vsChatgpt")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/adminai-vs-billingo")}>{t("sol_vsBillingo")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/adminai-vs-szamlazz")}>{t("sol_vsSzamlazz")}</DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     );
@@ -155,14 +176,14 @@ export function Navbar() {
   const DesktopPublicLinks = () => (
     <>
       <SolutionsDropdown />
-      <Link to="/arak" data-tour="nav-pricing" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
-        Árak
+      <Link to={isUsMarket() ? "/pricing" : "/arak"} data-tour="nav-pricing" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
+        {t("pricing")}
       </Link>
       <Link to="/blog" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
         Blog
       </Link>
-      <Link to="/gyik" className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
-        GYIK
+      <Link to={isUsMarket() ? "/help" : "/gyik"} className="text-sm font-medium text-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation px-2">
+        {t("faq")}
       </Link>
     </>
   );
@@ -211,9 +232,9 @@ export function Navbar() {
       {!user ? (
         <>
           <NavLink to="/">{t("home")}</NavLink>
-          <NavLink to="/arak">{t("pricing")}</NavLink>
+          <NavLink to={isUsMarket() ? "/pricing" : "/arak"}>{t("pricing")}</NavLink>
           <NavLink to="/blog">{t("blog")}</NavLink>
-          <NavLink to="/gyik">{t("faq")}</NavLink>
+          <NavLink to={isUsMarket() ? "/help" : "/gyik"}>{t("faq")}</NavLink>
           <NavLink to="/help">{t("help")}</NavLink>
           <SolutionsDropdown mobile />
         </>
@@ -223,10 +244,10 @@ export function Navbar() {
           <NavLink to="/upload">{t("upload")}</NavLink>
           <NavLink to="/archive">{t("archive")}</NavLink>
           <NavLink to="/search">{t("search")}</NavLink>
-          {(hasInvoiceAccess || isAdmin) && <NavLink to="/invoices">{t("accounting")}</NavLink>}
+          {!isUsMarket() && (hasInvoiceAccess || isAdmin) && <NavLink to="/invoices">{t("accounting")}</NavLink>}
           <NavLink to="/settings">{t("settings")}</NavLink>
           <NavLink to="/blog">{t("blog")}</NavLink>
-          <NavLink to="/gyik">{t("faq")}</NavLink>
+          <NavLink to={isUsMarket() ? "/help" : "/gyik"}>{t("faq")}</NavLink>
           <NavLink to="/help">{t("help")}</NavLink>
           {!checkingAdmin && isAdmin && (
             <>
@@ -279,7 +300,7 @@ export function Navbar() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => navigate("/upload")}>{t("uploadDoc")}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>{t("settings")}</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/gyik")}>{t("faq")}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate(isUsMarket() ? "/help" : "/gyik")}>{t("faq")}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/help")}>
                     <HelpCircle className="h-4 w-4 mr-2" />
                     {t("helpCoach")}

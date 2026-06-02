@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_DE_payment_plan",
+    "name": "Delaware \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://revenue.delaware.gov/",
+    "jurisdiction": "state",
+    "state_code": "DE",
+    "agency": "Delaware Division of Revenue"
+  },
+  {
+    "key": "state_DE_appeal",
+    "name": "Delaware \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://revenue.delaware.gov/",
+    "jurisdiction": "state",
+    "state_code": "DE",
+    "agency": "Delaware Division of Revenue"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "key": "state_MS_payment_plan",
+    "name": "Mississippi \u2014 payment plan request",
+    "sourceUrl": "",
+    "onlineUrl": "https://www.dor.ms.gov/",
+    "jurisdiction": "state",
+    "state_code": "MS",
+    "agency": "Mississippi Department of Revenue"
+  },
+  {
+    "key": "state_MS_appeal",
+    "name": "Mississippi \u2014 appeal / protest portal",
+    "sourceUrl": "",
+    "onlineUrl": "https://www.dor.ms.gov/",
+    "jurisdiction": "state",
+    "state_code": "MS",
+    "agency": "Mississippi Department of Revenue"
+  }
+]

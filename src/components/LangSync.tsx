@@ -1,10 +1,14 @@
 import { useEffect } from "react";
 import i18n from "@/i18n/config";
+import { isUsMarket } from "@/lib/market";
 
-/** Keeps `<html lang>` in sync with i18next (SEO + accessibility). */
 export function LangSync() {
   useEffect(() => {
     const apply = () => {
+      if (isUsMarket()) {
+        document.documentElement.lang = "en";
+        return;
+      }
       const lng = i18n.resolvedLanguage || i18n.language || "hu";
       document.documentElement.lang = lng.toLowerCase().startsWith("en") ? "en" : "hu";
     };

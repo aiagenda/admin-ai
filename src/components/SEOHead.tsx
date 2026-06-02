@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { getSiteOrigin } from "@/lib/site";
 
 const DEFAULT_OG_SITE_NAME = "AdminAI";
-const DEFAULT_LOCALE = "hu_HU";
+import { isUsMarket } from "@/lib/market";
+const DEFAULT_LOCALE = isUsMarket() ? "en_US" : "hu_HU";
 
 interface SEOHeadProps {
   title: string;
