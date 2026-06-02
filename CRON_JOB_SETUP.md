@@ -12,7 +12,7 @@ Mivel a Supabase anon key-t biztonsági okokból nem tároljuk a kódban, manuá
 ### 2. Töltsd ki az adatokat
 
 **Alapbeállítások:**
-- **Title:** `AdminAI - Monthly Accountant Report`
+- **Title:** `GovLetter - Monthly Accountant Report`
 - **Address (URL):** `https://<project-ref>.supabase.co/functions/v1/send-accountant-report`
 - **Request method:** `POST`
 
@@ -69,7 +69,7 @@ curl -X POST "https://api.cron-job.org/jobs" \
   -d '{
     "job": {
       "enabled": true,
-      "title": "AdminAI - Monthly Accountant Report",
+      "title": "GovLetter - Monthly Accountant Report",
       "url": "https://<project-ref>.supabase.co/functions/v1/send-accountant-report",
       "schedule": {
         "timezone": "Europe/Budapest",

@@ -401,7 +401,7 @@ export default function Result() {
       
       pdfContainer.innerHTML = `
         <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 30px 20px; margin: -20mm -20mm 30px -20mm; color: white;">
-          <h1 style="margin: 0; font-size: 32px; font-weight: bold;">AdminAI</h1>
+          <h1 style="margin: 0; font-size: 32px; font-weight: bold;">GovLetter</h1>
           <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Document Analysis</p>
         </div>
         
@@ -485,7 +485,7 @@ export default function Result() {
         
         <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #e2e8f0; text-align: center;">
           <p style="margin: 0; font-size: 10px; color: #94a3b8;">
-            AdminAI - ${window.location.origin} | Generated: ${format(new Date(), "yyyy. MMMM d. HH:mm", { locale: enUS })}
+            GovLetter - ${window.location.origin} | Generated: ${format(new Date(), "yyyy. MMMM d. HH:mm", { locale: enUS })}
           </p>
         </div>
       `;
@@ -524,7 +524,7 @@ export default function Result() {
       doc.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
       
       // Save PDF
-      const fileName = `noticeiq-analysis-${id?.substring(0, 8) || "unknown"}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
+      const fileName = `govletter-analysis-${id?.substring(0, 8) || "unknown"}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
       console.log("Saving PDF:", fileName, "Image dimensions:", imgWidth, "x", imgHeight);
       doc.save(fileName);
       toast.success("PDF downloaded!");
@@ -942,15 +942,15 @@ export default function Result() {
                       
                       const icalContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//AdminAI//Deadline Reminder//EN
+PRODID:-//GovLetter//Deadline Reminder//EN
 BEGIN:VEVENT
-UID:${id}@adminai.hu
+UID:${id}@govletter.com
 DTSTAMP:${formatDate(new Date())}
 DTSTART:${formatDate(deadlineDate)}
 DTEND:${formatDate(endDate)}
 SUMMARY:Deadline: ${analysis.simple_summary?.substring(0, 50) || "Document deadline"}
-DESCRIPTION:Document deadline\\nNoticeIQ - ${window.location.origin}/result/${id}
-LOCATION:AdminAI
+DESCRIPTION:Document deadline\\nGovLetter - ${window.location.origin}/result/${id}
+LOCATION:GovLetter
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`;

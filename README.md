@@ -1,4 +1,4 @@
-# AdminAI
+# GovLetter
 
 Magyar hivatalos dokumentumok AI alapú elemzésére szolgáló webalkalmazás: feltöltés, OCR, strukturált adatok kinyerése, határidők és teendők kezelése, könyvelői jelentések, tudásbázis-szemantikus keresés.
 
@@ -86,4 +86,4 @@ További backend/Edge Function titkok (OpenAI, Resend, VAPID stb.) a Supabase Da
 └── README.md            # Ez a fájl
 ```
 
-Új közösnek és AI-nak egy mondatban: *AdminAI magyar hivatalos dokumentumok feltöltésére, AI elemzésére, strukturált űrlapok és határidők kezelésére, könyvelői jelentések és emlékeztetők küldésére, valamint tudásbázis-szemantikus keresésre; frontend Vite+React, backend nagy része Supabase Edge Functions.*
+Új közösnek és AI-nak egy mondatban: *GovLetter magyar hivatalos dokumentumok feltöltésére, AI elemzésére, strukturált űrlapok és határidők kezelésére, könyvelői jelentések és emlékeztetők küldésére, valamint tudásbázis-szemantikus keresésre; frontend Vite+React, backend nagy része Supabase Edge Functions.*

@@ -14,15 +14,15 @@ export default function UseCaseNavPage() {
           <h1 className="text-4xl font-bold">NAV határozat értelmezése AI-val, magyarul</h1>
           <p className="text-lg text-muted-foreground">
             Ha NAV határozatot, felszólítást vagy adóhivatali levelet kaptál, az első kérdés mindig ugyanaz: mit jelent ez pontosan, és mit kell most tenni?
-            Az AdminAI erre ad gyors, közérthető választ.
+            Az GovLetter erre ad gyors, közérthető választ.
           </p>
         </header>
 
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">Mikor hasznos az AdminAI NAV leveleknél?</h2>
+          <h2 className="text-2xl font-semibold">Mikor hasznos az GovLetter NAV leveleknél?</h2>
           <p>
             A legtöbb vállalkozó és magánszemély nem jogász, mégis rendszeresen találkozik olyan dokumentumokkal, amelyekben rövid határidők,
-            jogkövetkezmények és bonyolult kifejezések vannak. Az AdminAI célja, hogy a hivatalos nyelvet hétköznapi magyarra fordítsa.
+            jogkövetkezmények és bonyolult kifejezések vannak. Az GovLetter célja, hogy a hivatalos nyelvet hétköznapi magyarra fordítsa.
             A rendszer külön jelöli a sürgős teendőket, és kiemeli a határidőket, hogy ne csússz ki a válaszadási időből.
           </p>
           <p>
@@ -62,7 +62,7 @@ export default function UseCaseNavPage() {
         <section className="space-y-3">
           <h2 className="text-2xl font-semibold">Kezdd el most</h2>
           <p>
-            Próbáld ki ingyenesen, és nézd meg, hogyan segít az AdminAI egy NAV határozat vagy adóhivatal levél gyors értelmezésében.
+            Próbáld ki ingyenesen, és nézd meg, hogyan segít az GovLetter egy NAV határozat vagy adóhivatal levél gyors értelmezésében.
             Ha rendszeresen kapsz hivatalos dokumentumokat, érdemes megnézni a <Link className="text-primary underline" to="/dokumentum-archivum">dokumentum archívum</Link> és
             a <Link className="text-primary underline" to="/szamla-ocr">számla OCR</Link> funkciókat is.
           </p>

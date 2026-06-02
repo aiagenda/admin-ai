@@ -28,7 +28,7 @@ function getGreeting(t: (k: string) => string): { text: string; emoji: string } 
   return { text: t("homePage.greetingEvening"), emoji: "🌙" };
 }
 
-const WELCOME_DISMISS_KEY = "adminai_welcome_dismissed";
+const WELCOME_DISMISS_KEY = "govletter_welcome_dismissed";
 
 export default function Home() {
   const navigate = useNavigate();

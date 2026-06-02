@@ -4,8 +4,8 @@
   "faq": [
     {
       "category": "General",
-      "question": "What is NoticeIQ?",
-      "answer": "NoticeIQ is an AI assistant that explains IRS, state, and other official letters in plain English. Upload a PDF or photo and get summaries, deadlines, and next steps."
+      "question": "What is GovLetter?",
+      "answer": "GovLetter is an AI assistant that explains IRS, state, and other official letters in plain English. Upload a PDF or photo and get summaries, deadlines, and next steps."
     },
     {
       "category": "General",
@@ -55,7 +55,7 @@
     {
       "category": "Privacy",
       "question": "Is this tax advice?",
-      "answer": "No. NoticeIQ is informational only. For advice on your situation, consult a CPA, EA, or attorney."
+      "answer": "No. GovLetter is informational only. For advice on your situation, consult a CPA, EA, or attorney."
     },
     {
       "category": "Billing",

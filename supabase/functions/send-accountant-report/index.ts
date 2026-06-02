@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "AdminAI <noreply@adminai.hu>", // TODO: Update with your verified domain
+            from: "GovLetter <noreply@govletter.com>", // TODO: Update with your verified domain
             to: user.email,
             subject: isTest
               ? `[TESZT] Könyvelő jelentés - ${currentYear}. ${currentMonth}. hónap`
@@ -280,7 +280,7 @@ Deno.serve(async (req) => {
               <p><strong>Összesen ${documents.length} dokumentum</strong> található a jelentésben.</p>
               <p>Ha bármilyen kérdése van, kérjük, lépjen kapcsolatba a felhasználóval.</p>
               <hr>
-              <p style="color: #666; font-size: 12px;">Ez egy automatikus email az AdminAI rendszertől.</p>
+              <p style="color: #666; font-size: 12px;">Ez egy automatikus email az GovLetter rendszertől.</p>
             `,
             attachments: [
               {

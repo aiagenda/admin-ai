@@ -7,21 +7,21 @@ export default function ComparisonSzamlazzPage() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <PageSEO pageKey="comparisonSzamlazz" path="/adminai-vs-szamlazz" />
+      <PageSEO pageKey="comparisonSzamlazz" path="/govletter-vs-szamlazz" />
       <div className="container mx-auto max-w-4xl space-y-6">
-        <h1 className="text-4xl font-bold">AdminAI vs Számlázz.hu</h1>
+        <h1 className="text-4xl font-bold">GovLetter vs Számlázz.hu</h1>
         <p className="text-lg text-muted-foreground">
-          A Számlázz.hu piacvezető számlázó platform. Az AdminAI ezzel nem versenyez direktben a számlakiállításban,
+          A Számlázz.hu piacvezető számlázó platform. Az GovLetter ezzel nem versenyez direktben a számlakiállításban,
           hanem a bejövő dokumentumok értelmezését és teendőkezelését oldja meg.
         </p>
 
         <h2 className="text-2xl font-semibold">Külön fókusz, külön erősség</h2>
         <p>
-          Számlázz.hu: kimenő számlázás, compliance és pénzügyi admin. AdminAI: NAV levelek, határozatok és egyéb dokumentumok
+          Számlázz.hu: kimenő számlázás, compliance és pénzügyi admin. GovLetter: NAV levelek, határozatok és egyéb dokumentumok
           értelmezése, határidők és teendők kiemelése.
         </p>
 
-        <h2 className="text-2xl font-semibold">Mikor érdemes AdminAI-t is használni?</h2>
+        <h2 className="text-2xl font-semibold">Mikor érdemes GovLetter-t is használni?</h2>
         <ul className="list-disc pl-6 text-muted-foreground space-y-1">
           <li>Ha sok különböző hivatalos dokumentum érkezik</li>
           <li>Ha gyorsan kell érthető magyarázat és következő lépés</li>
@@ -34,7 +34,7 @@ export default function ComparisonSzamlazzPage() {
         </div>
 
         <p className="text-sm">
-          Általános AI összehasonlítás: <Link to="/adminai-vs-chatgpt" className="text-primary underline">AdminAI vs ChatGPT</Link>
+          Általános AI összehasonlítás: <Link to="/govletter-vs-chatgpt" className="text-primary underline">GovLetter vs ChatGPT</Link>
         </p>
       </div>
     </div>

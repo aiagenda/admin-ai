@@ -46,7 +46,7 @@ export default function CheckoutSuccess() {
               Sikeres előfizetés!
             </CardTitle>
             <CardDescription className="text-base">
-              Köszönjük, hogy az AdminAI-t választottad!
+              Köszönjük, hogy az GovLetter-t választottad!
             </CardDescription>
           </CardHeader>
           
@@ -118,7 +118,7 @@ export default function CheckoutSuccess() {
             <p className="text-xs text-center text-muted-foreground">
               Előfizetésedet bármikor kezelheted a Beállítások menüben.
               <br />
-              Kérdésed van? Írj nekünk: support@adminai.hu
+              Kérdésed van? Írj nekünk: support@govletter.com
             </p>
           </CardContent>
         </Card>

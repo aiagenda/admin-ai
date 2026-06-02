@@ -20,7 +20,7 @@ Az automatikus könyvelő jelentés funkció lehetővé teszi, hogy a rendszer m
    ```
 
 4. **Fontos:** Verifikáld a domain-t a Resend-ben, hogy az email-ek ne spam mappába kerüljenek
-   - Jelenleg a kód `noreply@adminai.hu`-t használ
+   - Jelenleg a kód `noreply@govletter.com`-t használ
    - Módosítsd a `from` mezőt a `send-accountant-report/index.ts`-ben, ha más domain-t használsz
 
 ## 2. Edge Function Deploy

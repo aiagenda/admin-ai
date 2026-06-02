@@ -128,16 +128,16 @@ export function Navbar() {
               <NavLink to="/irs-notices">{t("sol_irsNotices")}</NavLink>
               <NavLink to="/state-tax-letters">{t("sol_stateTax")}</NavLink>
               <NavLink to="/ssa-letters">{t("sol_ssa")}</NavLink>
-              <NavLink to="/adminai-vs-chatgpt">{t("sol_vsChatgpt")}</NavLink>
+              <NavLink to="/govletter-vs-chatgpt">{t("sol_vsChatgpt")}</NavLink>
             </>
           ) : (
             <>
               <NavLink to="/nav-hatarozat-ertelmezes">{t("sol_navDecision")}</NavLink>
               <NavLink to="/szamla-ocr">{t("sol_invoiceOcr")}</NavLink>
               <NavLink to="/dokumentum-archivum">{t("sol_docArchive")}</NavLink>
-              <NavLink to="/adminai-vs-chatgpt">{t("sol_vsChatgpt")}</NavLink>
-              <NavLink to="/adminai-vs-billingo">{t("sol_vsBillingo")}</NavLink>
-              <NavLink to="/adminai-vs-szamlazz">{t("sol_vsSzamlazz")}</NavLink>
+              <NavLink to="/govletter-vs-chatgpt">{t("sol_vsChatgpt")}</NavLink>
+              <NavLink to="/govletter-vs-billingo">{t("sol_vsBillingo")}</NavLink>
+              <NavLink to="/govletter-vs-szamlazz">{t("sol_vsSzamlazz")}</NavLink>
             </>
           )}
         </>
@@ -156,16 +156,16 @@ export function Navbar() {
           {isUsMarket() ? (
             <>
               <DropdownMenuItem onClick={() => navigate("/irs-notices")}>{t("sol_irsNotices")}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/adminai-vs-chatgpt")}>{t("sol_vsChatgpt")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/govletter-vs-chatgpt")}>{t("sol_vsChatgpt")}</DropdownMenuItem>
             </>
           ) : (
             <>
               <DropdownMenuItem onClick={() => navigate("/nav-hatarozat-ertelmezes")}>{t("sol_navDecision")}</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/szamla-ocr")}>{t("sol_invoiceOcr")}</DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/dokumentum-archivum")}>{t("sol_docArchive")}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/adminai-vs-chatgpt")}>{t("sol_vsChatgpt")}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/adminai-vs-billingo")}>{t("sol_vsBillingo")}</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/adminai-vs-szamlazz")}>{t("sol_vsSzamlazz")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/govletter-vs-chatgpt")}>{t("sol_vsChatgpt")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/govletter-vs-billingo")}>{t("sol_vsBillingo")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/govletter-vs-szamlazz")}>{t("sol_vsSzamlazz")}</DropdownMenuItem>
             </>
           )}
         </DropdownMenuContent>

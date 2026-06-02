@@ -1,9 +1,9 @@
-import { isUsMarket } from "@/lib/market";
+/** Product brand name (US + HU). */
+export const BRAND = "GovLetter";
 
-export const BRAND_HU = "AdminAI";
-export const BRAND_EN = "NoticeIQ";
+export const BRAND_HU = BRAND;
+export const BRAND_EN = BRAND;
 
-export function brandNameForLocale(lang: string): string {
-  if (isUsMarket()) return BRAND_EN;
-  return lang?.toLowerCase().startsWith("en") ? BRAND_EN : BRAND_HU;
+export function brandNameForLocale(_lang?: string): string {
+  return BRAND;
 }

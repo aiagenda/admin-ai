@@ -28,11 +28,11 @@ export function HomeLanding() {
       ];
 
   const comparisons = us
-    ? [{ to: "/adminai-vs-chatgpt", title: t(`${p}.cmpChatgptTitle`), desc: t(`${p}.cmpChatgptDesc`) }]
+    ? [{ to: "/govletter-vs-chatgpt", title: t(`${p}.cmpChatgptTitle`), desc: t(`${p}.cmpChatgptDesc`) }]
     : [
-        { to: "/adminai-vs-chatgpt", title: t(`${p}.cmpChatgptTitle`), desc: t(`${p}.cmpChatgptDesc`) },
-        { to: "/adminai-vs-billingo", title: t(`${p}.cmpBillingoTitle`), desc: t(`${p}.cmpBillingoDesc`) },
-        { to: "/adminai-vs-szamlazz", title: t(`${p}.cmpSzamlazzTitle`), desc: t(`${p}.cmpSzamlazzDesc`) },
+        { to: "/govletter-vs-chatgpt", title: t(`${p}.cmpChatgptTitle`), desc: t(`${p}.cmpChatgptDesc`) },
+        { to: "/govletter-vs-billingo", title: t(`${p}.cmpBillingoTitle`), desc: t(`${p}.cmpBillingoDesc`) },
+        { to: "/govletter-vs-szamlazz", title: t(`${p}.cmpSzamlazzTitle`), desc: t(`${p}.cmpSzamlazzDesc`) },
       ];
 
   const step4Icon = us ? FileSpreadsheet : Receipt;

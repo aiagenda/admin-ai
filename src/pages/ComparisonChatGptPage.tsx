@@ -7,21 +7,21 @@ export default function ComparisonChatGptPage() {
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <PageSEO pageKey="comparisonChatgpt" path="/adminai-vs-chatgpt" />
+      <PageSEO pageKey="comparisonChatgpt" path="/govletter-vs-chatgpt" />
       <div className="container mx-auto max-w-4xl space-y-6">
-        <h1 className="text-4xl font-bold">AdminAI vs ChatGPT dokumentum értelmezésre</h1>
+        <h1 className="text-4xl font-bold">GovLetter vs ChatGPT dokumentum értelmezésre</h1>
         <p className="text-muted-foreground text-lg">
-          A ChatGPT kiváló általános AI eszköz. Az AdminAI viszont kifejezetten magyar hivatalos dokumentumok értelmezésére,
+          A ChatGPT kiváló általános AI eszköz. Az GovLetter viszont kifejezetten magyar hivatalos dokumentumok értelmezésére,
           határidőkiemelésre és admin workflow-ra épül.
         </p>
 
         <h2 className="text-2xl font-semibold">Fő különbség</h2>
         <p>
           ChatGPT-ben általában neked kell kontextust adni, a teljes szöveget bemásolni, és külön kérni a teendőlistát.
-          AdminAI-ban a folyamat eleve erre van tervezve: dokumentum feltöltés, értelmezés, teendők, határidők és archiválás egy helyen.
+          GovLetter-ban a folyamat eleve erre van tervezve: dokumentum feltöltés, értelmezés, teendők, határidők és archiválás egy helyen.
         </p>
 
-        <h2 className="text-2xl font-semibold">Mikor jobb az AdminAI?</h2>
+        <h2 className="text-2xl font-semibold">Mikor jobb az GovLetter?</h2>
         <ul className="list-disc pl-6 text-muted-foreground space-y-1">
           <li>NAV vagy hatósági levél gyors, közérthető értelmezése</li>
           <li>Határidők automatikus kiemelése és figyelése</li>
@@ -30,7 +30,7 @@ export default function ComparisonChatGptPage() {
         </ul>
 
         <p className="text-sm text-muted-foreground">
-          Fontos: az AdminAI tájékoztató célú AI rendszer, nem helyettesíti a személyre szabott jogi tanácsadást.
+          Fontos: az GovLetter tájékoztató célú AI rendszer, nem helyettesíti a személyre szabott jogi tanácsadást.
         </p>
 
         <div className="flex gap-3">
@@ -39,8 +39,8 @@ export default function ComparisonChatGptPage() {
         </div>
 
         <p className="text-sm">
-          További összehasonlítások: <Link to="/adminai-vs-billingo" className="text-primary underline">AdminAI vs Billingo</Link>,{" "}
-          <Link to="/adminai-vs-szamlazz" className="text-primary underline">AdminAI vs Számlázz.hu</Link>
+          További összehasonlítások: <Link to="/govletter-vs-billingo" className="text-primary underline">GovLetter vs Billingo</Link>,{" "}
+          <Link to="/govletter-vs-szamlazz" className="text-primary underline">GovLetter vs Számlázz.hu</Link>
         </p>
       </div>
     </div>

@@ -69,7 +69,7 @@ function fetchUrl(url: string, maxRedirects: number = 5): Promise<string> {
     
     const options = {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; AdminAI-KB-Bot/1.0; +https://adminai.hu)",
+        "User-Agent": "Mozilla/5.0 (compatible; GovLetter-KB-Bot/1.0; +https://govletter.com)",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "hu-HU,hu;q=0.9,en;q=0.8",
       },

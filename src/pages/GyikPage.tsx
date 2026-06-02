@@ -4,18 +4,18 @@ import { PageSEO } from "@/components/PageSEO";
 const faqItems = [
   {
     q: "Mi az a NAV határozat és mit kell tenni vele?",
-    a: "A NAV határozat hivatalos döntés vagy felszólítás. Először ellenőrizd a határidőt, majd a teendőket. Az AdminAI segít közérthetően értelmezni a dokumentumot és kiemeli a fontos lépéseket.",
+    a: "A NAV határozat hivatalos döntés vagy felszólítás. Először ellenőrizd a határidőt, majd a teendőket. Az GovLetter segít közérthetően értelmezni a dokumentumot és kiemeli a fontos lépéseket.",
   },
   {
-    q: "Biztonságos-e feltölteni a dokumentumaimat az AdminAI-ba?",
+    q: "Biztonságos-e feltölteni a dokumentumaimat az GovLetter-ba?",
     a: "Igen, a dokumentumok védett környezetben tárolódnak, és a hozzáférés jogosultsághoz kötött. A cél, hogy a vállalkozási adminisztráció gyorsabb legyen, adatbiztonsági kompromisszum nélkül.",
   },
   {
-    q: "Tudja kezelni az AdminAI a kézzel írt számlákat?",
+    q: "Tudja kezelni az GovLetter a kézzel írt számlákat?",
     a: "A rendszer OCR-t használ, amely támogatja a fotózott és szkennelt dokumentumokat. Kézzel írt elemeknél a pontosság dokumentumminőségtől függ, de az AI segít a javításban és visszaellenőrzésben.",
   },
   {
-    q: "Milyen dokumentumokat ismer fel az AdminAI?",
+    q: "Milyen dokumentumokat ismer fel az GovLetter?",
     a: "NAV levelek, hatósági értesítések, számlák és egyéb adminisztratív dokumentumok feldolgozására készült. A cél a gyors értelmezés, teendők és határidők egyértelmű megjelenítése.",
   },
   {
@@ -44,7 +44,7 @@ export default function GyikPage() {
       <div className="container mx-auto max-w-4xl space-y-6">
         <h1 className="text-4xl font-bold">Gyakori kérdések (GYIK)</h1>
         <p className="text-muted-foreground">
-          Összegyűjtöttük az AdminAI leggyakoribb kérdéseit a dokumentum értelmezésről, OCR-ről és könyvelési workflow-ról.
+          Összegyűjtöttük az GovLetter leggyakoribb kérdéseit a dokumentum értelmezésről, OCR-ről és könyvelési workflow-ról.
         </p>
 
         <div className="space-y-4">

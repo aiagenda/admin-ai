@@ -40,7 +40,7 @@ A Supabase Dashboard-ban, az Edge Functions beállításoknál add hozzá:
 - `SUPABASE_URL`: `https://<project-ref>.supabase.co`
 - `SUPABASE_SERVICE_ROLE_KEY`: (a service role key)
 - `RESEND_API_KEY`: (Resend API key – Dashboard → Secrets)
-- `APP_URL`: `https://adminai.hu` (vagy a production URL)
+- `APP_URL`: `https://govletter.com` (vagy a production URL)
 - `TWILIO_ACCOUNT_SID`: (opcionális, SMS-hez)
 - `TWILIO_AUTH_TOKEN`: (opcionális, SMS-hez)
 - `TWILIO_PHONE_NUMBER`: (opcionális, SMS-hez)
@@ -70,7 +70,7 @@ Content-Type: application/json
 1. Látogasd meg: https://cron-job.org/
 2. Bejelentkezés
 3. Új cron job létrehozása:
-   - **Title:** `AdminAI Deadline Reminders`
+   - **Title:** `GovLetter Deadline Reminders`
    - **URL:** `https://<project-ref>.supabase.co/functions/v1/send-deadline-reminders`
    - **Schedule:** `0 9 * * *` (minden nap 9:00-kor)
    - **Request Method:** POST
@@ -168,7 +168,7 @@ Tárolja a felhasználók értesítési beállításait:
 ### Email nem érkezik meg
 
 1. Ellenőrizd a Resend Dashboard-ban az email státuszát
-2. Ellenőrizd, hogy a `adminai.hu` domain verifikálva van-e Resend-ben
+2. Ellenőrizd, hogy a `govletter.com` domain verifikálva van-e Resend-ben
 3. Ellenőrizd a felhasználó email címét a `notification_preferences` táblában
 4. Ellenőrizd a `deadline_reminders` táblát a küldési státuszért
 

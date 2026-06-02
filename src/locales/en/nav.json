@@ -1,6 +1,6 @@
 {
-  "brand": "NoticeIQ",
-  "brandTagline": "Official letter assistant",
+  "brand": "GovLetter",
+  "brandTagline": "Government letter assistant",
   "solutions": "Solutions",
   "pricing": "Pricing",
   "blog": "Blog",
@@ -18,9 +18,9 @@
   "sol_navDecision": "Tax authority letters",
   "sol_invoiceOcr": "Invoice OCR",
   "sol_docArchive": "Document archive",
-  "sol_vsChatgpt": "NoticeIQ vs ChatGPT",
-  "sol_vsBillingo": "NoticeIQ vs Billingo",
-  "sol_vsSzamlazz": "NoticeIQ vs Számlázz.hu",
+  "sol_vsChatgpt": "GovLetter vs ChatGPT",
+  "sol_vsBillingo": "GovLetter vs Billingo",
+  "sol_vsSzamlazz": "GovLetter vs Számlázz.hu",
   "home": "Home",
   "login": "Sign in",
   "loginShort": "Sign in",
@@ -39,6 +39,5 @@
   "langEn": "English",
   "sol_irsNotices": "IRS notices",
   "sol_stateTax": "State tax letters",
-  "sol_ssa": "Social Security letters",
-  "helpFaq": "Help & FAQ"
+  "sol_ssa": "Social Security letters"
 }

@@ -1,89 +1,128 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <!-- Core pages -->
   <url>
-    <loc>https://noticeiq.io/</loc>
+    <loc>https://govletter.com/</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://noticeiq.io/pricing</loc>
+    <loc>https://govletter.com/pricing</loc>
     <lastmod>2026-06-02</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://noticeiq.io/help</loc>
+    <loc>https://govletter.com/help</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://noticeiq.io/blog</loc>
-    <lastmod>2026-06-02</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.75</priority>
   </url>
 
-  <!-- US solution pages -->
+  <!-- US solution landing pages (high SEO value) -->
   <url>
-    <loc>https://noticeiq.io/irs-notices</loc>
+    <loc>https://govletter.com/irs-notices</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://govletter.com/ssa-letters</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://noticeiq.io/state-tax-letters</loc>
+    <loc>https://govletter.com/state-tax-letters</loc>
     <lastmod>2026-06-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Blog index -->
+  <url>
+    <loc>https://govletter.com/blog</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Blog posts — ordered by SEO priority (search volume × KD inverse) -->
+  <url>
+    <loc>https://govletter.com/blog/social-security-overpayment-letter</loc>
+    <lastmod>2026-05-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://govletter.com/blog/irs-cp14-notice-explained</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://govletter.com/blog/irs-cp2000-notice-explained</loc>
+    <lastmod>2026-05-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.88</priority>
+  </url>
+  <url>
+    <loc>https://govletter.com/blog/irs-lt11-notice-final-levy</loc>
+    <lastmod>2026-05-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://noticeiq.io/ssa-letters</loc>
-    <lastmod>2026-06-02</lastmod>
+    <loc>https://govletter.com/blog/irs-cp504-notice-explained</loc>
+    <lastmod>2026-04-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://govletter.com/blog/how-to-read-irs-letter</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.82</priority>
+  </url>
+  <url>
+    <loc>https://govletter.com/blog/state-tax-notice-explained</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.82</priority>
   </url>
 
   <!-- Legal -->
   <url>
-    <loc>https://noticeiq.io/legal/privacy</loc>
-    <lastmod>2026-06-02</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.35</priority>
-  </url>
-  <url>
-    <loc>https://noticeiq.io/legal/cookies</loc>
-    <lastmod>2026-06-02</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.35</priority>
-  </url>
-  <url>
-    <loc>https://noticeiq.io/legal/terms</loc>
-    <lastmod>2026-06-02</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.35</priority>
-  </url>
-  <url>
-    <loc>https://noticeiq.io/legal/dpa</loc>
+    <loc>https://govletter.com/legal/privacy</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://noticeiq.io/legal/imprint</loc>
+    <loc>https://govletter.com/legal/cookies</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.25</priority>
+  </url>
+  <url>
+    <loc>https://govletter.com/legal/terms</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://noticeiq.io/legal/security</loc>
+    <loc>https://govletter.com/legal/security</loc>
     <lastmod>2026-06-02</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.35</priority>
+  </url>
+  <url>
+    <loc>https://govletter.com/legal/imprint</loc>
+    <lastmod>2026-06-02</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.25</priority>
   </url>
 
 </urlset>

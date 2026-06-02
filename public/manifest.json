@@ -1,6 +1,6 @@
 {
-  "name": "NoticeIQ — IRS & agency letter assistant",
-  "short_name": "NoticeIQ",
+  "name": "GovLetter — IRS & agency letter assistant",
+  "short_name": "GovLetter",
   "description": "Upload IRS notices and agency letters. Get plain-English explanations, deadlines, and next steps.",
   "start_url": "/",
   "display": "standalone",

@@ -332,7 +332,7 @@ export default function Pricing() {
         {us && (
           <p className="text-xs text-muted-foreground text-center mt-10 max-w-2xl mx-auto">
             <Shield className="inline h-3 w-3 mr-1" />
-            NoticeIQ is a document-explanation tool, not a tax advisor or law firm. Always verify
+            GovLetter is a document-explanation tool, not a tax advisor or law firm. Always verify
             deadlines and amounts against your original notice and consult a qualified professional
             before taking action.
           </p>

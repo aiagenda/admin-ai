@@ -1,8 +1,8 @@
 {
   "loading": "Betöltés…",
   "shell": {
-    "htmlTitle": "AdminAI · NoticeIQ — AI dokumentum munkafelület",
-    "htmlDescription": "Magyar (AdminAI) és angol (NoticeIQ): hivatalos levelek, számlák, vállalkozási dokumentumok. A részletes SEO-t az alkalmazás állítja be nyelv és útvonal szerint."
+    "htmlTitle": "GovLetter · GovLetter — AI dokumentum munkafelület",
+    "htmlDescription": "Magyar (GovLetter) és angol (GovLetter): hivatalos levelek, számlák, vállalkozási dokumentumok. A részletes SEO-t az alkalmazás állítja be nyelv és útvonal szerint."
   },
   "imprint": {
     "legalEntity": "Szervezet:",
@@ -73,12 +73,12 @@
       "heroTitle": "Hivatalos dokumentumok",
       "heroHighlight": "AI-alapú értelmezése magyarul",
       "tagline1": "A ChatGPT-nek elmagyarázhatod, mit kaptál.",
-      "tagline2": "Az AdminAI viszont elmagyarázza",
+      "tagline2": "Az GovLetter viszont elmagyarázza",
       "tagline2You": "neked",
       "tagline2YouWrap": "mit kaptál.",
       "uploadCta": "Dokumentum feltöltése",
       "pricingCta": "Árak megtekintése",
-      "howTitle": "Hogyan értelmezi az AdminAI a hivatal leveleit?",
+      "howTitle": "Hogyan értelmezi az GovLetter a hivatal leveleit?",
       "step1Title": "Töltse fel",
       "step1Desc": "Töltse fel PDF vagy szöveges dokumentumát egyszerűen",
       "step2Title": "Elemzés",
@@ -108,17 +108,17 @@
       "solSsaTitle": "Dokumentum archívum",
       "solSsaDesc": "Visszakereshető iratkezelés KKV-knak.",
       "solFaqTitle": "GYIK",
-      "solFaqDesc": "Leggyakoribb kérdések az AdminAI használatáról.",
+      "solFaqDesc": "Leggyakoribb kérdések az GovLetter használatáról.",
       "compareTitle": "Összehasonlítások",
-      "cmpChatgptTitle": "AdminAI vs ChatGPT",
+      "cmpChatgptTitle": "GovLetter vs ChatGPT",
       "cmpChatgptDesc": "Általános AI vs célzott dokumentum-értelmezés.",
-      "cmpBillingoTitle": "AdminAI vs Billingo",
+      "cmpBillingoTitle": "GovLetter vs Billingo",
       "cmpBillingoDesc": "Kimenő számlázás vs bejövő dokumentum értelmezés.",
-      "cmpSzamlazzTitle": "AdminAI vs Számlázz.hu",
-      "cmpSzamlazzDesc": "Piacvezető számlázó és az AdminAI eltérő fókusza.",
+      "cmpSzamlazzTitle": "GovLetter vs Számlázz.hu",
+      "cmpSzamlazzDesc": "Piacvezető számlázó és az GovLetter eltérő fókusza.",
       "ctaTitle": "Kezdje el most!",
       "ctaSubtitle": "Nincs több bonyolult hivatali nyelv - érthető magyarázatok percek alatt",
-      "ctaDisclaimer": "Az AdminAI tájékoztató jellegű AI-rendszer, nem minősül egyedi jogi tanácsadásnak.",
+      "ctaDisclaimer": "Az GovLetter tájékoztató jellegű AI-rendszer, nem minősül egyedi jogi tanácsadásnak.",
       "ctaButton": "Első dokumentum feltöltése"
     }
   },

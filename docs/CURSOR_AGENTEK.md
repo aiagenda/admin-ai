@@ -1,6 +1,6 @@
 # Cursor „agentek” ebben a projektben
 
-> **Fontos:** A „Composer / példa mondatok” szekció **neked, fejlesztőként** szól a Cursorban — **nem** az **adminai.hu** látogatóinak. A nyilvános SEO-t a webalkalmazás (`SEOHead`, `index.html`, sitemap) kezeli.
+> **Fontos:** A „Composer / példa mondatok” szekció **neked, fejlesztőként** szól a Cursorban — **nem** az **govletter.com** látogatóinak. A nyilvános SEO-t a webalkalmazás (`SEOHead`, `index.html`, sitemap) kezeli.
 
 A Cursorban a **felhasználó** nem ugyanazt a „Task / subagent” gombot látja, mint a háttérben futó asszisztens. Amit te tudsz csinálni: **világosan megfogalmazni a feladatot**, és **Agent (Composer) módban** dolgozni — az elsődleges asszisztens szükség szerint **specializált háttér‑feladatokat** indíthat (kódbázis‑feltérképés, deploy, shell, stb.).
 
@@ -29,7 +29,7 @@ Az elsődleges asszisztens a Cursor **beépített agent‑típusai** közül vá
 
 ---
 
-## SEO feladatok (AdminAI) — így hívd „agent” logikával
+## SEO feladatok (GovLetter) — így hívd „agent” logikával
 
 A cél: **technikai SEO + konzisztens meta + mérhetőség**. A repóban már van `SEOHead`, `public/sitemap.xml`, `public/robots.txt`, statikus `index.html` — ezeket kell **szinkronban** tartani a termékkel és **kiterjeszteni**, ahol hiányzik.
 
@@ -46,7 +46,7 @@ A cél: **technikai SEO + konzisztens meta + mérhetőség**. A repóban már va
 
 1. **`index.html`** — `title`, `meta name="description"`, `og:*`, `twitter:*` **egyezzen** a valós ajánlattal (pl. próba: 1 dokumentum, nem elavult „5 ingyen”, ha már nem az van).
 2. **Minden nyilvános marketing URL** — legyen `SEOHead` (`title`, `description`, `path`, szükség szerint `keywords`). Hiány példa: `/help`, jogi oldalak — döntsd el, indexelendő-e; ha igen, egyedi meta.
-3. **`SEOHead` / canonical** — a `BASE_URL` jelenleg fix (`adminai.hu`). **Preview / staging** esetén env alapú domain (`VITE_PUBLIC_SITE_URL` vagy build arg) ne törje a canonicalt.
+3. **`SEOHead` / canonical** — a `BASE_URL` jelenleg fix (`govletter.com`). **Preview / staging** esetén env alapú domain (`VITE_PUBLIC_SITE_URL` vagy build arg) ne törje a canonicalt.
 4. **`og:image`** — oldalanként (blog, use case, összehasonlítás): a komponens bővíthető opcionális `ogImage` prop-pal; addig legalább a fő kép konzisztens.
 5. **Structured data** — `SEOHead` `structuredData`: globálisan **Organization** + **WebSite**; **FAQPage** a `/gyik`-hez; **Article** a blog posztokhoz (ahol van slug).
 6. **`public/sitemap.xml`** — új publikus URL = frissítés; lehetőség szerint **`<lastmod>`**; belső folyamat (script / checklist PR-ben).

@@ -12,7 +12,7 @@ export default function UseCaseArchivumPage() {
         <h1 className="text-4xl font-bold">Dokumentum archiválás és iratkezelő szoftver KKV-knak</h1>
         <p className="text-lg text-muted-foreground">
           A digitális iratkezelés akkor működik jól, ha nem csak tárol, hanem visszakereshetővé és értelmezhetővé teszi a dokumentumokat.
-          Az AdminAI ezt adja meg kis- és középvállalkozásoknak.
+          Az GovLetter ezt adja meg kis- és középvállalkozásoknak.
         </p>
 
         <h2 className="text-2xl font-semibold">Miért fontos a jó dokumentum archiválás?</h2>
@@ -21,7 +21,7 @@ export default function UseCaseArchivumPage() {
           szoftver KKV környezetben nem csak mappákat jelent, hanem gyors keresést, státusz követést és egyértelmű teendőket.
         </p>
 
-        <h2 className="text-2xl font-semibold">Mit tud az AdminAI archívum?</h2>
+        <h2 className="text-2xl font-semibold">Mit tud az GovLetter archívum?</h2>
         <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
           <li>Központi dokumentumtár a feltöltött anyagokhoz</li>
           <li>AI-alapú keresés a korábbi dokumentumok között</li>

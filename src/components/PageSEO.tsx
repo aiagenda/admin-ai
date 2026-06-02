@@ -15,7 +15,7 @@ type PageSEOProps = {
 
 /**
  * Meta title/description/keywords from translation.json under the seo.* keys.
- * Brand in OG uses nav namespace (brand = AdminAI / NoticeIQ).
+ * Brand in OG uses nav namespace (brand = GovLetter / GovLetter).
  */
 export function PageSEO({
   pageKey,

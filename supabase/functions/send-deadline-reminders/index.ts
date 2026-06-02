@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
                   ` : ""}
 
                   <p style="margin-top: 20px;">
-                    <a href="${Deno.env.get("APP_URL") || "https://adminai.hu"}/result/${analysis.id}" 
+                    <a href="${Deno.env.get("APP_URL") || "https://govletter.com"}/result/${analysis.id}" 
                        style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
                       Dokumentum megtekintése
                     </a>
@@ -206,8 +206,8 @@ Deno.serve(async (req) => {
 
                   <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
                   <p style="color: #666; font-size: 12px;">
-                    Ez egy automatikus emlékeztető az AdminAI rendszertől.<br>
-                    Az értesítési beállításokat a <a href="${Deno.env.get("APP_URL") || "https://adminai.hu"}/settings">Beállítások</a> oldalon módosíthatja.
+                    Ez egy automatikus emlékeztető az GovLetter rendszertől.<br>
+                    Az értesítési beállításokat a <a href="${Deno.env.get("APP_URL") || "https://govletter.com"}/settings">Beállítások</a> oldalon módosíthatja.
                   </p>
                 `;
 
@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify({
-                    from: "AdminAI <noreply@adminai.hu>",
+                    from: "GovLetter <noreply@govletter.com>",
                     to: user.email,
                     subject: emailSubject,
                     html: emailHtml,
@@ -244,11 +244,11 @@ Deno.serve(async (req) => {
                 const notificationPayload = JSON.stringify({
                   title: `⏰ Határidő emlékeztető - ${deadlineFormatted}`,
                   body: `${document.filename} határidője: ${deadlineFormatted}`,
-                  icon: `${Deno.env.get("APP_URL") || "https://adminai.hu"}/favicon.ico`,
+                  icon: `${Deno.env.get("APP_URL") || "https://govletter.com"}/favicon.ico`,
                   tag: `deadline-${analysis.id}`,
                   urgent: analysis.severity === 'urgent',
                   data: {
-                    url: `${Deno.env.get("APP_URL") || "https://adminai.hu"}/result/${analysis.id}`,
+                    url: `${Deno.env.get("APP_URL") || "https://govletter.com"}/result/${analysis.id}`,
                     analysis_id: analysis.id
                   },
                   actions: [

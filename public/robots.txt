@@ -19,7 +19,7 @@ Disallow: /gyik
 Disallow: /nav-hatarozat-ertelmezes
 Disallow: /szamla-ocr
 Disallow: /dokumentum-archivum
-Disallow: /adminai-vs-billingo
-Disallow: /adminai-vs-szamlazz
+Disallow: /govletter-vs-billingo
+Disallow: /govletter-vs-szamlazz
 
-Sitemap: https://noticeiq.io/sitemap.xml
+Sitemap: https://govletter.com/sitemap.xml

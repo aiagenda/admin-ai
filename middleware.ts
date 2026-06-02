@@ -1,6 +1,6 @@
 import { next } from "@vercel/functions";
 
-const REALM = "NoticeIQ";
+const REALM = "GovLetter";
 
 /** Static/PWA assets must stay public even when SITE_ACCESS_PASSWORD is set (otherwise manifest/sw 401). */
 const PUBLIC_PATH_PREFIXES = [

@@ -1,5 +1,5 @@
 Contact: mailto:security@example.com
 Preferred-Languages: en, hu
-Canonical: https://adminai.hu/.well-known/security.txt
+Canonical: https://govletter.com/.well-known/security.txt
 
 # Replace security@example.com with VITE_LEGAL_SECURITY_EMAIL / operational inbox before launch.

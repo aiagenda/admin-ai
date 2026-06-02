@@ -11,14 +11,14 @@ export default function UseCaseSzamlaOCRPage() {
       <div className="container mx-auto max-w-4xl space-y-8">
         <h1 className="text-4xl font-bold">Számla OCR és automatizált felismerés KKV-knak</h1>
         <p className="text-lg text-muted-foreground">
-          A számla OCR célja egyszerű: ne kézzel kelljen begépelni a számlaadatokat. Az AdminAI a feltöltött számlákról kiolvassa
+          A számla OCR célja egyszerű: ne kézzel kelljen begépelni a számlaadatokat. Az GovLetter a feltöltött számlákról kiolvassa
           a fő adatokat, segít kategorizálni őket, és exportálható formában adja tovább könyveléshez.
         </p>
 
         <h2 className="text-2xl font-semibold">Miben segít a számla felismerés szoftver?</h2>
         <p>
           Kis- és középvállalkozásoknál a számlakezelés gyakran ismétlődő, időigényes folyamat. Ha sok a számla, a manuális adatbevitel
-          hibalehetőséget és extra admin terhet jelent. Az AdminAI OCR folyamata csökkenti az adminisztrációs időt,
+          hibalehetőséget és extra admin terhet jelent. Az GovLetter OCR folyamata csökkenti az adminisztrációs időt,
           és egységesebb adatminőséget ad az exportokban.
         </p>
 

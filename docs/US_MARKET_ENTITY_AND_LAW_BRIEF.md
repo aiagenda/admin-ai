@@ -4,8 +4,8 @@ Use this brief when engaging EU/HU and/or US counsel. This document is **not leg
 
 ## Product snapshot
 
-- **Hungarian-facing brand:** AdminAI (`hu`), typical domain `adminai.hu`.
-- **English/US-facing brand:** NoticeIQ (`en`), intended `.com` / app subdomain.
+- **Hungarian-facing brand:** GovLetter (`hu`), typical domain `govletter.com`.
+- **English/US-facing brand:** GovLetter (`en`), intended `.com` / app subdomain.
 - **Stack:** React SPA on Vercel, Supabase (Auth/Postgres/Storage), Stripe Checkout via Edge Function `create-checkout-session`, optional Google OAuth.
 - **Data:** Users upload PDFs/images; backend analyses documents with AI; outputs shown in-app.
 - **Risk profile:** Tax/agency document interpretation assistance — **not** licensed legal/tax advice; outputs must be validated by professionals.

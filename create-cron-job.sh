@@ -8,7 +8,7 @@ SUPABASE_URL="https://kmtjturvfggqinamtarr.supabase.co"
 FUNCTION_URL="${SUPABASE_URL}/functions/v1/send-accountant-report"
 
 echo "=========================================="
-echo "AdminAI - Cron Job Setup"
+echo "GovLetter - Cron Job Setup"
 echo "=========================================="
 echo ""
 echo "This script will create a cron job on cron-job.org"
@@ -34,7 +34,7 @@ RESPONSE=$(curl -s -X POST "https://api.cron-job.org/jobs" \
   -d "{
     \"job\": {
       \"enabled\": true,
-      \"title\": \"AdminAI - Monthly Accountant Report\",
+      \"title\": \"GovLetter - Monthly Accountant Report\",
       \"url\": \"$FUNCTION_URL\",
       \"schedule\": {
         \"timezone\": \"Europe/Budapest\",

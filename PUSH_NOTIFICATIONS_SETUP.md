@@ -70,7 +70,7 @@ A Supabase Dashboard-ban, az Edge Functions beállításoknál add hozzá:
 
 - `VAPID_PUBLIC_KEY`: `BLRNzJbsmrKGdRFxz6_ht75EhQgRcwXMDJkPRI7xYlayWGYEfbdKgm74x5nQvizYzJ_8rIXoARvfSHnWpoT6Kng`
 - `VAPID_PRIVATE_KEY`: `EVAhy2NqoROWPnvvGWIWwlmLHCBwRDkhte24ZMX9uMU`
-- `APP_URL`: `https://adminai.hu` (vagy a production URL)
+- `APP_URL`: `https://govletter.com` (vagy a production URL)
 
 ## 4. Web Push API Implementáció
 

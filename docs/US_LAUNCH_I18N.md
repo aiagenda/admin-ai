@@ -4,18 +4,18 @@
 
 | Locale | Product name | Domain hint |
 |--------|--------------|-------------|
-| Hungarian (`hu`) | **AdminAI** | adminai.hu |
-| English (`en`) | **NoticeIQ** | register `.com` / app subdomain |
+| Hungarian (`hu`) | **GovLetter** | govletter.com |
+| English (`en`) | **GovLetter** | register `.com` / app subdomain |
 
-**Why NoticeIQ:** focuses on *agency / IRS-style notices* (not generic “admin”). Easier to trademark-search before launch.
+**Why GovLetter:** focuses on *agency / IRS-style notices* (not generic “admin”). Easier to trademark-search before launch.
 
 Alternatives if `.com` taken: **LetterPilot**, **ClearNotice**, **DeskLetter**.
 
 ## What ships in code
 
-- `i18next` + browser language detector; persisted as `localStorage` key `adminai_lang`.
+- `i18next` + browser language detector; persisted as `localStorage` key `govletter_lang`.
 - Namespaces: `nav`, `common`. Files: `src/locales/{hu,en}/*.json`.
-- **Navbar** + **mobile bottom nav** use translations; EN shows **NoticeIQ** in the logo.
+- **Navbar** + **mobile bottom nav** use translations; EN shows **GovLetter** in the logo.
 - `<html lang>` synced via `LangSync` (`src/components/LangSync.tsx`).
 - `src/lib/brand.ts` exports `BRAND_HU` / `BRAND_EN` for SEO/components.
 

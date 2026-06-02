@@ -42,7 +42,7 @@ const initOptions = usOnly
       detection: {
         order: ["localStorage", "navigator"],
         caches: ["localStorage"],
-        lookupLocalStorage: "adminai_lang",
+        lookupLocalStorage: "govletter_lang",
       },
     };
 

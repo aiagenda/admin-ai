@@ -4,6 +4,6 @@ export function getSiteOrigin(): string {
   if (typeof raw === "string" && raw.trim()) {
     return raw.trim().replace(/\/$/, "");
   }
-  // Default to US brand — set VITE_PUBLIC_SITE_URL=https://adminai.hu for HU production
-  return "https://noticeiq.io";
+  // Default to US brand — set VITE_PUBLIC_SITE_URL=https://govletter.com for HU production
+  return "https://govletter.com";
 }

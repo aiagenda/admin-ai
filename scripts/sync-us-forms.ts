@@ -164,7 +164,7 @@ async function downloadPdf(url: string, key: string): Promise<Buffer | null> {
   const res = await fetch(url, {
     headers: {
       "User-Agent":
-        "NoticeIQ-FormSync/1.0 (+https://github.com/aiagenda/admin-ai; form-pdf-mirror)",
+        "GovLetter-FormSync/1.0 (+https://github.com/aiagenda/admin-ai; form-pdf-mirror)",
       Accept: "application/pdf,*/*",
     },
     redirect: "follow",

@@ -17,8 +17,8 @@ export const HU_ONLY_PATHS = [
   "/nav-hatarozat-ertelmezes",
   "/szamla-ocr",
   "/dokumentum-archivum",
-  "/adminai-vs-billingo",
-  "/adminai-vs-szamlazz",
+  "/govletter-vs-billingo",
+  "/govletter-vs-szamlazz",
 ] as const;
 
 export const HU_PATH_REDIRECTS: Record<string, string> = {

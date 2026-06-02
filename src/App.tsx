@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
@@ -45,6 +45,9 @@ import ArakPage from "./pages/ArakPage";
 import UseCaseArchivumPage from "./pages/UseCaseArchivumPage";
 import UseCaseSzamlaOCRPage from "./pages/UseCaseSzamlaOCRPage";
 import UseCaseNavPage from "./pages/UseCaseNavPage";
+import IRSNoticesPage from "./pages/IRSNoticesPage";
+import SSALettersPage from "./pages/SSALettersPage";
+import StateTaxPage from "./pages/StateTaxPage";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import CookiePolicy from "./pages/legal/CookiePolicy";
 import TermsOfService from "./pages/legal/TermsOfService";
@@ -74,9 +77,9 @@ const App = () => (
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/help" element={<Help />} />
-                <Route path="/irs-notices" element={<Help />} />
-                <Route path="/state-tax-letters" element={<Help />} />
-                <Route path="/ssa-letters" element={<Help />} />
+                <Route path="/irs-notices" element={<IRSNoticesPage />} />
+                <Route path="/state-tax-letters" element={<StateTaxPage />} />
+                <Route path="/ssa-letters" element={<SSALettersPage />} />
                 <Route
                   path="/search"
                   element={
@@ -221,9 +224,12 @@ const App = () => (
                 <Route path="/nav-hatarozat-ertelmezes" element={<UseCaseNavPage />} />
                 <Route path="/szamla-ocr" element={<UseCaseSzamlaOCRPage />} />
                 <Route path="/dokumentum-archivum" element={<UseCaseArchivumPage />} />
-                <Route path="/adminai-vs-chatgpt" element={<ComparisonChatGptPage />} />
-                <Route path="/adminai-vs-billingo" element={<ComparisonBillingoPage />} />
-                <Route path="/adminai-vs-szamlazz" element={<ComparisonSzamlazzPage />} />
+                <Route path="/govletter-vs-chatgpt" element={<ComparisonChatGptPage />} />
+                <Route path="/govletter-vs-billingo" element={<ComparisonBillingoPage />} />
+                <Route path="/govletter-vs-szamlazz" element={<ComparisonSzamlazzPage />} />
+                <Route path="/adminai-vs-chatgpt" element={<Navigate to="/govletter-vs-chatgpt" replace />} />
+                <Route path="/adminai-vs-billingo" element={<Navigate to="/govletter-vs-billingo" replace />} />
+                <Route path="/adminai-vs-szamlazz" element={<Navigate to="/govletter-vs-szamlazz" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

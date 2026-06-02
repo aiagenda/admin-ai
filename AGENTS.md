@@ -4,7 +4,7 @@
 
 Részletes útmutató: **`docs/CURSOR_AGENTEK.md`** — hogyan dolgozz **Agent / Composer** módban, példa mondatok, táblázat.
 
-**SEO checklist + példa hívások** ugyanott: szekció **„SEO feladatok (AdminAI)”** (fájlban keresd: `## SEO feladatok`).
+**SEO checklist + példa hívások** ugyanott: szekció **„SEO feladatok (GovLetter)”** (fájlban keresd: `## SEO feladatok`).
 
 ## Gépi asszisztensnek
 

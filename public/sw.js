@@ -1,6 +1,6 @@
-// Service Worker for NoticeIQ PWA
+// Service Worker for GovLetter PWA
 // Cache version — increment when deploying breaking changes
-const CACHE_VERSION = "noticeiq-v2";
+const CACHE_VERSION = "govletter-v2";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
 const PRECACHE_URLS = [

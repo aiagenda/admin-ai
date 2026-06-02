@@ -1,120 +1,170 @@
 {
   "seo": {
     "home": {
-      "title": "NoticeIQ — IRS & state tax notice assistant (plain English)",
-      "description": "Upload IRS CP notices, state tax letters, and agency mail. Get deadlines, amounts, next steps, and official form links. Not tax advice.",
-      "keywords": "IRS notice, CP14, CP2000, levy notice, state tax letter, IRS help, tax notice explained, NoticeIQ",
-      "websiteDescription": "Plain-English breakdowns of IRS and state tax notices with deadlines and recommended forms."
+      "title": "GovLetter — IRS & government letter explained in plain English",
+      "description": "Upload any IRS notice, state tax letter, Social Security letter or agency mail. Get a plain-English explanation, deadlines, and next steps in under 60 seconds. Free first document.",
+      "keywords": "IRS notice explained, CP14 notice, government letter help, IRS letter what does it mean, tax notice explained, GovLetter",
+      "websiteDescription": "Plain-English explanations for IRS notices, state tax letters, Social Security mail, and any official government correspondence."
     },
     "pricing": {
-      "title": "NoticeIQ pricing – documents, monthly plans, bookkeeping add-on",
-      "description": "Per-document and monthly bundles with a free trial and Stripe checkout. Built for official letters, invoice OCR, and bookkeeping workflows.",
-      "keywords": "NoticeIQ pricing, document AI, monthly plan, invoice OCR, Stripe"
+      "title": "GovLetter pricing — per-document and monthly plans",
+      "description": "Free first document, then $3.99 per document or monthly plans from $9.99. Understand any IRS notice, state tax letter, or agency mail in plain English.",
+      "keywords": "GovLetter pricing, IRS notice help cost, document AI pricing, government letter explained"
     },
     "arak": {
-      "title": "NoticeIQ pricing (2026) – trial, documents, monthly, invoices",
-      "description": "Compare plans for AI breakdowns of official letters, invoice OCR, and archive. Built for busy SMB teams.",
-      "keywords": "NoticeIQ pricing, SMB, invoice OCR, subscription"
+      "title": "GovLetter pricing — free trial, per-doc, monthly",
+      "description": "Try free, then pay only when you need it. Per-document from $3.99 or monthly plans for frequent filers.",
+      "keywords": "GovLetter pricing, IRS letter help, monthly plan"
     },
     "upload": {
-      "title": "Upload a document | NoticeIQ",
-      "description": "Upload a PDF or photo for AI analysis: deadlines, amounts, and export for your accountant.",
-      "keywords": "upload PDF, document AI, NoticeIQ"
+      "title": "Upload your IRS notice or government letter | GovLetter",
+      "description": "Upload a PDF or photo of your IRS notice, state tax letter, or agency mail. Plain-English explanation with deadlines and next steps in under 60 seconds.",
+      "keywords": "upload IRS notice, upload government letter, IRS letter PDF, GovLetter"
     },
     "auth": {
-      "title": "Sign in or create account | NoticeIQ",
-      "description": "Access document and invoice workflows: Google or email sign-in.",
-      "keywords": "NoticeIQ login, sign up"
+      "title": "Sign in to GovLetter — understand your government letters",
+      "description": "Sign in or create a free account to upload and understand IRS notices, state tax letters, and agency mail.",
+      "keywords": "GovLetter sign in, create account"
     },
     "authBootstrap": {
-      "title": "Signing in | NoticeIQ",
-      "description": "Complete sign-in with Google or email.",
+      "title": "Signing in | GovLetter",
+      "description": "Completing sign-in.",
       "keywords": ""
     },
     "authCallback": {
-      "title": "Completing sign-in | NoticeIQ",
-      "description": "OAuth redirect endpoint (not indexed).",
+      "title": "Completing sign-in | GovLetter",
+      "description": "OAuth redirect.",
       "keywords": ""
     },
     "notFound": {
-      "title": "404 – page not found | NoticeIQ",
-      "description": "This page does not exist. Return home for document analysis and invoice tools.",
+      "title": "Page not found | GovLetter",
+      "description": "This page doesn't exist. Return home to upload and understand your government letters.",
       "keywords": ""
     },
     "help": {
-      "title": "Help & FAQ | NoticeIQ",
-      "description": "How upload, analysis, archive, invoices, and export work — troubleshooting and tips.",
-      "keywords": "NoticeIQ help, upload, invoice module, FAQ"
+      "title": "Help & FAQ — IRS notices, government letters | GovLetter",
+      "description": "How GovLetter works, what letter types are supported, privacy, and common questions about IRS notices and agency mail.",
+      "keywords": "GovLetter help, IRS notice FAQ, government letter FAQ, how it works"
     },
     "gyik": {
-      "title": "FAQ: tax letters, invoice OCR, privacy | NoticeIQ",
-      "description": "Deadlines, OCR, exports, and security — common questions about NoticeIQ.",
-      "keywords": "FAQ, invoice OCR, tax letter, NoticeIQ"
+      "title": "FAQ — IRS notices, tax letters, privacy | GovLetter",
+      "description": "Answers to common questions about understanding IRS notices, state tax letters, Social Security mail, and how GovLetter keeps your documents secure.",
+      "keywords": "FAQ, IRS notice, tax letter, GovLetter privacy"
     },
     "blog": {
-      "title": "NoticeIQ blog – tax letters, invoices, SMB operations",
-      "description": "Practical guides for interpreting notices and streamlining invoice workflows.",
-      "keywords": "tax blog, invoice OCR, SMB, NoticeIQ"
+      "title": "GovLetter Blog — IRS notices, tax letters, agency mail explained",
+      "description": "Plain-English guides to IRS notices (CP14, CP2000, LT11), state tax letters, Social Security mail, and what to do when you receive official government correspondence.",
+      "keywords": "IRS notice guide, CP14 explained, CP2000 notice, government letter blog, GovLetter"
     },
     "comparisonChatgpt": {
-      "title": "NoticeIQ vs ChatGPT for official documents",
-      "description": "Why a purpose-built workflow beats a general chatbot for deadlines, structured extraction, and archives.",
-      "keywords": "NoticeIQ vs ChatGPT, document AI"
+      "title": "GovLetter vs ChatGPT for IRS notices and government letters",
+      "description": "Why a purpose-built IRS notice tool gives better deadlines, structured next steps, and form recommendations than a general chatbot.",
+      "keywords": "GovLetter vs ChatGPT, IRS notice tool, government letter AI"
     },
     "comparisonBillingo": {
-      "title": "NoticeIQ vs Billingo – incoming documents",
-      "description": "Billingo focuses on outbound invoicing; NoticeIQ focuses on understanding letters you receive.",
-      "keywords": "Billingo, incoming mail, NoticeIQ"
+      "title": "GovLetter vs Billingo — different tools for different jobs",
+      "description": "Billingo focuses on outbound invoicing. GovLetter focuses on understanding official letters and notices you receive.",
+      "keywords": "Billingo alternative, GovLetter"
     },
     "comparisonSzamlazz": {
-      "title": "NoticeIQ vs Számlázz.hu – different jobs",
-      "description": "Invoicing platforms vs document interpretation — what each is best at.",
-      "keywords": "Számlázz, document AI, NoticeIQ"
+      "title": "GovLetter vs Számlázz.hu — invoicing vs letter understanding",
+      "description": "Invoicing platforms handle what you send. GovLetter handles what the government sends you.",
+      "keywords": "Számlázz alternative, GovLetter"
     },
     "useCaseNav": {
-      "title": "Understand tax authority letters (SMB) | NoticeIQ",
-      "description": "Turn complex notices into clear next steps and calendar-ready deadlines.",
-      "keywords": "tax notice, authority letter, SMB"
+      "title": "Understand tax authority letters | GovLetter",
+      "description": "Turn complex IRS and state tax notices into clear next steps, deadlines, and recommended forms.",
+      "keywords": "tax notice explained, IRS letter help, state tax letter"
     },
     "useCaseOcr": {
-      "title": "Invoice OCR for SMBs | NoticeIQ",
-      "description": "Capture invoice fields from scans and photos and export to spreadsheets.",
-      "keywords": "invoice OCR, bookkeeping export"
+      "title": "Invoice OCR for small businesses | GovLetter",
+      "description": "Capture invoice fields from scans and photos and export to spreadsheets for bookkeeping.",
+      "keywords": "invoice OCR, bookkeeping export, small business"
     },
     "useCaseArchive": {
-      "title": "Document archive for SMBs | NoticeIQ",
-      "description": "Searchable archive with AI summaries for operational and compliance paperwork.",
-      "keywords": "document archive, SMB"
+      "title": "Document archive for small businesses | GovLetter",
+      "description": "Searchable archive of all your official letters and notices with AI summaries.",
+      "keywords": "document archive, government letter archive, GovLetter"
+    },
+    "irsNotices": {
+      "title": "IRS Notice Explained — CP14, CP2000, LT11 and more | GovLetter",
+      "description": "Received an IRS notice? Find out exactly what it means, how urgent it is, and what to do next. Covers CP14, CP2000, CP504, LT11, and all major IRS notice types.",
+      "keywords": "IRS notice explained, CP14 notice, CP2000 notice, LT11 notice, IRS letter help, what does IRS notice mean"
+    },
+    "ssaLetters": {
+      "title": "Social Security Letter Explained — Overpayment, Benefit Changes | GovLetter",
+      "description": "Got a letter from Social Security? Understand SSA overpayment notices, benefit change letters, and USCIS correspondence in plain English with deadlines and next steps.",
+      "keywords": "Social Security overpayment letter, SSA notice explained, Social Security letter what does it mean, SSA overpayment 2026"
+    },
+    "stateTaxLetters": {
+      "title": "State Tax Notice Explained — All 50 States | GovLetter",
+      "description": "Received a state tax notice? GovLetter explains balance due letters, audit notices, and payment demands from all 50 state tax authorities in plain English.",
+      "keywords": "state tax notice explained, state tax letter what does it mean, California FTB notice, Texas state tax letter, state tax help"
     },
     "legalPrivacy": {
-      "title": "Privacy policy | NoticeIQ",
-      "description": "How we process personal data: purposes, retention, and your rights.",
-      "keywords": "privacy, GDPR, NoticeIQ"
+      "title": "Privacy policy | GovLetter",
+      "description": "How GovLetter processes your documents and personal data, retention periods, and your rights.",
+      "keywords": "privacy, GDPR, GovLetter privacy policy"
     },
     "legalCookies": {
-      "title": "Cookie notice | NoticeIQ",
-      "description": "Cookies used by the web app and how to control them.",
-      "keywords": "cookies, NoticeIQ"
+      "title": "Cookie notice | GovLetter",
+      "description": "Cookies and tracking used by GovLetter and how to control them.",
+      "keywords": "cookies, GovLetter"
     },
     "legalTerms": {
-      "title": "Terms of service | NoticeIQ",
-      "description": "Terms covering access, billing, liability, and termination.",
-      "keywords": "terms, NoticeIQ"
+      "title": "Terms of service | GovLetter",
+      "description": "Terms governing access to GovLetter, billing, AI output disclaimers, and termination.",
+      "keywords": "terms of service, GovLetter"
     },
     "legalDpa": {
-      "title": "Data processing agreement (DPA) | NoticeIQ",
-      "description": "B2B processing roles, instructions, and subprocessors (template-level overview).",
-      "keywords": "DPA, processing agreement"
+      "title": "Data processing agreement | GovLetter",
+      "description": "B2B data processing roles, subprocessors, and instructions for GovLetter.",
+      "keywords": "data processing agreement, DPA, GovLetter"
     },
     "legalImprint": {
-      "title": "Imprint & contact | NoticeIQ",
-      "description": "Provider details and contact channels.",
-      "keywords": "imprint, contact"
+      "title": "Imprint & contact | GovLetter",
+      "description": "Provider details and contact information for GovLetter.",
+      "keywords": "imprint, contact, GovLetter"
     },
     "legalSecurity": {
-      "title": "Security overview | NoticeIQ",
-      "description": "How we protect documents and accounts at a high level.",
-      "keywords": "security, NoticeIQ"
+      "title": "Security overview | GovLetter",
+      "description": "How GovLetter protects your uploaded documents and account data.",
+      "keywords": "security, document protection, GovLetter"
+    },
+    "blogPost_irs-cp14-notice-explained": {
+      "title": "IRS CP14 Notice: What It Means and What to Do | GovLetter",
+      "description": "Received a CP14 from the IRS? It means you owe a balance. This guide explains what CP14 means, how to verify the amount, your payment options, and the 21-day deadline.",
+      "keywords": "CP14 notice, IRS CP14, what is CP14, IRS balance due notice, CP14 what does it mean"
+    },
+    "blogPost_irs-cp2000-notice-explained": {
+      "title": "IRS CP2000 Notice: It's Not a Bill — Here's What to Do | GovLetter",
+      "description": "A CP2000 is a proposed adjustment, not a final bill. This guide explains why you got it, how to agree or dispute it, and the 30-day deadline you must not miss.",
+      "keywords": "CP2000 notice, IRS CP2000, what is CP2000, IRS proposed adjustment, CP2000 how to respond"
+    },
+    "blogPost_social-security-overpayment-letter": {
+      "title": "Social Security Overpayment Letter: What It Means and How to Fight It | GovLetter",
+      "description": "Got an SSA overpayment letter demanding money back? This 2026 guide explains your appeal rights, waiver options, and exactly how to respond before the deadline.",
+      "keywords": "social security overpayment letter, SSA overpayment 2026, social security overpayment appeal, SSA overpayment waiver, social security letter what does it mean"
+    },
+    "blogPost_irs-lt11-notice-final-levy": {
+      "title": "IRS LT11 Notice: Final Notice Before Levy — Act Within 30 Days | GovLetter",
+      "description": "LT11 is the IRS's final warning before seizing wages and bank accounts. You have 30 days to request a CDP hearing. This guide explains exactly what to do.",
+      "keywords": "LT11 notice, IRS LT11, final notice intent to levy, LT11 what to do, IRS levy notice"
+    },
+    "blogPost_irs-cp504-notice-explained": {
+      "title": "IRS CP504 Notice: Last Warning Before State Refund Levy | GovLetter",
+      "description": "CP504 means the IRS is about to seize your state tax refund. You have limited time to pay or request a payment plan before collection begins.",
+      "keywords": "CP504 notice, IRS CP504, notice of intent to levy, CP504 what does it mean, IRS state refund levy"
+    },
+    "blogPost_how-to-read-irs-letter": {
+      "title": "Got an IRS Letter? How to Read It in 5 Minutes | GovLetter",
+      "description": "Every IRS letter has a notice number, a deadline, and a specific next step. This guide shows you exactly what to look for so you can stop panicking and start acting.",
+      "keywords": "how to read IRS letter, IRS letter explained, what does IRS letter mean, IRS notice guide, got a letter from IRS"
+    },
+    "blogPost_state-tax-notice-explained": {
+      "title": "State Tax Notice Explained: What to Do in Any State | GovLetter",
+      "description": "Received a balance due or audit notice from your state tax authority? This guide explains what state tax notices mean and the steps to take in all 50 states.",
+      "keywords": "state tax notice explained, state tax letter what to do, state tax balance due, California FTB letter, New York state tax notice"
     }
   }
 }

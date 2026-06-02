@@ -1,4 +1,4 @@
-# Teszt dokumentumok – AdminAI
+# Teszt dokumentumok – GovLetter
 
 10 letölthető teszt fájl (5 számla + 5 hivatalos levél) az app feltöltésének teszteléséhez.
 
@@ -23,6 +23,6 @@
 1. Nyisd meg a kívánt `.html` fájlt böngészőben (dupla kattintás vagy jobb klikk → Megnyitás böngészővel).
 2. Nyomtatás: **Ctrl+P** (Windows) / **Cmd+P** (Mac).
 3. Célnál válaszd: **Mentés PDF-ként** / **Save as PDF**.
-4. Mentsd el a PDF-et, majd töltsd fel az AdminAI alkalmazásba (Dokumentum feltöltése vagy Könyvelés).
+4. Mentsd el a PDF-et, majd töltsd fel az GovLetter alkalmazásba (Dokumentum feltöltése vagy Könyvelés).
 
 Alternatíva: ha az app képet is fogad, a nyomtatási ablakból „Mentés PDF-ként” helyett készíthetsz képernyőképet a megnyitott oldalról, és azt töltheted fel.

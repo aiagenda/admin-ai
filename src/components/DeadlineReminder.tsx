@@ -97,15 +97,15 @@ export function DeadlineReminder() {
 
     const icalContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//NoticeIQ//Deadline Reminder//EN
+PRODID:-//GovLetter//Deadline Reminder//EN
 BEGIN:VEVENT
-UID:${deadline.id}@adminai.hu
+UID:${deadline.id}@govletter.com
 DTSTAMP:${formatDate(new Date())}
 DTSTART:${formatDate(startDate)}
 DTEND:${formatDate(endDate)}
 SUMMARY:Deadline: ${deadline.filename}
-DESCRIPTION:Document deadline: ${deadline.filename}\\nAdminAI - ${window.location.origin}/result/${deadline.analysis_id}
-LOCATION:NoticeIQ
+DESCRIPTION:Document deadline: ${deadline.filename}\\nGovLetter - ${window.location.origin}/result/${deadline.analysis_id}
+LOCATION:GovLetter
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`;
@@ -128,7 +128,7 @@ END:VCALENDAR`;
 
     let icalContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//NoticeIQ//Deadline Reminders//EN
+PRODID:-//GovLetter//Deadline Reminders//EN
 `;
 
     upcomingDeadlines.forEach((deadline) => {
@@ -136,13 +136,13 @@ PRODID:-//NoticeIQ//Deadline Reminders//EN
       const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
 
       icalContent += `BEGIN:VEVENT
-UID:${deadline.id}@adminai.hu
+UID:${deadline.id}@govletter.com
 DTSTAMP:${formatDate(new Date())}
 DTSTART:${formatDate(startDate)}
 DTEND:${formatDate(endDate)}
 SUMMARY:Deadline: ${deadline.filename}
-DESCRIPTION:Document deadline: ${deadline.filename}\\nAdminAI - ${window.location.origin}/result/${deadline.analysis_id}
-LOCATION:NoticeIQ
+DESCRIPTION:Document deadline: ${deadline.filename}\\nGovLetter - ${window.location.origin}/result/${deadline.analysis_id}
+LOCATION:GovLetter
 STATUS:CONFIRMED
 END:VEVENT
 `;
@@ -154,7 +154,7 @@ END:VEVENT
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `adminai-hataridok.ics`;
+    link.download = `govletter-deadlines.ics`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
