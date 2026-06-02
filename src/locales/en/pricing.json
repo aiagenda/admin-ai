@@ -1,0 +1,70 @@
+{
+  "badge": "Refund policy in Terms of Service",
+  "title": "Don't panic over",
+  "titleHighlight": "official mail",
+  "subtitle": "Upload your letter and we'll spell out what to do. Start with one free trial, then pay per document or monthly.",
+  "freeSection": "Free",
+  "freePlanName": "1 trial document",
+  "freePlanDesc": "Short / watermarked analysis to try the workflow",
+  "freePrice": "$0",
+  "freeCta": "Try free",
+  "perDocSection": "Per document",
+  "subSection": "Monthly plans",
+  "docPlans": [
+    {
+      "name": "Basic",
+      "price": "$9",
+      "per": "document",
+      "description": "Fast, clear analysis",
+      "cta": "Buy",
+      "features": [
+        "Plain-English summary",
+        "IRS & agency letters",
+        "Email notifications"
+      ],
+      "planKey": "basic_doc"
+    },
+    {
+      "name": "Pro",
+      "price": "$19",
+      "per": "document",
+      "description": "Deeper analysis, response draft, PDF",
+      "cta": "Buy",
+      "highlight": true,
+      "features": [
+        "Deeper analysis",
+        "Suggested response draft",
+        "PDF export where available"
+      ],
+      "planKey": "pro_doc"
+    }
+  ],
+  "subPlans": [
+    {
+      "name": "Monthly 10",
+      "price": "$29",
+      "per": "month",
+      "description": "Regular use",
+      "cta": "Subscribe",
+      "features": [
+        "10 documents / month",
+        "Quota-based access",
+        "Cancel anytime"
+      ],
+      "planKey": "monthly"
+    },
+    {
+      "name": "Business 50",
+      "price": "$79",
+      "per": "month",
+      "description": "Offices & small teams",
+      "cta": "Subscribe",
+      "features": [
+        "50 documents / month",
+        "Higher quota",
+        "Priority processing (goal)"
+      ],
+      "planKey": "business"
+    }
+  ]
+}

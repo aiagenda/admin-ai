@@ -1,0 +1,70 @@
+{
+  "badge": "Pénzvisszafizetési elvek az ÁSZF-ben",
+  "title": "Ne ijedj meg a",
+  "titleHighlight": "hivatalos levelektől",
+  "subtitle": "Töltsd fel a levelet, és elmondjuk, mit kell tenned. Először ingyenesen 1 könnyített próbát kapsz, utána fizess csak amikor kell: dokumentumonként, vagy havi csomagban.",
+  "freeSection": "Ingyenes",
+  "freePlanName": "1 próba dokumentum",
+  "freePlanDesc": "Rövid / vízjeles, könnyített elemzés, hogy kipróbáld a folyamatot",
+  "freePrice": "0 Ft",
+  "freeCta": "Próba indítása",
+  "perDocSection": "Dokumentumonként",
+  "subSection": "Havi csomagok",
+  "docPlans": [
+    {
+      "name": "Basic",
+      "price": "1 490 Ft",
+      "per": "dokumentum",
+      "description": "Gyors, részletes elemzés",
+      "cta": "Vásárlás",
+      "features": [
+        "Normál minőségű értelmezés",
+        "Nav / hivatali levél támogatás",
+        "E-mail értesítés"
+      ],
+      "planKey": "basic_doc"
+    },
+    {
+      "name": "Pro",
+      "price": "3 990 Ft",
+      "per": "dokumentum",
+      "description": "Mélyebb elemzés, válaszminta, PDF",
+      "cta": "Vásárlás",
+      "highlight": true,
+      "features": [
+        "Mélyebb elemzés",
+        "Javasolt válaszminta",
+        "PDF export a riportból (ahol elérhető)"
+      ],
+      "planKey": "pro_doc"
+    }
+  ],
+  "subPlans": [
+    {
+      "name": "Havi 10",
+      "price": "4 990 Ft",
+      "per": "hó",
+      "description": "Rendszeres használatra",
+      "cta": "Előfizetés",
+      "features": [
+        "10 dokumentum / hó a katalógus hónapban",
+        "Dokumentum kredit nélküli, kvótás hozzáférés",
+        "Bármikor lemondható"
+      ],
+      "planKey": "monthly"
+    },
+    {
+      "name": "Business 50",
+      "price": "14 990 Ft",
+      "per": "hó",
+      "description": "Irodáknak, kis cégeknek",
+      "cta": "Előfizetés",
+      "features": [
+        "50 dokumentum / hó",
+        "Magasabb kvóta",
+        "Prioritás a feldolgozásnál (cél)"
+      ],
+      "planKey": "business"
+    }
+  ]
+}

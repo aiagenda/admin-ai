@@ -10,8 +10,11 @@ import { FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageSEO } from "@/components/PageSEO";
+import { useTranslation } from "react-i18next";
 
 export default function Auth() {
+  const { t } = useTranslation("common");
+  const { t: navT } = useTranslation("nav");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,19 +27,17 @@ export default function Auth() {
       if (user && session && !bootstrapping) {
         setBootstrapping(true);
         try {
-          const { data, error } = await supabase.rpc('bootstrap_admin');
-          
+          const { data, error } = await supabase.rpc("bootstrap_admin");
+
           if (error) {
-            console.error('Bootstrap admin error:', error);
-            toast.error('Admin check failed');
-          } else if (data) {
-            navigate("/");
+            console.error("Bootstrap admin error:", error);
+            toast.error(t("authPage.toastAdminFailed"));
           } else {
             navigate("/");
           }
         } catch (err) {
-          console.error('Bootstrap error:', err);
-          toast.error('Authentication error');
+          console.error("Bootstrap error:", err);
+          toast.error(t("authPage.toastAuthError"));
         } finally {
           setBootstrapping(false);
         }
@@ -44,29 +45,29 @@ export default function Auth() {
     };
 
     handleAuthCallback();
-  }, [user, session, navigate, bootstrapping]);
+  }, [user, session, navigate, bootstrapping, t]);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { 
+        provider: "google",
+        options: {
           redirectTo: `${import.meta.env.VITE_APP_ORIGIN || window.location.origin}/auth/callback`,
           queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
       });
-      
+
       if (error) {
-        toast.error('Google sign-in failed');
-        console.error('Google OAuth error:', error);
+        toast.error(t("authPage.toastGoogleFailed"));
+        console.error("Google OAuth error:", error);
       }
     } catch (err) {
-      toast.error('Authentication error');
-      console.error('OAuth error:', err);
+      toast.error(t("authPage.toastAuthError"));
+      console.error("OAuth error:", err);
     } finally {
       setLoading(false);
     }
@@ -79,7 +80,7 @@ export default function Auth() {
     setLoading(true);
     const { error } = await signIn(email, password);
     if (error) {
-      toast.error('Bejelentkezés sikertelen');
+      toast.error(t("authPage.toastSignInFailed"));
     }
     setLoading(false);
   };
@@ -89,14 +90,14 @@ export default function Auth() {
     if (!email || !password) return;
 
     if (password.length < 6) {
-      toast.error("A jelszónak legalább 6 karakter hosszúnak kell lennie");
+      toast.error(t("authPage.toastPasswordMin"));
       return;
     }
 
     setLoading(true);
     const { error } = await signUp(email, password);
     if (error) {
-      toast.error('Regisztráció sikertelen');
+      toast.error(t("authPage.toastSignUpFailed"));
     }
     setLoading(false);
   };
@@ -108,7 +109,7 @@ export default function Auth() {
         <div className="flex min-h-screen items-center justify-center">
           <div className="text-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-            <p className="text-muted-foreground">Hozzáférés ellenőrzése...</p>
+            <p className="text-muted-foreground">{t("authPage.checkingAccess")}</p>
           </div>
         </div>
       </>
@@ -125,91 +126,91 @@ export default function Auth() {
               <FileText className="h-6 w-6 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">AdminAI</CardTitle>
-          <CardDescription>
-            Dokumentum elemző asszisztens
-          </CardDescription>
+          <CardTitle className="text-2xl">{navT("brand")}</CardTitle>
+          <CardDescription>{t("authPage.tagline")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Button 
-              variant="outline" 
-              className="w-full min-h-[48px] touch-manipulation" 
+            <Button
+              variant="outline"
+              className="w-full min-h-[48px] touch-manipulation"
               onClick={handleGoogleSignIn}
               disabled={loading}
             >
-              {loading ? "Betöltés..." : "Bejelentkezés Google-lel"}
+              {loading ? t("authPage.loading") : t("authPage.googleSignIn")}
             </Button>
             <Tabs defaultValue="signin">
               <TabsList className="grid w-full grid-cols-2 h-12">
-              <TabsTrigger value="signin" className="min-h-[44px]">Bejelentkezés</TabsTrigger>
-              <TabsTrigger value="signup" className="min-h-[44px]">Regisztráció</TabsTrigger>
-            </TabsList>
+                <TabsTrigger value="signin" className="min-h-[44px]">
+                  {t("authPage.tabSignIn")}
+                </TabsTrigger>
+                <TabsTrigger value="signup" className="min-h-[44px]">
+                  {t("authPage.tabSignUp")}
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email cím</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="pelda@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Jelszó</Label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    placeholder="••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Betöltés..." : "Bejelentkezés"}
-                </Button>
-              </form>
-            </TabsContent>
+              <TabsContent value="signin">
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email">{t("authPage.email")}</Label>
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      placeholder={t("authPage.emailPlaceholder")}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password">{t("authPage.password")}</Label>
+                    <Input
+                      id="signin-password"
+                      type="password"
+                      placeholder="••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? t("authPage.loading") : t("authPage.signIn")}
+                  </Button>
+                </form>
+              </TabsContent>
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email cím</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="pelda@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Jelszó</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Legalább 6 karakter
-                  </p>
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Betöltés..." : "Regisztráció"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="signup">
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">{t("authPage.email")}</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      placeholder={t("authPage.emailPlaceholder")}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">{t("authPage.password")}</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      placeholder="••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                    <p className="text-xs text-muted-foreground">{t("authPage.passwordHint")}</p>
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? t("authPage.loading") : t("authPage.signUp")}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
           </div>
         </CardContent>
       </Card>

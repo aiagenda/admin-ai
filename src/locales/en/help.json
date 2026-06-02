@@ -1,0 +1,66 @@
+{
+  "pageTitle": "Help & FAQ",
+  "pageSubtitle": "Upload, analysis, deadlines, privacy, and troubleshooting.",
+  "faq": [
+    {
+      "category": "General",
+      "question": "What is NoticeIQ?",
+      "answer": "NoticeIQ is an AI assistant that explains IRS, state, and other official letters in plain English. Upload a PDF or photo and get summaries, deadlines, and next steps."
+    },
+    {
+      "category": "General",
+      "question": "How does it work?",
+      "answer": "Upload your document. Our AI extracts deadlines, amounts, and key terms, then gives a plain-English summary and a more detailed legal-style breakdown. Suggested forms may appear when relevant."
+    },
+    {
+      "category": "Upload",
+      "question": "What file types are supported?",
+      "answer": "PDF, JPG, PNG, and HEIC up to 20MB. Scanned photos work; clearer images improve accuracy."
+    },
+    {
+      "category": "Upload",
+      "question": "How long does analysis take?",
+      "answer": "Usually 30\u201360 seconds. Complex or multi-page notices can take longer."
+    },
+    {
+      "category": "Upload",
+      "question": "What if processing fails?",
+      "answer": "Try again with a sharper scan or smaller file. If it keeps failing, contact support with the document type (e.g. CP14)."
+    },
+    {
+      "category": "Results",
+      "question": "Plain English vs legal detail?",
+      "answer": "Plain English is for everyday reading. Legal detail uses more formal wording and cites laws only when they appear in your letter."
+    },
+    {
+      "category": "Results",
+      "question": "What do severity levels mean?",
+      "answer": "Urgent: act soon. Action needed: respond or pay by the deadline. Info: mostly FYI."
+    },
+    {
+      "category": "Results",
+      "question": "How do I mark to-dos done?",
+      "answer": "On the results page, check off items under What to do. Progress is saved to your account."
+    },
+    {
+      "category": "Archive",
+      "question": "How do I search documents?",
+      "answer": "Use the archive search and filters for status, severity, tags, and category."
+    },
+    {
+      "category": "Privacy",
+      "question": "Is my data secure?",
+      "answer": "Documents are stored in your private account with encryption in transit and at rest. See our Privacy Policy and Security page."
+    },
+    {
+      "category": "Privacy",
+      "question": "Is this tax advice?",
+      "answer": "No. NoticeIQ is informational only. For advice on your situation, consult a CPA, EA, or attorney."
+    },
+    {
+      "category": "Billing",
+      "question": "Is there a free trial?",
+      "answer": "Yes\u2014one trial analysis per account. After that, pay per document or choose a monthly plan on Pricing."
+    }
+  ]
+}

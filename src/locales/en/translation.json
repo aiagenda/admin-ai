@@ -1,10 +1,10 @@
 {
   "seo": {
     "home": {
-      "title": "NoticeIQ – understand agency letters & invoices | AI for SMBs",
-      "description": "Plain-language summaries, next steps, and deadlines from PDFs and scans. Free trial, then per-document or monthly plans. Invoice OCR and bookkeeping-friendly export.",
-      "keywords": "IRS letter, tax notice, agency letter, invoice OCR, SMB admin AI, NoticeIQ",
-      "websiteDescription": "Plain-language breakdowns of official letters and deadlines. Invoice OCR and export for small businesses."
+      "title": "NoticeIQ — IRS & state tax notice assistant (plain English)",
+      "description": "Upload IRS CP notices, state tax letters, and agency mail. Get deadlines, amounts, next steps, and official form links. Not tax advice.",
+      "keywords": "IRS notice, CP14, CP2000, levy notice, state tax letter, IRS help, tax notice explained, NoticeIQ",
+      "websiteDescription": "Plain-English breakdowns of IRS and state tax notices with deadlines and recommended forms."
     },
     "pricing": {
       "title": "NoticeIQ pricing – documents, monthly plans, bookkeeping add-on",
