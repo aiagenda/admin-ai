@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { isUsMarket } from "@/lib/market";
 import { PageSEO } from "@/components/PageSEO";
+import posthog from "posthog-js";
 
 type PlanKey =
   | "basic_doc"
@@ -179,11 +180,19 @@ export default function Checkout() {
       });
       if (error) throw new Error(error.message);
       if (data?.url) {
+        posthog.capture("checkout initiated", {
+          plan,
+          plan_name: selected.name,
+          plan_price: selected.price,
+          is_subscription: selected.isSubscription,
+          market: us ? "us" : "hu",
+        });
         window.location.href = data.url;
       } else {
         throw new Error(us ? "No Stripe URL returned" : "Nem jött vissza Stripe URL");
       }
     } catch (err) {
+      posthog.captureException(err instanceof Error ? err : new Error(String(err)));
       const msg = err instanceof Error ? err.message : String(err);
       toast.error(msg);
     } finally {

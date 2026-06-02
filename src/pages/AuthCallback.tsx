@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { PageSEO } from "@/components/PageSEO";
 import { useTranslation } from "react-i18next";
+import posthog from "posthog-js";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -19,6 +20,10 @@ export default function AuthCallback() {
           data: { session },
         } = await supabase.auth.getSession();
         if (session) {
+          if (session.user) {
+            posthog.identify(session.user.id, { email: session.user.email });
+            posthog.capture("user signed in", { method: "google" });
+          }
           navigate("/", { replace: true });
         } else {
           navigate("/auth?error=login_failed", { replace: true });
@@ -27,11 +32,16 @@ export default function AuthCallback() {
       }
 
       if (hasCode) {
-        const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+        const { error, data } = await supabase.auth.exchangeCodeForSession(window.location.href);
         if (error) {
+          posthog.captureException(error);
           console.error("Auth exchange error:", error.message);
           navigate("/auth?error=login_failed", { replace: true });
         } else {
+          if (data.session?.user) {
+            posthog.identify(data.session.user.id, { email: data.session.user.email });
+            posthog.capture("user signed in", { method: "google" });
+          }
           navigate("/", { replace: true });
         }
         return;

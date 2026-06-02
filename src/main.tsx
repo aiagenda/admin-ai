@@ -9,14 +9,15 @@ import "./index.css";
 if (import.meta.env.VITE_POSTHOG_KEY) {
   import("posthog-js").then(({ default: posthog }) => {
     posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
-      api_host: import.meta.env.VITE_POSTHOG_HOST || "https://app.posthog.com",
+      api_host: import.meta.env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com",
       capture_pageview: true,
       capture_pageleave: true,
       persistence: "localStorage",
       autocapture: true,
+      enableExceptionAutocapture: true,
       session_recording: {
-        maskAllInputs: true,       // masks form fields for privacy
-        maskTextSelector: ".sensitive", // add class="sensitive" to hide PII
+        maskAllInputs: true,
+        maskTextSelector: ".sensitive",
       },
     });
   });

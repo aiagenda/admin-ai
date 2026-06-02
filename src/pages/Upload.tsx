@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import posthog from "posthog-js";
 
 function sanitizeFilename(name: string) {
   return name
@@ -312,6 +313,13 @@ export default function Upload() {
 
       if (insErr || !doc) throw insErr;
 
+      posthog.capture("document uploaded", {
+        document_id: doc.id,
+        file_type: contentType,
+        file_size_bytes: file.size,
+        market: isUsMarket() ? "us" : "hu",
+      });
+
       // 2.5. Increment usage counter (only if function exists)
       try {
         await supabase.rpc("increment_user_usage", {
@@ -402,11 +410,16 @@ export default function Upload() {
                 .single();
 
               if (!analysisError && analysisData) {
+                posthog.capture("document analysis completed", {
+                  document_id: doc.id,
+                  analysis_id: analysisData.id,
+                });
                 toast.success(t("uploadPage.analysisCompleteToast"));
                 navigate(`/result/${analysisData.id}`);
                 return true; // Stop polling
               }
             } else if (currentStatus === "error") {
+              posthog.capture("document analysis failed", { document_id: doc.id });
               toast.error(t("uploadPage.analysisErrorToast"));
               setProcessingDocId(null);
               setProcessingStatus("");
@@ -490,6 +503,7 @@ export default function Upload() {
         // Polling will continue as fallback
       }
     } catch (err: any) {
+      posthog.captureException(err instanceof Error ? err : new Error(String(err)));
       console.error("UPLOAD ERROR:", err);
       toast.error(err.message || t("uploadPage.genericError"));
     } finally {

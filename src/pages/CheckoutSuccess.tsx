@@ -6,6 +6,7 @@ import { CheckCircle2, Loader2, ArrowRight, Upload, Receipt, Calendar } from "lu
 import { useAuth } from "@/contexts/AuthContext";
 import Confetti from "react-confetti";
 import { isUsMarket } from "@/lib/market";
+import posthog from "posthog-js";
 
 export default function CheckoutSuccess() {
   const navigate = useNavigate();
@@ -19,6 +20,15 @@ export default function CheckoutSuccess() {
     const timer = setTimeout(() => setShowConfetti(false), 5000);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      posthog.capture("subscription activated", {
+        stripe_session_id: sessionId,
+        market: us ? "us" : "hu",
+      });
+    }
+  }, [user, sessionId, us]);
 
   if (!user) {
     navigate("/auth");

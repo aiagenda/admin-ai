@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageSEO } from "@/components/PageSEO";
 import { useTranslation } from "react-i18next";
+import posthog from "posthog-js";
 
 export default function Auth() {
   const { t } = useTranslation("common");
@@ -62,10 +63,14 @@ export default function Auth() {
       });
 
       if (error) {
+        posthog.captureException(error);
         toast.error(t("authPage.toastGoogleFailed"));
         console.error("Google OAuth error:", error);
+      } else {
+        posthog.capture("user signed in", { method: "google" });
       }
     } catch (err) {
+      posthog.captureException(err instanceof Error ? err : new Error(String(err)));
       toast.error(t("authPage.toastAuthError"));
       console.error("OAuth error:", err);
     } finally {

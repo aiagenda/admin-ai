@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import posthog from "posthog-js";
 
 interface AuthContextType {
   user: User | null;
@@ -25,6 +26,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        posthog.identify(session.user.id, { email: session.user.email });
+      }
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -49,10 +53,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) throw error;
+      const { data: { user: signedInUser } } = await supabase.auth.getUser();
+      if (signedInUser) {
+        posthog.identify(signedInUser.id, { email: signedInUser.email });
+        posthog.capture("user signed in", { method: "email" });
+      }
       toast.success(t("authPage.signIn") + " ✓");
       navigate("/");
       return { error: null };
     } catch (error: any) {
+      posthog.captureException(error);
       toast.error(error.message || t("authPage.toastSignInFailed"));
       return { error };
     }
@@ -71,9 +81,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) throw error;
+      posthog.capture("user signed up", { method: "email" });
       toast.success(t("authPage.signUp") + " — check your email");
       return { error: null };
     } catch (error: any) {
+      posthog.captureException(error);
       toast.error(error.message || t("authPage.toastSignUpFailed"));
       return { error };
     }
@@ -81,7 +93,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      posthog.capture("user signed out");
       await supabase.auth.signOut();
+      posthog.reset();
       toast.success(t("authPage.signOutSuccess", { defaultValue: "Signed out" }));
       navigate("/");
     } catch {

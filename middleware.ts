@@ -19,6 +19,7 @@ function isPublicAsset(pathname: string): boolean {
   if (PUBLIC_PATH_PREFIXES.some((p) => pathname === p)) return true;
   if (pathname.startsWith("/assets/")) return true;
   if (pathname.startsWith("/.well-known/")) return true;
+  if (/^\/google[a-z0-9]+\.html$/.test(pathname)) return true;
   return false;
 }
 

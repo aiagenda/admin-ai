@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -197,6 +198,7 @@ export default function Result() {
           }
         }
       } catch (error: any) {
+        posthog.captureException(error);
         console.error("Error fetching analysis:", error);
         toast.error("Failed to load analysis");
       } finally {
@@ -306,8 +308,10 @@ export default function Result() {
 
       setFeedbackGiven(true);
       setFeedbackType(type);
+      posthog.capture("analysis feedback submitted", { analysis_id: id, feedback_type: type, summary_type: activeTab });
       toast.success("Thanks for your feedback!");
     } catch (error: any) {
+      posthog.captureException(error);
       console.error("Feedback error:", error);
       toast.error("Failed to submit feedback");
     }
@@ -527,8 +531,10 @@ export default function Result() {
       const fileName = `govletter-analysis-${id?.substring(0, 8) || "unknown"}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
       console.log("Saving PDF:", fileName, "Image dimensions:", imgWidth, "x", imgHeight);
       doc.save(fileName);
+      posthog.capture("analysis exported as pdf", { analysis_id: id });
       toast.success("PDF downloaded!");
     } catch (error) {
+      posthog.captureException(error instanceof Error ? error : new Error(String(error)));
       console.error("PDF export error:", error);
       toast.error("Failed to generate PDF");
       
@@ -552,6 +558,7 @@ export default function Result() {
       const link = `${window.location.origin}/result/${id}`;
       setShareLink(link);
       setShowShareDialog(true);
+      posthog.capture("analysis shared", { analysis_id: id });
     } catch (error) {
       console.error("Share link error:", error);
       toast.error("Failed to create share link");
@@ -603,10 +610,17 @@ export default function Result() {
       }
 
       setFeedbackGiven(true);
+      posthog.capture("analysis feedback submitted", {
+        analysis_id: id,
+        feedback_type: feedbackType,
+        summary_type: activeTab,
+        has_comment: Boolean(comment),
+      });
       toast.success("Thanks for your feedback!");
       setShowCommentDialog(false);
       setComment("");
     } catch (error: any) {
+      posthog.captureException(error);
       console.error("Feedback error:", error);
       toast.error("Failed to submit feedback");
     }
@@ -964,6 +978,10 @@ END:VCALENDAR`;
                       link.click();
                       document.body.removeChild(link);
                       URL.revokeObjectURL(url);
+                      posthog.capture("deadline calendar exported", {
+                        analysis_id: id,
+                        deadline: analysis.deadline,
+                      });
                       toast.success("Calendar event downloaded!");
                     }}
                   >
