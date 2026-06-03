@@ -1,23 +1,26 @@
-// Fill an official IRS fillable PDF's AcroForm fields with the user's reviewed
-// data, then download it. Used only for forms with a verified field map
-// (see formFieldMaps.ts). pdf-lib runs entirely in the browser; the source PDF
-// is the CORS-enabled Supabase-hosted copy passed in as `pdfUrl`.
+// Fill an official government AcroForm PDF with the user's reviewed data and
+// download it. The actual filling happens in the `fill-pdf-form` edge function
+// (server-side), because government PDF hosts don't allow direct browser fetch
+// (no CORS). The frontend just computes the field→value map and posts it.
 
 import { getAcroFieldValues, type FillContext } from "@/lib/formFieldMaps";
+import { supabase } from "@/integrations/supabase/client";
+
+const FUNCTIONS_BASE =
+  import.meta.env.VITE_SUPABASE_FUNCTION_URL ||
+  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 export interface FillResult {
-  /** How many AcroForm fields were successfully set. */
   filledCount: number;
-  /** Field map keys that did not exist in the PDF (for diagnostics). */
-  missing: string[];
+  missingCount: number;
 }
 
 /**
- * Fetches the official PDF, fills the mapped fields, and triggers a download of
- * the completed (non-flattened, still-editable) PDF so the user can review and
- * tweak before printing/signing.
+ * Computes the field values for `formKey`, sends them to the edge function to
+ * fill the official PDF (`pdfUrl`), and downloads the completed PDF.
  *
- * @throws if the form is unmapped, the PDF can't be fetched, or has no form.
+ * @throws if the form is unmapped or the fill request fails.
  */
 export async function fillAndDownloadPdf(
   formKey: string,
@@ -28,61 +31,42 @@ export async function fillAndDownloadPdf(
   const values = getAcroFieldValues(formKey, ctx);
   if (!values) throw new Error(`No verified field map for ${formKey}`);
 
-  const res = await fetch(pdfUrl);
-  if (!res.ok) throw new Error(`Could not load the official PDF (${res.status})`);
-  const bytes = new Uint8Array(await res.arrayBuffer());
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token || ANON_KEY;
 
-  const { PDFDocument } = await import("pdf-lib");
-  const pdf = await PDFDocument.load(bytes, { ignoreEncryption: true });
-  const form = pdf.getForm();
+  const res = await fetch(`${FUNCTIONS_BASE}/fill-pdf-form`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: ANON_KEY,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ pdf_url: pdfUrl, values, filename: downloadName || formKey }),
+  });
 
-  let filledCount = 0;
-  const missing: string[] = [];
-
-  for (const [fieldName, value] of Object.entries(values)) {
-    if (!value) continue;
-    let field;
+  if (!res.ok) {
+    let msg = `Fill failed (${res.status})`;
     try {
-      field = form.getTextField(fieldName);
+      const j = await res.json();
+      if (j?.error) msg = j.error;
     } catch {
-      missing.push(fieldName);
-      continue;
+      /* ignore */
     }
-    try {
-      field.setText(value);
-      filledCount += 1;
-    } catch {
-      // Comb fields (SSN/EIN/ZIP) enforce a maxLength and reject formatted
-      // values like "123-45-6789". Retry with alphanumerics only, truncated.
-      try {
-        const max = field.getMaxLength();
-        const stripped = value.replace(/[^A-Za-z0-9]/g, "");
-        field.setText(max != null ? stripped.slice(0, max) : stripped);
-        filledCount += 1;
-      } catch {
-        missing.push(fieldName);
-      }
-    }
+    throw new Error(msg);
   }
 
-  // Make values render in all viewers without requiring a click.
-  try {
-    form.updateFieldAppearances();
-  } catch {
-    /* best effort */
-  }
+  const filledCount = Number(res.headers.get("X-Fields-Filled") || 0);
+  const missingCount = Number(res.headers.get("X-Fields-Missing") || 0);
 
-  const out = await pdf.save();
-  // Copy into a fresh ArrayBuffer-backed array for a clean Blob part.
-  const blob = new Blob([out.slice()], { type: "application/pdf" });
+  const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = downloadName || `${formKey}-filled.pdf`;
+  a.download = `${downloadName || formKey}.pdf`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  return { filledCount, missing };
+  return { filledCount, missingCount };
 }

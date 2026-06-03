@@ -119,24 +119,25 @@ function irsIntentToLevy(): ActionPathsResult {
       {
         key: "cdp_hearing",
         label: "Request a hearing (appeal)",
-        description: "Within 30 days you can request a Collection Due Process hearing to challenge the levy.",
+        description: "Within 30 days you can request a Collection Due Process hearing, or appeal the action under the Collection Appeals Program.",
         tone: "caution",
         steps: [
-          "File Form 12153 to request a Collection Due Process (CDP) hearing.",
-          "Mail it before the 30-day deadline shown on your notice.",
-          "This pauses the levy while your appeal is reviewed.",
+          "File Form 12153 to request a Collection Due Process (CDP) hearing, or",
+          "File Form 9423 for a faster Collection Appeals Program (CAP) appeal.",
+          "Mail before the 30-day deadline shown on your notice — this pauses the levy.",
         ],
-        formKeys: ["irs_form_12153"],
+        formKeys: ["irs_form_12153", "irs_form_9423"],
       },
       {
         key: "hardship",
         label: "I can't afford to pay",
-        description: "If paying would cause real hardship, you may settle for less or pause collection.",
+        description: "If paying would cause real hardship, you may settle for less, pause collection, or get advocate help.",
         steps: [
           "Check eligibility with the IRS Offer in Compromise pre-qualifier.",
-          "Submit Form 656 (Offer in Compromise) with Form 433-A.",
+          "Submit Form 656 (Offer in Compromise) with Form 433-A, or",
+          "Ask the Taxpayer Advocate Service for help with Form 911 if hardship is urgent.",
         ],
-        formKeys: ["irs_form_656", "irs_form_433a"],
+        formKeys: ["irs_form_656", "irs_form_433a", "irs_form_911"],
         externalUrl: IRS_OIC_PREQUAL,
         externalLabel: "Check OIC eligibility",
       },
@@ -190,6 +191,49 @@ function irsGeneric(): ActionPathsResult {
           "File Form 1040-X if your original return needs correcting.",
         ],
         formKeys: ["irs_form_1040x"],
+      },
+      {
+        key: "advocate",
+        label: "Get help from the Taxpayer Advocate",
+        description: "If your IRS problem is causing hardship or hasn't been resolved through normal channels, the Taxpayer Advocate Service can help — free.",
+        steps: [
+          "Complete Form 911 to request Taxpayer Advocate Service assistance.",
+          "Describe the hardship or the unresolved issue and what you need.",
+        ],
+        formKeys: ["irs_form_911"],
+      },
+    ],
+  };
+}
+
+function vaBenefitOrDebt(): ActionPathsResult {
+  return {
+    question: "How would you like to respond to this VA decision or notice?",
+    paths: [
+      {
+        key: "supplemental_claim",
+        label: "Submit new evidence (Supplemental Claim)",
+        description: "If you have new and relevant evidence, ask VA to review the decision again.",
+        tone: "positive",
+        recommended: true,
+        steps: [
+          "Complete VA Form 20-0995 (Supplemental Claim).",
+          "Identify the new and relevant evidence supporting your claim.",
+          "File within any deadline stated on your decision letter.",
+        ],
+        formKeys: ["va_form_20_0995"],
+      },
+      {
+        key: "va_contact",
+        label: "Contact VA / arrange repayment",
+        description: "For a debt, you can dispute it, request a waiver, or set up a payment plan with VA.",
+        steps: [
+          "Call VA at the number on your letter to discuss options.",
+          "Request a waiver or payment plan if the debt would cause hardship.",
+        ],
+        formKeys: [],
+        externalUrl: "https://www.va.gov/manage-va-debt/",
+        externalLabel: "Manage VA debt",
       },
     ],
   };
@@ -330,12 +374,13 @@ export function getActionPaths(docType: string | null | undefined): ActionPathsR
 
   if (t === "ssa_overpayment") return ssaOverpayment();
 
+  if (t === "va_debt" || t === "va_benefit") return vaBenefitOrDebt();
+
   // Letters that are clearly actionable but without a tailored IRS/SSA path.
   const actionable = [
     "ssa_benefit_change",
     "ssa_generic",
     "medicare_premium",
-    "va_debt",
     "unemployment_determination",
     "court_summons",
     "court_judgment",

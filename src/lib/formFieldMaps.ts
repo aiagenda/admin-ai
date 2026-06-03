@@ -49,6 +49,18 @@ function combinedAddress(ctx: FillContext): string {
   return [ctx.address, ctx.city_state_zip].filter(Boolean).join(", ");
 }
 
+/** Split an SSN string into the 3-2-4 digit groups some forms use. */
+function splitSSN(ssn?: string): { a: string; b: string; c: string } {
+  const d = (ssn || "").replace(/\D/g, "");
+  return { a: d.slice(0, 3), b: d.slice(3, 5), c: d.slice(5, 9) };
+}
+
+/** Split a ZIP into 5-digit + optional 4-digit groups. */
+function splitZip(zip?: string): { five: string; four: string } {
+  const d = (zip || "").replace(/\D/g, "");
+  return { five: d.slice(0, 5), four: d.slice(5, 9) };
+}
+
 // Per-form maps ---------------------------------------------------------------
 
 const f9465: FieldSetter = (ctx) => {
@@ -169,6 +181,59 @@ const f433b: FieldSetter = (ctx) => {
   return out;
 };
 
+// Form 911 — Request for Taxpayer Advocate Service Assistance (hardship help).
+const P911 = "topmostSubform[0].page1[0].";
+const f911: FieldSetter = (ctx) => {
+  const { city, state, zip } = splitCityStateZip(ctx.city_state_zip);
+  const out: Record<string, string> = {};
+  if (ctx.taxpayer_name) out[`${P911}taxpayerName[0]`] = ctx.taxpayer_name;
+  if (ctx.ssn_ein) out[`${P911}taxpayerTIN[0]`] = ctx.ssn_ein;
+  if (ctx.address) out[`${P911}taxpayerAddressStreet[0]`] = ctx.address;
+  if (city) out[`${P911}taxpayerAddressCity[0]`] = city;
+  if (state) out[`${P911}taxpayerAddressState[0]`] = state;
+  if (zip) out[`${P911}taxpayerAddressZIPCode[0]`] = zip;
+  if (!city && !state && !zip && ctx.city_state_zip) out[`${P911}taxpayerAddressCity[0]`] = ctx.city_state_zip;
+  if (ctx.phone) out[`${P911}taxpayerDaytimePhone[0]`] = ctx.phone;
+  return out;
+};
+
+// Form 9423 — Collection Appeal Request.
+const f9423: FieldSetter = (ctx) => {
+  const { city, state, zip } = splitCityStateZip(ctx.city_state_zip);
+  const out: Record<string, string> = {};
+  if (ctx.taxpayer_name) out[`${P1}Q1_Taxname[0]`] = ctx.taxpayer_name;
+  if (ctx.ssn_ein) out[`${P1}Q3SSN[0]`] = ctx.ssn_ein;
+  if (ctx.phone) out[`${P1}Q5TaxhomePhone[0]`] = ctx.phone;
+  if (ctx.address) out[`${P1}Q7TaxAddress[0]`] = ctx.address;
+  if (city) out[`${P1}Q8City[0]`] = city;
+  if (state) out[`${P1}Q9State[0]`] = state;
+  if (zip) out[`${P1}Q10ZIP[0]`] = zip;
+  if (!city && !state && !zip && ctx.city_state_zip) out[`${P1}Q8City[0]`] = ctx.city_state_zip;
+  return out;
+};
+
+// VA Form 20-0995 — Decision Review Request: Supplemental Claim. Uses split
+// SSN (3-2-4) and split ZIP (5-4), and a separate first/last name.
+const VA = "form1[0].#subform[16].";
+const f_va_0995: FieldSetter = (ctx) => {
+  const { first, last } = splitName(ctx.taxpayer_name);
+  const { city, state, zip } = splitCityStateZip(ctx.city_state_zip);
+  const ssn = splitSSN(ctx.ssn_ein);
+  const z = splitZip(zip);
+  const out: Record<string, string> = {};
+  if (first) out[`${VA}VeteransFirstName[0]`] = first;
+  if (last) out[`${VA}VeteransLastName[0]`] = last;
+  if (ssn.a) out[`${VA}FirstThreeNumbers[0]`] = ssn.a;
+  if (ssn.b) out[`${VA}SecondTwoNumbers[0]`] = ssn.b;
+  if (ssn.c) out[`${VA}LastFourNumbers[0]`] = ssn.c;
+  if (ctx.address) out[`${VA}CurrentMailingAddress_NumberAndStreet[0]`] = ctx.address;
+  if (city) out[`${VA}CurrentMailingAddress_City[0]`] = city;
+  if (state) out[`${VA}CurrentMailingAddress_StateOrProvince[0]`] = state;
+  if (z.five) out[`${VA}CurrentMailingAddress_ZIPOrPostalCode_FirstFiveNumbers[0]`] = z.five;
+  if (z.four) out[`${VA}CurrentMailingAddress_ZIPOrPostalCode_LastFourNumbers[0]`] = z.four;
+  return out;
+};
+
 /** Map of form key → AcroForm field setter. Only these forms get true fill. */
 const FIELD_MAPS: Record<string, FieldSetter> = {
   irs_form_9465: f9465,
@@ -179,6 +244,9 @@ const FIELD_MAPS: Record<string, FieldSetter> = {
   irs_form_656: f656,
   irs_form_433a: f433a,
   irs_form_433b: f433b,
+  irs_form_911: f911,
+  irs_form_9423: f9423,
+  va_form_20_0995: f_va_0995,
 };
 
 export function hasVerifiedFieldMap(formKey: string): boolean {
