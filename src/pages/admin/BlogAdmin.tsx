@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft, Plus, Pencil, Trash2, Globe, EyeOff, Eye, Loader2,
-  ExternalLink, RefreshCw, FileText,
+  ExternalLink, RefreshCw, FileText, Sparkles, PlayCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -32,6 +32,7 @@ type BlogPost = {
   date_label: string | null;
   badge_text: string | null;
   badge_variant: string;
+  auto_generated?: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -67,6 +68,8 @@ export default function BlogAdmin() {
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState(false);
+  const [filterAuto, setFilterAuto] = useState(false);
+  const [runningWriter, setRunningWriter] = useState(false);
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -80,6 +83,33 @@ export default function BlogAdmin() {
   }, []);
 
   useEffect(() => { fetchPosts(); }, [fetchPosts]);
+
+  async function runAutoWriter() {
+    setRunningWriter(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auto-blog-writer`,
+        { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token ?? ""}` }, body: "{}" }
+      );
+      const json = await res.json();
+      if (json.saved > 0) {
+        toast.success(`✍️ ${json.saved} new draft(s) generated! Refresh to see them.`);
+        fetchPosts();
+      } else if (json.errors?.length) {
+        toast.error("Writer error: " + json.errors[0]);
+      } else {
+        toast.info(json.message ?? "No new topics found today.");
+      }
+    } catch (e) {
+      toast.error("Failed to run auto-writer: " + (e as Error).message);
+    } finally {
+      setRunningWriter(false);
+    }
+  }
+
+  const autoDraftCount = posts.filter((p) => p.auto_generated && !p.is_published).length;
+  const displayedPosts = filterAuto ? posts.filter((p) => p.auto_generated) : posts;
 
   function openNew() {
     setForm({ ...EMPTY_FORM });
@@ -366,9 +396,33 @@ export default function BlogAdmin() {
             <h1 className="text-2xl font-bold">Blog / Article Writer</h1>
             <Badge variant="secondary">{posts.length} posts</Badge>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={fetchPosts} disabled={loading}>
               <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
+            </Button>
+            {autoDraftCount > 0 && (
+              <Button
+                variant={filterAuto ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilterAuto((v) => !v)}
+              >
+                <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                {autoDraftCount} AI draft{autoDraftCount > 1 ? "s" : ""} pending
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={runAutoWriter}
+              disabled={runningWriter}
+              title="Fetch today's trending topics and generate a draft now"
+            >
+              {runningWriter ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
+              )}
+              Run writer now
             </Button>
             <Button size="sm" onClick={openNew}>
               <Plus className="h-4 w-4 mr-1.5" />
@@ -394,8 +448,8 @@ export default function BlogAdmin() {
         )}
 
         <div className="space-y-3">
-          {posts.map((post) => (
-            <Card key={post.id} className="hover:border-primary/30 transition-colors">
+          {displayedPosts.map((post) => (
+            <Card key={post.id} className={`hover:border-primary/30 transition-colors ${post.auto_generated && !post.is_published ? "border-amber-300/50" : ""}`}>
               <CardContent className="py-3 flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -403,6 +457,11 @@ export default function BlogAdmin() {
                     <Badge variant={post.is_published ? "default" : "secondary"} className="text-xs shrink-0">
                       {post.is_published ? "Published" : "Draft"}
                     </Badge>
+                    {post.auto_generated && (
+                      <Badge variant="outline" className="text-xs shrink-0 gap-1 border-amber-400/60 text-amber-700 dark:text-amber-400">
+                        <Sparkles className="h-2.5 w-2.5" />AI
+                      </Badge>
+                    )}
                     <Badge variant="outline" className="text-xs shrink-0 uppercase">{post.market}</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground font-mono">/blog/{post.slug}</p>
