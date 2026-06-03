@@ -169,7 +169,7 @@ export default function Result() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data: feedbackData } = await (supabase
-            .from("analysis_feedback" as any)
+            .from("analysis_feedback")
             .select("feedback_type")
             .eq("analysis_id", id)
             .eq("user_id", user.id)
@@ -182,7 +182,7 @@ export default function Result() {
 
           // Fetch todo progress
           const { data: progressData } = await (supabase
-            .from("todo_progress" as any)
+            .from("todo_progress")
             .select("todo_index, completed")
             .eq("analysis_id", id)
             .eq("user_id", user.id)) as { data: { todo_index: number; completed: boolean }[] | null };
@@ -195,7 +195,7 @@ export default function Result() {
             setTodoProgress(progressMap);
           }
         }
-      } catch (error: any) {
+      } catch (error) {
         posthog.captureException(error);
         console.error("Error fetching analysis:", error);
         toast.error("Failed to load analysis");
@@ -216,7 +216,7 @@ export default function Result() {
         const { data: { user } } = await supabase.auth.getUser();
         const tabType = activeTab === "simple" ? "simple" : "detailed";
 
-        await (supabase.from("tab_view_analytics" as any).insert({
+        await (supabase.from("tab_view_analytics").insert({
           analysis_id: id,
           user_id: user?.id || null,
           tab_type: tabType,
@@ -273,7 +273,7 @@ export default function Result() {
 
       // Check if feedback already exists
       const { data: existingFeedback } = await (supabase
-        .from("analysis_feedback" as any)
+        .from("analysis_feedback")
         .select("id")
         .eq("analysis_id", id)
         .eq("user_id", user.id)
@@ -282,7 +282,7 @@ export default function Result() {
       if (existingFeedback) {
         // Update existing feedback
         const { error } = await (supabase
-          .from("analysis_feedback" as any)
+          .from("analysis_feedback")
           .update({
             feedback_type: type,
             summary_type: activeTab,
@@ -293,7 +293,7 @@ export default function Result() {
         if (error) throw error;
       } else {
         // Insert new feedback
-        const { error } = await (supabase.from("analysis_feedback" as any).insert({
+        const { error } = await (supabase.from("analysis_feedback").insert({
           analysis_id: id,
           user_id: user.id,
           feedback_type: type,
@@ -308,7 +308,7 @@ export default function Result() {
       setFeedbackType(type);
       posthog.capture("analysis feedback submitted", { analysis_id: id, feedback_type: type, summary_type: activeTab });
       toast.success("Thanks for your feedback!");
-    } catch (error: any) {
+    } catch (error) {
       posthog.captureException(error);
       console.error("Feedback error:", error);
       toast.error("Failed to submit feedback");
@@ -328,7 +328,7 @@ export default function Result() {
 
       const newCompleted = !todoProgress[index];
       
-      const { error } = await (supabase.from("todo_progress" as any).upsert({
+      const { error } = await (supabase.from("todo_progress").upsert({
         analysis_id: id,
         user_id: user.id,
         todo_index: index,
@@ -350,7 +350,7 @@ export default function Result() {
       } else {
         toast.success("Step unmarked");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Todo toggle error:", error);
       toast.error("Failed to update step");
     }
@@ -502,7 +502,7 @@ export default function Result() {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // Force reflow
-      pdfContainer.offsetHeight;
+      void pdfContainer.offsetHeight;
       
       // Capture as high-quality image
       const canvas = await html2canvas(pdfContainer, {
@@ -580,7 +580,7 @@ export default function Result() {
 
       // Check if feedback already exists
       const { data: existingFeedback } = await (supabase
-        .from("analysis_feedback" as any)
+        .from("analysis_feedback")
         .select("id")
         .eq("analysis_id", id)
         .eq("user_id", user.id)
@@ -589,7 +589,7 @@ export default function Result() {
       if (existingFeedback) {
         // Update existing feedback
         const { error } = await (supabase
-          .from("analysis_feedback" as any)
+          .from("analysis_feedback")
           .update({
             feedback_type: feedbackType,
             summary_type: activeTab,
@@ -600,7 +600,7 @@ export default function Result() {
         if (error) throw error;
       } else {
         // Insert new feedback
-        const { error } = await (supabase.from("analysis_feedback" as any).insert({
+        const { error } = await (supabase.from("analysis_feedback").insert({
           analysis_id: id,
           user_id: user.id,
           feedback_type: feedbackType,
@@ -621,7 +621,7 @@ export default function Result() {
       toast.success("Thanks for your feedback!");
       setShowCommentDialog(false);
       setComment("");
-    } catch (error: any) {
+    } catch (error) {
       posthog.captureException(error);
       console.error("Feedback error:", error);
       toast.error("Failed to submit feedback");

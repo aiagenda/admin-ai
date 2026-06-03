@@ -64,9 +64,10 @@ export default function Analytics() {
       let totalUsers = 0;
       let activeUsers = 0;
       const { data: userStats } = await supabase.rpc('get_admin_user_stats');
-      if (userStats && !(userStats as any).error) {
-        totalUsers = Number((userStats as any).registered) || 0;
-        activeUsers = Number((userStats as any).active_30d) || 0;
+      const us = userStats as { error?: unknown; registered?: number; active_30d?: number } | null;
+      if (us && !us.error) {
+        totalUsers = Number(us.registered) || 0;
+        activeUsers = Number(us.active_30d) || 0;
       }
 
       // Total documents
@@ -96,35 +97,35 @@ export default function Analytics() {
       // Feedback stats
       const feedbackQuery = startDate
         ? supabase
-            .from("analysis_feedback" as any)
+            .from("analysis_feedback")
             .select("feedback_type")
             .gte("created_at", startDate)
         : supabase
-            .from("analysis_feedback" as any)
+            .from("analysis_feedback")
             .select("feedback_type");
 
       const { data: feedbackData } = await feedbackQuery;
       const feedbackStats = {
-        helpful: feedbackData?.filter((f: any) => f.feedback_type === "helpful").length || 0,
-        not_helpful: feedbackData?.filter((f: any) => f.feedback_type === "not_helpful").length || 0,
-        confusing: feedbackData?.filter((f: any) => f.feedback_type === "confusing").length || 0,
+        helpful: feedbackData?.filter((f) => f.feedback_type === "helpful").length || 0,
+        not_helpful: feedbackData?.filter((f) => f.feedback_type === "not_helpful").length || 0,
+        confusing: feedbackData?.filter((f) => f.feedback_type === "confusing").length || 0,
         total: feedbackData?.length || 0,
       };
 
       // Tab usage
       const tabQuery = startDate
         ? supabase
-            .from("tab_view_analytics" as any)
+            .from("tab_view_analytics")
             .select("tab_type")
             .gte("viewed_at", startDate)
         : supabase
-            .from("tab_view_analytics" as any)
+            .from("tab_view_analytics")
             .select("tab_type");
 
       const { data: tabData } = await tabQuery;
       const tabUsage = {
-        simple: tabData?.filter((t: any) => t.tab_type === "simple").length || 0,
-        detailed: tabData?.filter((t: any) => t.tab_type === "detailed").length || 0,
+        simple: tabData?.filter((t) => t.tab_type === "simple").length || 0,
+        detailed: tabData?.filter((t) => t.tab_type === "detailed").length || 0,
       };
 
       // Category distribution
@@ -134,7 +135,7 @@ export default function Analytics() {
         .not("category", "is", null);
 
       const categoryDistribution: Record<string, number> = {};
-      categoryData?.forEach((doc: any) => {
+      categoryData?.forEach((doc) => {
         if (doc.category) {
           categoryDistribution[doc.category] = (categoryDistribution[doc.category] || 0) + 1;
         }
@@ -201,7 +202,7 @@ export default function Analytics() {
         },
         dailyStats,
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching analytics:", error);
     } finally {
       setLoading(false);

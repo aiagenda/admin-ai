@@ -88,7 +88,7 @@ export default function Compare() {
             setDoc2Id(urlDoc2Id);
           }
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error fetching documents:", error);
         toast.error("Hiba a dokumentumok betöltése során");
       } finally {

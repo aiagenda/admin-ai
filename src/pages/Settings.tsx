@@ -118,7 +118,7 @@ export default function Settings() {
           setPush1Day(notifRow.push_1_day_before ?? true);
           setPushOnDeadline(notifRow.push_on_deadline ?? false);
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error fetching profile:", error);
         toast.error("Failed to load profile");
       } finally {
@@ -178,9 +178,10 @@ export default function Settings() {
         accountant_auto_send_day: autoSendEnabled ? parseInt(autoSendDay) : null,
         accountant_export_format: exportFormat,
       });
-    } catch (error: any) {
-      console.error("Error saving settings:", error?.message ?? error);
-      if (error?.code) console.error("Supabase code:", error.code, "details:", error.details);
+    } catch (error) {
+      const e = error as { message?: string; code?: string; details?: string };
+      console.error("Error saving settings:", e?.message ?? error);
+      if (e?.code) console.error("Supabase code:", e.code, "details:", e.details);
       toast.error("Failed to save settings");
     } finally {
       setSaving(false);
@@ -225,9 +226,9 @@ export default function Settings() {
       }
 
       toast.success(`Test email sent to ${accountantEmail}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error sending test email:", error);
-      toast.error(error.message || "Failed to send test email");
+      toast.error((error as Error)?.message || "Failed to send test email");
     } finally {
       setSendingTest(false);
     }

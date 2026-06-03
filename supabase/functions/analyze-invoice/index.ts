@@ -117,29 +117,28 @@ type LineItem = {
   quantity: number | null;
   unit: string | null;
   unit_price: number | null;
-  net_amount: number | null;
-  vat_rate: string | null;
-  vat_amount: number | null;
-  gross_amount: number | null;
+  net_amount: number | null; // line subtotal (pre-tax)
+  sales_tax_rate: string | null;
+  sales_tax_amount: number | null;
+  gross_amount: number | null; // line total
 };
 
 type InvoiceAnalysisResult = {
   invoice_number: string | null;
   invoice_date: string | null; // YYYY-MM-DD
   due_date: string | null; // YYYY-MM-DD
-  fulfillment_date: string | null; // Teljesítés dátuma
   vendor_name: string | null;
   vendor_address: string | null;
-  vendor_tax_id: string | null;
-  net_amount: number | null;
-  vat_rate: string | null; // "27%", "18%", "5%", "AAM", "TAM"
-  vat_amount: number | null;
-  gross_amount: number | null;
+  vendor_tax_id: string | null; // US EIN (XX-XXXXXXX) or SSN
+  net_amount: number | null; // Subtotal (pre-tax)
+  sales_tax_rate: string | null; // e.g. "8.25%", "0%"
+  sales_tax_amount: number | null;
+  gross_amount: number | null; // Total (subtotal + sales tax)
   currency: string;
   item_description: string | null;
-  line_items: LineItem[] | null; // Részletes tételek
-  payment_method: string | null; // készpénz, átutalás, kártya
-  expense_category: string | null; // fuel, office, travel, accommodation, food, phone, software, maintenance, marketing, other
+  line_items: LineItem[] | null;
+  payment_method: string | null; // cash, check, credit_card, debit_card, ach, wire
+  expense_category: string | null; // IRS Schedule C category key
   has_handwritten_content: boolean;
   ai_confidence: number; // 0.0-1.0
 };
@@ -219,16 +218,16 @@ async function extractTextWithVision(
   openaiApiKey: string,
   ocrImprovements: string
 ): Promise<string> {
-  const ocrPrompt = `Extract all text from this Hungarian invoice/receipt image.
+  const ocrPrompt = `Extract all text from this US invoice/receipt image.
 
 Pay EXTRA attention to:
-- Invoice number (számlaszám)
-- Dates (dátum, teljesítés, fizetési határidő)
-- Vendor/seller name and address (eladó/kibocsátó)
-- Tax ID (adószám)
-- ALL amounts - net, VAT, gross (nettó, ÁFA, bruttó)
-- VAT rate (ÁFA kulcs: 27%, 18%, 5%, AAM, TAM)
-- Item descriptions (tételek)
+- Invoice / receipt number
+- Dates (invoice date, due date)
+- Vendor/seller name and address
+- Vendor tax ID (EIN, format XX-XXXXXXX) if shown
+- ALL amounts - Subtotal, Sales Tax, Total
+- Sales tax rate (e.g. 8.25%) if shown
+- Line item descriptions
 
 HANDWRITTEN numbers are common - be very careful:
 - Carefully distinguish: 0 vs O, 1 vs I vs L, 5 vs S, 6 vs G, 8 vs B
@@ -275,60 +274,67 @@ async function analyzeInvoice(
 ): Promise<InvoiceAnalysisResult> {
   const today = new Date().toISOString().split("T")[0];
 
-  const systemPrompt = `You are an expert Hungarian invoice analyzer. Extract ALL data from the invoice text.
+  const systemPrompt = `You are an expert US bookkeeping assistant analyzing invoices and receipts for IRS Schedule C categorization. Extract ALL data from the invoice/receipt text.
 
 Return ONLY valid JSON with this exact structure:
 {
   "invoice_number": "string or null",
   "invoice_date": "YYYY-MM-DD or null",
   "due_date": "YYYY-MM-DD or null",
-  "fulfillment_date": "YYYY-MM-DD or null (teljesítés dátuma)",
   "vendor_name": "string or null",
   "vendor_address": "string or null",
-  "vendor_tax_id": "string (Hungarian format: 12345678-1-12) or null",
-  "net_amount": number or null (TOTAL net),
-  "vat_rate": "27%" | "18%" | "5%" | "AAM" | "TAM" | "0%" | null (main rate),
-  "vat_amount": number or null (TOTAL VAT),
-  "gross_amount": number or null (TOTAL gross),
-  "currency": "HUF" | "EUR" | "USD",
+  "vendor_tax_id": "string (US EIN format XX-XXXXXXX, or SSN) or null",
+  "net_amount": number or null (SUBTOTAL, pre-tax total),
+  "sales_tax_rate": "string like \\"8.25%\\" or \\"0%\\" or null",
+  "sales_tax_amount": number or null (TOTAL sales tax),
+  "gross_amount": number or null (TOTAL = subtotal + sales tax),
+  "currency": "USD" | "EUR" | "CAD" | other ISO code,
   "item_description": "string - short summary of all items",
   "line_items": [
     {
-      "description": "tétel megnevezése",
+      "description": "item name",
       "quantity": number or null,
-      "unit": "db" | "óra" | "km" | "m2" | null,
+      "unit": "ea" | "hr" | "mi" | "sq ft" | null,
       "unit_price": number or null,
       "net_amount": number or null,
-      "vat_rate": "27%" | null,
-      "vat_amount": number or null,
+      "sales_tax_rate": "8.25%" | null,
+      "sales_tax_amount": number or null,
       "gross_amount": number or null
     }
   ] or null if only 1 item,
-  "payment_method": "készpénz" | "átutalás" | "bankkártya" | null,
-  "expense_category": "fuel" | "office" | "travel" | "accommodation" | "food" | "phone" | "software" | "maintenance" | "marketing" | "other",
+  "payment_method": "cash" | "check" | "credit_card" | "debit_card" | "ach" | "wire" | null,
+  "expense_category": "advertising" | "car_truck" | "commissions_fees" | "contract_labor" | "depreciation" | "insurance" | "interest" | "legal_professional" | "office_expense" | "rent_lease" | "repairs" | "supplies" | "taxes_licenses" | "travel" | "meals" | "utilities" | "wages" | "other",
   "has_handwritten_content": boolean,
   "ai_confidence": 0.0-1.0
 }
 
 RULES:
-1. Amounts must be NUMBERS (not strings). Remove thousands separators. Example: "10 600 Ft" → 10600
-2. Dates in YYYY-MM-DD format
-3. line_items: Extract EACH line item separately if there are multiple items on the invoice (e.g., "villanyszerelés" and "kiszállási díj" are 2 separate items)
-4. expense_category - choose based on vendor/item:
-   - fuel: gas stations, petrol (MOL, Shell, OMV, benzin, gázolaj)
-   - office: office supplies, stationery (irodaszer, papír)
-   - travel: transport, parking, tolls (vonat, busz, taxi, parkolás, útdíj)
-   - accommodation: hotels, airbnb (szállás, hotel)
-   - food: restaurants, catering (étterem, vendéglátás)
-   - phone: telecom, internet (Telekom, Vodafone, internet)
-   - software: subscriptions, SaaS (előfizetés, szoftver)
-   - maintenance: repairs, services (karbantartás, javítás)
-   - marketing: ads, promo (reklám, marketing)
-   - other: anything else
-5. has_handwritten_content: true if you detected any handwritten numbers/text
-6. ai_confidence: your confidence in the extraction (0.5-1.0)
-7. If relative date like "fizetési határidő: 8 nap", calculate from invoice_date. Today is ${today}.
-8. fulfillment_date: Look for "teljesítés" or "teljesítés dátuma" - often same as invoice_date
+1. Amounts must be NUMBERS (not strings). Remove thousands separators and the "$" sign. Example: "$1,250.00" -> 1250. Use a period as the decimal separator.
+2. Dates in YYYY-MM-DD format. US receipts often use MM/DD/YYYY - convert accordingly (e.g. "03/05/2026" -> "2026-03-05").
+3. There is NO federal VAT in the US. Sales tax is a state/local line shown separately. If the receipt shows only a Total with no tax line, set sales_tax_rate and sales_tax_amount to null and put the Total in gross_amount.
+4. line_items: extract EACH line item separately when there are multiple items.
+5. expense_category - map to the IRS Schedule C category that best fits the vendor/items:
+   - advertising: ads, marketing, promotions (Google Ads, Meta, print, signage)
+   - car_truck: fuel, gas stations, auto repair, parking, tolls, registration (Shell, Chevron, AutoZone)
+   - commissions_fees: sales commissions, referral or platform fees, merchant processing (Stripe, PayPal fees)
+   - contract_labor: independent contractors, freelancers, 1099 work
+   - depreciation: capitalized equipment/asset purchases
+   - insurance: business liability, property, auto, E&O (not health)
+   - interest: loan or credit-card interest
+   - legal_professional: attorneys, CPAs, bookkeepers, consultants
+   - office_expense: office supplies, postage, small office items (Staples, USPS)
+   - rent_lease: office/equipment/vehicle rent or lease (WeWork, U-Haul)
+   - repairs: repairs and maintenance of business property/equipment
+   - supplies: materials and supplies consumed in the business
+   - taxes_licenses: business licenses, permits, regulatory fees, payroll taxes
+   - travel: airfare, hotels, lodging, rideshare, rental cars when traveling (Delta, Marriott, Uber, Hertz)
+   - meals: restaurants, catering, business meals (50% deductible)
+   - utilities: electricity, gas, water, internet, phone (Comcast, AT&T, Verizon)
+   - wages: employee wages and salaries
+   - other: anything that does not fit above
+6. has_handwritten_content: true if you detected any handwritten numbers/text.
+7. ai_confidence: your confidence in the extraction (0.5-1.0).
+8. If a relative due date like "Net 30" or "due in 15 days" appears, calculate it from invoice_date. Today is ${today}.
 
 ONLY return the JSON object, no other text.`;
 
@@ -428,12 +434,12 @@ Deno.serve(async (req) => {
 
     // Check for unsupported formats
     if (mimeType === "image/heic" || mimeType === "image/heif" || ext === "heic" || ext === "heif") {
-      throw new Error("HEIC/HEIF formátum nem támogatott. Kérjük konvertáld JPG vagy PNG formátumba.");
+      throw new Error("HEIC/HEIF format is not supported. Please convert the file to JPG or PNG.");
     }
 
     // Check file size - OpenAI has limits
     if (fileBlob.size > 20 * 1024 * 1024) {
-      throw new Error("A fájl túl nagy. Maximum méret: 20MB.");
+      throw new Error("The file is too large. Maximum size: 20MB.");
     }
 
     // Convert to uint8 array
@@ -472,7 +478,7 @@ Deno.serve(async (req) => {
           console.log(`✅ Extracted ${extractedText.length} characters from PDF via OCR`);
         } catch (imageError) {
           console.error("PDF image extraction failed:", imageError);
-          throw new Error("Nem sikerült feldolgozni a PDF fájlt. Próbáld meg képként feltölteni (JPG, PNG).");
+          throw new Error("Could not process the PDF file. Try uploading it as an image (JPG, PNG).");
         }
       }
     } else {
@@ -503,7 +509,7 @@ Deno.serve(async (req) => {
     }
 
     if (!extractedText || extractedText.length < 10) {
-      throw new Error("Nem sikerült szöveget kinyerni a fájlból. Ellenőrizd, hogy a kép/PDF olvasható-e.");
+      throw new Error("Could not extract any text from the file. Check that the image/PDF is readable.");
     }
 
     // Analyze invoice
@@ -518,15 +524,14 @@ Deno.serve(async (req) => {
         invoice_number: analysis.invoice_number,
         invoice_date: analysis.invoice_date,
         due_date: analysis.due_date,
-        fulfillment_date: analysis.fulfillment_date,
         vendor_name: analysis.vendor_name,
         vendor_address: analysis.vendor_address,
         vendor_tax_id: analysis.vendor_tax_id,
         net_amount: analysis.net_amount,
-        vat_rate: analysis.vat_rate,
-        vat_amount: analysis.vat_amount,
+        vat_rate: analysis.sales_tax_rate,
+        vat_amount: analysis.sales_tax_amount,
         gross_amount: analysis.gross_amount,
-        currency: analysis.currency || "HUF",
+        currency: analysis.currency || "USD",
         item_description: analysis.item_description,
         line_items: analysis.line_items,
         payment_method: analysis.payment_method,

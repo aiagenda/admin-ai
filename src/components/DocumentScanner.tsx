@@ -232,13 +232,14 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
         video.play().catch(() => {});
       }
       setCameraStarted(true);
-    } catch (err: any) {
+    } catch (err) {
+      const e = err as { message?: string; name?: string };
       setCameraError(
-        err?.message?.includes("Permission") || err?.name === "NotAllowedError"
+        e?.message?.includes("Permission") || e?.name === "NotAllowedError"
           ? "Kamera hozzáférés megtagadva. Engedélyezd a böngészőben, vagy használd a fájl feltöltést."
           : "Kamera nem elérhető (pl. PWA mód). Használd a „Fájl kiválasztása” lehetőséget.",
       );
-      trackEvent("scanner_camera_error", { name: err?.name || "unknown" });
+      trackEvent("scanner_camera_error", { name: e?.name || "unknown" });
     }
   }, [mode]);
 

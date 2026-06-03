@@ -62,17 +62,17 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
     return true;
   });
 
-  const severityToMegjegyzes = (severity: string) => {
+  const severityToNote = (severity: string) => {
     switch (severity) {
-      case "urgent": return "Sürgős";
-      case "action_needed": return "Teendő";
-      default: return "Információ";
+      case "urgent": return "Urgent";
+      case "action_needed": return "Action needed";
+      default: return "Information";
     }
   };
 
   const parseAmountToNumber = (amount: string | null | undefined): number | "" => {
     if (amount == null || amount === "") return "";
-    const cleaned = String(amount).replace(/\s/g, "").replace(/ Ft$|Ft$/i, "").replace(",", ".");
+    const cleaned = String(amount).replace(/[\s,$]/g, "").replace(/USD$/i, "");
     const num = parseFloat(cleaned.replace(/[^\d.-]/g, ""));
     return isNaN(num) ? "" : num;
   };
@@ -81,23 +81,23 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
     try {
       const csvRows: string[][] = [];
       csvRows.push([
-        "Sorszám",
-        "Dátum",
-        "Határidő",
-        "Típus",
-        "Összeg (Ft)",
-        "Bankszámlaszám",
-        "Kedvezményezett",
-        "Fájlnév",
-        "Leírás",
-        "Megjegyzés",
+        "No.",
+        "Date",
+        "Due Date",
+        "Type",
+        "Amount (USD)",
+        "Bank Account",
+        "Payee",
+        "File Name",
+        "Description",
+        "Note",
       ]);
 
       filteredDocuments.forEach((doc, index) => {
         const analysis = doc.analyses;
         const uploadDate = new Date(doc.upload_date).toISOString().split("T")[0];
         const deadline = analysis?.deadline ? new Date(analysis.deadline).toISOString().split("T")[0] : "";
-        const category = doc.category || "Egyéb";
+        const category = doc.category || "Other";
         const amount = analysis?.amount || "";
         const bankAccount = analysis?.bank_account || "";
         const recipient = analysis?.recipient_name || "";
@@ -105,7 +105,7 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
         const description = analysis?.simple_summary
           ? analysis.simple_summary.substring(0, 100) + (analysis.simple_summary.length > 100 ? "..." : "")
           : "";
-        const megjegyzes = severityToMegjegyzes(analysis?.severity || "info");
+        const note = severityToNote(analysis?.severity || "info");
 
         csvRows.push([
           String(index + 1),
@@ -117,7 +117,7 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
           recipient,
           filename,
           description,
-          megjegyzes,
+          note,
         ]);
       });
 
@@ -139,18 +139,18 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `konyvelo_export_${new Date().toISOString().split("T")[0]}.csv`;
+      link.download = `accountant_export_${new Date().toISOString().split("T")[0]}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success("CSV exportálás sikeres!");
+      toast.success("CSV export successful!");
       setOpen(false);
       onExport?.();
     } catch (error) {
       console.error("CSV export error:", error);
-      toast.error("Hiba történt az export során");
+      toast.error("An error occurred during export");
     }
   };
 
@@ -162,7 +162,7 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
         const analysis = doc.analyses;
         const uploadDate = new Date(doc.upload_date).toISOString().split("T")[0];
         const deadline = analysis?.deadline ? new Date(analysis.deadline).toISOString().split("T")[0] : "";
-        const category = doc.category || "Egyéb";
+        const category = doc.category || "Other";
         const amountRaw = analysis?.amount || "";
         const amountNum = parseAmountToNumber(amountRaw);
         const bankAccount = analysis?.bank_account || "";
@@ -171,56 +171,56 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
         const description = analysis?.simple_summary
           ? analysis.simple_summary.substring(0, 100) + (analysis.simple_summary.length > 100 ? "..." : "")
           : "";
-        const megjegyzes = severityToMegjegyzes(analysis?.severity || "info");
+        const note = severityToNote(analysis?.severity || "info");
 
         excelData.push({
-          "Sorszám": index + 1,
-          "Dátum": uploadDate,
-          "Határidő": deadline,
-          "Típus": category,
-          "Összeg (Ft)": amountNum !== "" ? amountNum : amountRaw,
-          "Bankszámlaszám": bankAccount,
-          "Kedvezményezett": recipient,
-          "Fájlnév": filename,
-          "Leírás": description,
-          "Megjegyzés": megjegyzes,
+          "No.": index + 1,
+          "Date": uploadDate,
+          "Due Date": deadline,
+          "Type": category,
+          "Amount (USD)": amountNum !== "" ? amountNum : amountRaw,
+          "Bank Account": bankAccount,
+          "Payee": recipient,
+          "File Name": filename,
+          "Description": description,
+          "Note": note,
         });
       });
 
       const XLSX = await import("xlsx");
       const ws = XLSX.utils.json_to_sheet(excelData);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Dokumentumok");
+      XLSX.utils.book_append_sheet(wb, ws, "Documents");
 
       const colWidths = [
-        { wch: 8 },  // Sorszám
-        { wch: 12 }, // Dátum
-        { wch: 12 }, // Határidő
-        { wch: 15 }, // Típus
-        { wch: 14 }, // Összeg (Ft)
-        { wch: 25 }, // Bankszámlaszám
-        { wch: 20 }, // Kedvezményezett
-        { wch: 30 }, // Fájlnév
-        { wch: 50 }, // Leírás
-        { wch: 12 }, // Megjegyzés
+        { wch: 8 },  // No.
+        { wch: 12 }, // Date
+        { wch: 12 }, // Due Date
+        { wch: 15 }, // Type
+        { wch: 14 }, // Amount (USD)
+        { wch: 25 }, // Bank Account
+        { wch: 20 }, // Payee
+        { wch: 30 }, // File Name
+        { wch: 50 }, // Description
+        { wch: 12 }, // Note
       ];
       ws["!cols"] = colWidths;
 
       // Generate Excel file
-      XLSX.writeFile(wb, `konyvelo_export_${new Date().toISOString().split("T")[0]}.xlsx`);
+      XLSX.writeFile(wb, `accountant_export_${new Date().toISOString().split("T")[0]}.xlsx`);
 
-      toast.success("Excel exportálás sikeres!");
+      toast.success("Excel export successful!");
       setOpen(false);
       onExport?.();
     } catch (error) {
       console.error("Excel export error:", error);
-      toast.error("Hiba történt az export során");
+      toast.error("An error occurred during export");
     }
   };
 
   const handleExport = () => {
     if (filteredDocuments.length === 0) {
-      toast.error("Nincs exportálható dokumentum a kiválasztott szűrőkkel");
+      toast.error("No documents to export with the selected filters");
       return;
     }
 
@@ -236,40 +236,40 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
       <DialogTrigger asChild>
         <Button variant="outline" className="w-full sm:w-auto">
           <Download className="mr-2 h-4 w-4" />
-          Export könyvelőnek
+          Export for Accountant
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Export könyvelőnek</DialogTitle>
+          <DialogTitle>Export for Accountant</DialogTitle>
           <DialogDescription>
-            Exportálja a dokumentumokat CSV vagy Excel formátumban könyvelő programokhoz.
+            Export your documents in CSV or Excel format for accounting software.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="format">Formátum</Label>
+            <Label htmlFor="format">Format</Label>
             <Select value={format} onValueChange={(value: "csv" | "excel") => setFormat(value)}>
               <SelectTrigger id="format">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="csv">CSV (könyvelő programokkal kompatibilis)</SelectItem>
+                <SelectItem value="csv">CSV (compatible with accounting software)</SelectItem>
                 <SelectItem value="excel">Excel (XLSX)</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category">Kategória szűrés</Label>
+            <Label htmlFor="category">Category filter</Label>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger id="category">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Összes kategória</SelectItem>
-                <SelectItem value="szamla">Csak számlák</SelectItem>
-                <SelectItem value="hatosagi_level">Csak hatósági levelek</SelectItem>
+                <SelectItem value="all">All categories</SelectItem>
+                <SelectItem value="szamla">Invoices only</SelectItem>
+                <SelectItem value="hatosagi_level">Official letters only</SelectItem>
                 {categories.map((cat) => (
                   <SelectItem key={cat} value={cat}>
                     {cat}
@@ -280,11 +280,11 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
           </div>
 
           <div className="space-y-2">
-            <Label>Dátum tartomány (opcionális)</Label>
+            <Label>Date range (optional)</Label>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label htmlFor="date-start" className="text-xs text-muted-foreground">
-                  Kezdő dátum
+                  Start date
                 </Label>
                 <input
                   id="date-start"
@@ -296,7 +296,7 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
               </div>
               <div>
                 <Label htmlFor="date-end" className="text-xs text-muted-foreground">
-                  Vég dátum
+                  End date
                 </Label>
                 <input
                   id="date-end"
@@ -310,16 +310,16 @@ export function ExportForAccountant({ documents, onExport }: ExportForAccountant
           </div>
 
           <div className="text-sm text-muted-foreground">
-            {filteredDocuments.length} dokumentum lesz exportálva
+            {filteredDocuments.length} document(s) will be exported
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
-            Mégse
+            Cancel
           </Button>
           <Button onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
-            Exportálás
+            Export
           </Button>
         </DialogFooter>
       </DialogContent>

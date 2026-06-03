@@ -58,8 +58,14 @@ export function DeadlineReminder() {
 
         if (analysesError) throw analysesError;
 
-        const deadlines: UpcomingDeadline[] = (analysesData || [])
-          .map((analysis: any) => {
+        type AnalysisRow = {
+          id: string;
+          deadline: string;
+          severity: string;
+          documents: { id: string; filename: string };
+        };
+        const deadlines: UpcomingDeadline[] = ((analysesData || []) as unknown as AnalysisRow[])
+          .map((analysis) => {
             const deadlineDate = new Date(analysis.deadline);
             const daysUntil = differenceInDays(deadlineDate, new Date());
             return {

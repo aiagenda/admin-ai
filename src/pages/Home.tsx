@@ -114,7 +114,7 @@ export default function Home() {
           // Check enterprise subscription
           try {
             const { data: subData } = await (supabase
-              .from('user_subscriptions' as any)
+              .from('user_subscriptions')
               .select('plan_type')
               .eq('user_id', user.id)
               .single()) as { data: { plan_type: string } | null };
@@ -132,11 +132,19 @@ export default function Home() {
         setHasInvoiceAccess(true);
 
         // Fetch all invoices for user (same as InvoiceArchive), then filter by current month
+        type InvoiceRow = {
+          invoice_date: string | null;
+          upload_date: string | null;
+          status: string | null;
+          vat_amount: number | null;
+          net_amount: number | null;
+          gross_amount: number | null;
+        };
         const { data: allInvoices, error } = await (supabase
-          .from('invoices' as any)
+          .from('invoices')
           .select('*')
           .eq('user_id', user.id)
-          .order('upload_date', { ascending: false })) as { data: any[] | null; error: any };
+          .order('upload_date', { ascending: false })) as { data: InvoiceRow[] | null; error: unknown };
 
         if (error) {
           console.error("Error fetching invoice stats:", error);
@@ -155,18 +163,18 @@ export default function Home() {
         const start = startOfMonth(now);
         const end = endOfMonth(now);
         // Same month logic as InvoiceArchive: invoice_date || upload_date in [start, end]
-        const list = raw.filter((inv: any) => {
+        const list = raw.filter((inv) => {
           const dateStr = inv.invoice_date || inv.upload_date;
           if (!dateStr) return false;
           const d = new Date(dateStr);
           if (isNaN(d.getTime())) return false;
           return d >= start && d <= end;
         });
-        const completed = list.filter((inv: any) => inv.status === 'completed');
+        const completed = list.filter((inv) => inv.status === 'completed');
         setInvoiceStats({
-          monthlyVat: completed.reduce((sum: number, inv: any) => sum + (inv.vat_amount || 0), 0),
-          monthlyNet: completed.reduce((sum: number, inv: any) => sum + (inv.net_amount || 0), 0),
-          monthlyGross: completed.reduce((sum: number, inv: any) => sum + (inv.gross_amount || 0), 0),
+          monthlyVat: completed.reduce((sum, inv) => sum + (inv.vat_amount || 0), 0),
+          monthlyNet: completed.reduce((sum, inv) => sum + (inv.net_amount || 0), 0),
+          monthlyGross: completed.reduce((sum, inv) => sum + (inv.gross_amount || 0), 0),
           invoiceCount: list.length,
           completedCount: completed.length,
         });

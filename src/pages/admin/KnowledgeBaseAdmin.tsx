@@ -68,7 +68,7 @@ export default function KnowledgeBaseAdmin() {
 
       if (error) throw error;
       setDocuments(data || []);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error loading documents:", error);
       toast.error("Hiba a dokumentumok betöltése során");
     } finally {
@@ -139,9 +139,9 @@ export default function KnowledgeBaseAdmin() {
       resetForm();
       setDialogOpen(false);
       await loadDocuments();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving document:", error);
-      toast.error("Hiba a mentés során: " + (error.message || "Ismeretlen hiba"));
+      toast.error("Hiba a mentés során: " + ((error as Error)?.message || "Ismeretlen hiba"));
     }
   }
 
@@ -157,7 +157,7 @@ export default function KnowledgeBaseAdmin() {
       if (error) throw error;
       toast.success("Dokumentum törölve");
       await loadDocuments();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error deleting document:", error);
       toast.error("Hiba a törlés során");
     }
@@ -174,7 +174,7 @@ export default function KnowledgeBaseAdmin() {
       // Note: In production, you'd call a dedicated Edge Function for this
       // For now, we'll just show a message
       toast.info("Embedding generálás funkció hamarosan elérhető. Használd a generate-embeddings.ts scriptet.");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error generating embeddings:", error);
       toast.error("Hiba az embedding generálása során");
     } finally {

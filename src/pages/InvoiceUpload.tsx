@@ -211,7 +211,7 @@ export default function InvoiceUpload() {
 
       // Insert invoice record
       const { data: invoice, error: insErr } = await (supabase
-        .from("invoices" as any)
+        .from("invoices")
         .insert({
           user_id: user.id,
           filename: clean,
@@ -220,7 +220,7 @@ export default function InvoiceUpload() {
           status: "processing",
         })
         .select()
-        .single()) as { data: { id: string } | null; error: any };
+        .single()) as { data: { id: string } | null; error: unknown };
 
       if (insErr || !invoice) throw insErr;
 
@@ -256,10 +256,10 @@ export default function InvoiceUpload() {
         f.id === fileItem.id ? { ...f, status: "completed" as FileStatus } : f
       ));
 
-    } catch (error: any) {
+    } catch (error) {
       console.error("Upload error:", error);
-      setFiles(prev => prev.map(f => 
-        f.id === fileItem.id ? { ...f, status: "error" as FileStatus, error: error.message } : f
+      setFiles(prev => prev.map(f =>
+        f.id === fileItem.id ? { ...f, status: "error" as FileStatus, error: (error as Error)?.message } : f
       ));
     }
   };
@@ -283,7 +283,7 @@ export default function InvoiceUpload() {
 
       if (!isAdmin) {
         const { data: subData } = await (supabase
-          .from('user_subscriptions' as any)
+          .from('user_subscriptions')
           .select('plan_type')
           .eq('user_id', user.id)
           .single()) as { data: { plan_type: string } | null };

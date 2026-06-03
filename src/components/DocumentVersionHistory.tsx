@@ -66,7 +66,7 @@ export function DocumentVersionHistory({ documentId, currentVersion = 1 }: Docum
         } else {
           setVersions(data as DocumentVersion[]);
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error fetching version history:", error);
         toast.error("Failed to load version history");
       } finally {
@@ -105,7 +105,7 @@ export function DocumentVersionHistory({ documentId, currentVersion = 1 }: Docum
       URL.revokeObjectURL(url);
 
       toast.success("Version downloaded");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error downloading version:", error);
       toast.error("Failed to download version");
     }

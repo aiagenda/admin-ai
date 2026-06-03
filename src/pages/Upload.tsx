@@ -276,9 +276,10 @@ export default function Upload() {
         );
         return;
       }
-    } catch (quotaErr: any) {
+    } catch (quotaErr) {
+      const e = quotaErr as { code?: string; message?: string };
       // If function doesn't exist, skip quota check
-      if (quotaErr.code !== "PGRST202" && !quotaErr.message?.includes("Could not find the function")) {
+      if (e.code !== "PGRST202" && !e.message?.includes("Could not find the function")) {
         console.error("Quota check failed:", quotaErr);
       }
       // Continue anyway
@@ -325,9 +326,10 @@ export default function Upload() {
         await supabase.rpc("increment_user_usage", {
           _user_id: user.id,
         });
-      } catch (usageErr: any) {
+      } catch (usageErr) {
+        const e = usageErr as { code?: string; message?: string };
         // If function doesn't exist (migration not run), silently skip
-        if (usageErr.code === "PGRST202" || usageErr.message?.includes("Could not find the function")) {
+        if (e.code === "PGRST202" || e.message?.includes("Could not find the function")) {
           console.warn("Usage tracking function not available. Skipping usage increment.");
         } else {
           console.error("Usage tracking error:", usageErr);
@@ -502,10 +504,10 @@ export default function Upload() {
         console.warn("Realtime subscription failed, using polling only:", realtimeError);
         // Polling will continue as fallback
       }
-    } catch (err: any) {
+    } catch (err) {
       posthog.captureException(err instanceof Error ? err : new Error(String(err)));
       console.error("UPLOAD ERROR:", err);
-      toast.error(err.message || t("uploadPage.genericError"));
+      toast.error((err as Error)?.message || t("uploadPage.genericError"));
     } finally {
       setLoading(false);
     }

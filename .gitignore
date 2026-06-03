@@ -31,3 +31,10 @@ VAPID_KEYS.txt
 *.sln
 *.sw?
 .vercel
+
+# Local tooling & generated artifacts (not for repo)
+.claude/
+.agents/
+skills-lock.json
+posthog-setup-report.md
+scripts/__pycache__/

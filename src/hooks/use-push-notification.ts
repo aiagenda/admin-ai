@@ -88,7 +88,7 @@ export function usePushNotification() {
       try {
         applicationServerKey = urlBase64ToUint8Array(publicKey);
         console.log('Application server key converted successfully');
-      } catch (keyError: any) {
+      } catch (keyError) {
         console.error('Error converting VAPID key:', keyError);
         toast.error('Hiba a VAPID kulcs feldolgozása során. Ellenőrizd a kulcs formátumát.');
         return false;
@@ -101,13 +101,14 @@ export function usePushNotification() {
           applicationServerKey: applicationServerKey
         });
         console.log('Push subscription created:', subscription.endpoint.substring(0, 50) + '...');
-      } catch (subscribeError: any) {
+      } catch (subscribeError) {
         console.error('Push subscription error:', subscribeError);
+        const e = subscribeError as { name?: string; message?: string };
         // Push notifications nem működnek localhost-on HTTPS nélkül (kivéve ha service worker van)
-        if (subscribeError.name === 'AbortError' || subscribeError.message?.includes('push service error')) {
+        if (e.name === 'AbortError' || e.message?.includes('push service error')) {
           toast.error('Push értesítések csak HTTPS-en vagy localhost-on működnek. Production környezetben próbáld meg.');
         } else {
-          toast.error('Hiba a push subscription létrehozása során: ' + (subscribeError.message || 'Ismeretlen hiba'));
+          toast.error('Hiba a push subscription létrehozása során: ' + (e.message || 'Ismeretlen hiba'));
         }
         return false;
       }
@@ -137,9 +138,9 @@ export function usePushNotification() {
       setIsSubscribed(true);
       toast.success('Push értesítések engedélyezve!');
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error subscribing to push:', error);
-      toast.error('Hiba az értesítések engedélyezése során: ' + (error.message || 'Ismeretlen hiba'));
+      toast.error('Hiba az értesítések engedélyezése során: ' + ((error as Error)?.message || 'Ismeretlen hiba'));
       return false;
     } finally {
       setIsLoading(false);
@@ -170,7 +171,7 @@ export function usePushNotification() {
         toast.success('Push értesítések kikapcsolva');
         return true;
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error unsubscribing from push:', error);
       toast.error('Hiba az értesítések kikapcsolása során');
       return false;
@@ -194,7 +195,7 @@ export function usePushNotification() {
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
+    .replace(/-/g, '+')
     .replace(/_/g, '/');
 
   const rawData = window.atob(base64);

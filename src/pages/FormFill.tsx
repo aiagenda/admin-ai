@@ -51,9 +51,9 @@ export default function FormFill() {
         }
 
         setForm(data as Form);
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error loading form:", error);
-        toast.error("Hiba az űrlap betöltése során: " + (error.message || "Ismeretlen hiba"));
+        toast.error("Hiba az űrlap betöltése során: " + ((error as Error)?.message || "Ismeretlen hiba"));
         navigate("/archive");
       } finally {
         setLoading(false);

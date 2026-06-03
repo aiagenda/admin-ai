@@ -17,13 +17,13 @@ interface SearchResult {
   title: string;
   description?: string;
   url?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface SearchResponse {
   success: boolean;
   intent?: string;
-  entities?: Record<string, any>;
+  entities?: Record<string, unknown>;
   results?: SearchResult[];
   response?: string;
   count?: number;
@@ -116,9 +116,9 @@ export function AISearch() {
           ...prev.slice(0, 9), // Keep last 10 searches
         ]);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Search error:", error);
-      toast.error(t(`${s}.searchError`, { msg: error.message || "Unknown" }));
+      toast.error(t(`${s}.searchError`, { msg: (error as Error)?.message || "Unknown" }));
     } finally {
       setSearching(false);
     }

@@ -64,7 +64,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
       if (error) throw error;
 
       setRelatedDocs((data || []) as RelatedDocument[]);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching related documents:", error);
       toast.error("Failed to load related documents");
     } finally {
@@ -88,7 +88,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
       if (error) throw error;
 
       setAvailableDocuments(data || []);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching available documents:", error);
       toast.error("Failed to load documents");
     } finally {
@@ -119,7 +119,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
       setRelationType("related");
       setRelationDescription("");
       fetchRelatedDocuments();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error creating relation:", error);
       toast.error("Failed to create link");
     }
@@ -138,7 +138,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
 
       toast.success("Link removed");
       fetchRelatedDocuments();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error removing relation:", error);
       toast.error("Failed to remove link");
     }

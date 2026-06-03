@@ -7,12 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { 
-  Receipt, 
-  ArrowLeft, 
-  Calendar, 
-  Building2, 
-  Hash, 
+import {
+  Receipt,
+  ArrowLeft,
+  Calendar,
+  Building2,
+  Hash,
   FileText,
   Loader2,
   AlertCircle,
@@ -28,7 +28,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { hu } from "date-fns/locale";
 
 interface LineItem {
   description: string;
@@ -36,8 +35,11 @@ interface LineItem {
   unit: string | null;
   unit_price: number | null;
   net_amount: number | null;
-  vat_rate: string | null;
-  vat_amount: number | null;
+  sales_tax_rate?: string | null;
+  sales_tax_amount?: number | null;
+  // Legacy keys kept for older records
+  vat_rate?: string | null;
+  vat_amount?: number | null;
   gross_amount: number | null;
 }
 
@@ -54,6 +56,7 @@ interface Invoice {
   vendor_address: string | null;
   vendor_tax_id: string | null;
   net_amount: number | null;
+  // vat_rate / vat_amount columns now hold the US sales-tax rate / amount
   vat_rate: string | null;
   vat_amount: number | null;
   gross_amount: number | null;
@@ -67,18 +70,42 @@ interface Invoice {
   has_handwritten_content: boolean | null;
 }
 
+// IRS Schedule C (Form 1040) expense categories
 const categoryLabels: Record<string, string> = {
-  fuel: "Üzemanyag",
-  office: "Irodaszer",
-  travel: "Utazás",
-  accommodation: "Szállás",
-  food: "Vendéglátás",
-  phone: "Telefon/Internet",
-  software: "Szoftver/Előfizetés",
-  maintenance: "Karbantartás",
-  marketing: "Marketing/Reklám",
-  other: "Egyéb",
+  advertising: "Advertising",
+  car_truck: "Car & Truck",
+  commissions_fees: "Commissions & Fees",
+  contract_labor: "Contract Labor",
+  depreciation: "Depreciation",
+  insurance: "Insurance",
+  interest: "Interest",
+  legal_professional: "Legal & Professional",
+  office_expense: "Office Expense",
+  rent_lease: "Rent or Lease",
+  repairs: "Repairs & Maintenance",
+  supplies: "Supplies",
+  taxes_licenses: "Taxes & Licenses",
+  travel: "Travel",
+  meals: "Meals (50%)",
+  utilities: "Utilities",
+  wages: "Wages",
+  other: "Other Expenses",
 };
+
+const paymentLabels: Record<string, string> = {
+  cash: "Cash",
+  check: "Check",
+  credit_card: "Credit Card",
+  debit_card: "Debit Card",
+  ach: "ACH",
+  wire: "Wire",
+};
+
+// Line-item tax helpers (support both new sales_tax_* and legacy vat_* keys)
+const itemTaxAmount = (item: LineItem): number | null =>
+  item.sales_tax_amount ?? item.vat_amount ?? null;
+const itemTaxRate = (item: LineItem): string | null =>
+  item.sales_tax_rate ?? item.vat_rate ?? null;
 
 export default function InvoiceDetail() {
   const { id } = useParams<{ id: string }>();
@@ -91,6 +118,13 @@ export default function InvoiceDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Format a number as US dollars (falls back to invoice currency code if not USD)
+  const fmtMoney = (n: number | null | undefined): string => {
+    if (n == null) return "-";
+    const currency = invoice?.currency || "USD";
+    return n.toLocaleString("en-US", { style: "currency", currency });
+  };
+
   // Start editing
   const startEditing = () => {
     if (invoice) {
@@ -98,7 +132,6 @@ export default function InvoiceDetail() {
         invoice_number: invoice.invoice_number,
         invoice_date: invoice.invoice_date,
         due_date: invoice.due_date,
-        fulfillment_date: invoice.fulfillment_date,
         vendor_name: invoice.vendor_name,
         vendor_address: invoice.vendor_address,
         vendor_tax_id: invoice.vendor_tax_id,
@@ -121,12 +154,11 @@ export default function InvoiceDetail() {
 
     try {
       const { error } = await (supabase
-        .from("invoices" as any)
+        .from("invoices")
         .update({
           invoice_number: editForm.invoice_number,
           invoice_date: editForm.invoice_date,
           due_date: editForm.due_date,
-          fulfillment_date: editForm.fulfillment_date,
           vendor_name: editForm.vendor_name,
           vendor_address: editForm.vendor_address,
           vendor_tax_id: editForm.vendor_tax_id,
@@ -150,12 +182,12 @@ export default function InvoiceDetail() {
         vat_amount: editForm.vat_amount ? Number(editForm.vat_amount) : null,
         gross_amount: editForm.gross_amount ? Number(editForm.gross_amount) : null,
       });
-      
+
       setIsEditing(false);
-      toast.success("Számla adatok frissítve");
+      toast.success("Invoice updated");
     } catch (error) {
       console.error("Error saving invoice:", error);
-      toast.error("Hiba a mentés során");
+      toast.error("Failed to save changes");
     } finally {
       setSaving(false);
     }
@@ -170,11 +202,11 @@ export default function InvoiceDetail() {
 
       try {
         const { data, error } = await (supabase
-          .from("invoices" as any)
+          .from("invoices")
           .select("*")
           .eq("id", id)
           .eq("user_id", user.id)
-          .single()) as { data: Invoice | null; error: any };
+          .single()) as { data: Invoice | null; error: unknown };
 
         if (error) throw error;
         setInvoice(data);
@@ -184,14 +216,14 @@ export default function InvoiceDetail() {
           const { data: urlData } = await supabase.storage
             .from("documents")
             .createSignedUrl(data.file_url, 3600);
-          
+
           if (urlData?.signedUrl) {
             setImageUrl(urlData.signedUrl);
           }
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error fetching invoice:", error);
-        toast.error("Hiba a számla betöltése során");
+        toast.error("Failed to load invoice");
       } finally {
         setLoading(false);
       }
@@ -202,13 +234,13 @@ export default function InvoiceDetail() {
     // Poll for status updates if processing
     const interval = setInterval(async () => {
       if (!id) return;
-      
+
       const { data } = await (supabase
-        .from("invoices" as any)
+        .from("invoices")
         .select("status")
         .eq("id", id)
         .single()) as { data: { status: string } | null };
-      
+
       if (data?.status === "completed" || data?.status === "error") {
         // Refresh full data
         fetchInvoice();
@@ -220,7 +252,7 @@ export default function InvoiceDetail() {
   }, [user, id]);
 
   const handleDelete = async () => {
-    if (!invoice || !confirm("Biztosan törölni szeretnéd ezt a számlát?")) return;
+    if (!invoice || !confirm("Are you sure you want to delete this receipt?")) return;
 
     try {
       // Delete from storage
@@ -230,15 +262,15 @@ export default function InvoiceDetail() {
 
       // Delete from database
       await (supabase
-        .from("invoices" as any)
+        .from("invoices")
         .delete()
         .eq("id", invoice.id));
 
-      toast.success("Számla törölve");
+      toast.success("Receipt deleted");
       navigate("/invoices");
     } catch (error) {
       console.error("Error deleting invoice:", error);
-      toast.error("Hiba a törlés során");
+      toast.error("Failed to delete");
     }
   };
 
@@ -247,7 +279,7 @@ export default function InvoiceDetail() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Betöltés...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -258,13 +290,13 @@ export default function InvoiceDetail() {
       <div className="min-h-screen py-12 px-4">
         <div className="container mx-auto max-w-2xl text-center">
           <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Számla nem található</h1>
+          <h1 className="text-2xl font-bold mb-2">Receipt not found</h1>
           <p className="text-muted-foreground mb-4">
-            A keresett számla nem létezik vagy nincs hozzáférésed.
+            This receipt doesn't exist or you don't have access to it.
           </p>
           <Button onClick={() => navigate("/invoices")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Vissza a számlákhoz
+            Back to receipts
           </Button>
         </div>
       </div>
@@ -281,26 +313,26 @@ export default function InvoiceDetail() {
         <div className="flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate("/invoices")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Vissza
+            Back
           </Button>
           <div className="flex gap-2">
             {!isEditing && invoice.status === "completed" && (
               <Button variant="outline" onClick={startEditing}>
                 <Pencil className="h-4 w-4 mr-2" />
-                Szerkesztés
+                Edit
               </Button>
             )}
             {imageUrl && (
               <Button variant="outline" asChild>
                 <a href={imageUrl} target="_blank" rel="noopener noreferrer">
                   <Download className="h-4 w-4 mr-2" />
-                  Letöltés
+                  Download
                 </a>
               </Button>
             )}
             <Button variant="destructive" onClick={handleDelete}>
               <Trash2 className="h-4 w-4 mr-2" />
-              Törlés
+              Delete
             </Button>
           </div>
         </div>
@@ -311,9 +343,9 @@ export default function InvoiceDetail() {
             <CardContent className="p-4 flex items-center gap-3">
               <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
               <div>
-                <h4 className="font-medium text-blue-800 dark:text-blue-200">Feldolgozás alatt...</h4>
+                <h4 className="font-medium text-blue-800 dark:text-blue-200">Processing...</h4>
                 <p className="text-sm text-blue-700 dark:text-blue-300">
-                  Az AI elemzi a számlát. Ez általában 10-30 másodpercig tart.
+                  The AI is analyzing the receipt. This usually takes 10-30 seconds.
                 </p>
               </div>
             </CardContent>
@@ -325,9 +357,9 @@ export default function InvoiceDetail() {
             <CardContent className="p-4 flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-red-600" />
               <div>
-                <h4 className="font-medium text-red-800 dark:text-red-200">Hiba történt</h4>
+                <h4 className="font-medium text-red-800 dark:text-red-200">Something went wrong</h4>
                 <p className="text-sm text-red-700 dark:text-red-300">
-                  A számla feldolgozása sikertelen volt. Próbáld újra feltölteni.
+                  Processing this receipt failed. Please try uploading it again.
                 </p>
               </div>
             </CardContent>
@@ -340,7 +372,7 @@ export default function InvoiceDetail() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Számla
+                Receipt
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -350,12 +382,12 @@ export default function InvoiceDetail() {
                     <iframe
                       src={imageUrl}
                       className="w-full h-[500px]"
-                      title="Számla"
+                      title="Receipt"
                     />
                   ) : (
                     <img
                       src={imageUrl}
-                      alt="Számla"
+                      alt="Receipt"
                       className="w-full h-auto"
                     />
                   )}
@@ -379,12 +411,12 @@ export default function InvoiceDetail() {
                 <CardTitle className="text-lg flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <Receipt className="h-5 w-5" />
-                    Számla adatok
+                    Receipt details
                   </span>
                   {invoice.status === "completed" && (
                     <Badge variant="secondary" className="gap-1">
                       <CheckCircle2 className="h-3 w-3" />
-                      Feldolgozva
+                      Processed
                     </Badge>
                   )}
                 </CardTitle>
@@ -394,14 +426,14 @@ export default function InvoiceDetail() {
                 <div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                     <Building2 className="h-4 w-4" />
-                    Kibocsátó
+                    Vendor
                   </div>
                   <p className="font-medium">{invoice.vendor_name || "-"}</p>
                   {invoice.vendor_address && (
                     <p className="text-sm text-muted-foreground">{invoice.vendor_address}</p>
                   )}
                   {invoice.vendor_tax_id && (
-                    <p className="text-sm text-muted-foreground">Adószám: {invoice.vendor_tax_id}</p>
+                    <p className="text-sm text-muted-foreground">EIN / Tax ID: {invoice.vendor_tax_id}</p>
                   )}
                 </div>
 
@@ -410,18 +442,18 @@ export default function InvoiceDetail() {
                   <div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                       <Hash className="h-4 w-4" />
-                      Számlaszám
+                      Invoice #
                     </div>
                     <p className="font-medium">{invoice.invoice_number || "-"}</p>
                   </div>
                   <div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                       <Calendar className="h-4 w-4" />
-                      Dátum
+                      Date
                     </div>
                     <p className="font-medium">
-                      {invoice.invoice_date 
-                        ? format(new Date(invoice.invoice_date), "yyyy. MMMM d.", { locale: hu })
+                      {invoice.invoice_date
+                        ? format(new Date(invoice.invoice_date), "MMMM d, yyyy")
                         : "-"
                       }
                     </p>
@@ -431,7 +463,7 @@ export default function InvoiceDetail() {
                 {/* Item */}
                 {invoice.item_description && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Tétel</p>
+                    <p className="text-sm text-muted-foreground mb-1">Item</p>
                     <p className="font-medium">{invoice.item_description}</p>
                   </div>
                 )}
@@ -439,7 +471,7 @@ export default function InvoiceDetail() {
                 {/* Category */}
                 {invoice.expense_category && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Kategória</p>
+                    <p className="text-sm text-muted-foreground mb-1">Category (Schedule C)</p>
                     <Badge variant="outline">
                       {categoryLabels[invoice.expense_category] || invoice.expense_category}
                     </Badge>
@@ -451,38 +483,23 @@ export default function InvoiceDetail() {
             {/* Amounts */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Összegek</CardTitle>
+                <CardTitle className="text-lg">Amounts</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Nettó</span>
-                    <span className="font-medium">
-                      {invoice.net_amount 
-                        ? `${invoice.net_amount.toLocaleString("hu-HU")} ${invoice.currency || "Ft"}`
-                        : "-"
-                      }
-                    </span>
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="font-medium">{fmtMoney(invoice.net_amount)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">
-                      ÁFA {invoice.vat_rate && `(${invoice.vat_rate})`}
+                      Sales Tax {invoice.vat_rate && `(${invoice.vat_rate})`}
                     </span>
-                    <span className="font-medium">
-                      {invoice.vat_amount 
-                        ? `${invoice.vat_amount.toLocaleString("hu-HU")} ${invoice.currency || "Ft"}`
-                        : "-"
-                      }
-                    </span>
+                    <span className="font-medium">{fmtMoney(invoice.vat_amount)}</span>
                   </div>
                   <div className="border-t pt-3 flex justify-between">
-                    <span className="font-medium">Bruttó</span>
-                    <span className="font-bold text-lg text-primary">
-                      {invoice.gross_amount 
-                        ? `${invoice.gross_amount.toLocaleString("hu-HU")} ${invoice.currency || "Ft"}`
-                        : "-"
-                      }
-                    </span>
+                    <span className="font-medium">Total</span>
+                    <span className="font-bold text-lg text-primary">{fmtMoney(invoice.gross_amount)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -493,14 +510,14 @@ export default function InvoiceDetail() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">AI megbízhatóság</span>
+                    <span className="text-muted-foreground">AI confidence</span>
                     <span className="font-medium">
                       {Math.round(invoice.ai_confidence * 100)}%
                     </span>
                   </div>
                   {invoice.has_handwritten_content && (
                     <p className="text-xs text-muted-foreground mt-2">
-                      ⚠️ Kézírásos elemek észlelve - ellenőrizd az adatokat
+                      ⚠️ Handwritten content detected - please verify the data
                     </p>
                   )}
                 </CardContent>
@@ -509,13 +526,13 @@ export default function InvoiceDetail() {
           </div>
         </div>
 
-        {/* Line Items - Részletes tételek */}
+        {/* Line Items */}
         {invoice.line_items && invoice.line_items.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <List className="h-5 w-5" />
-                Tételek részletezése
+                Line items
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -523,12 +540,12 @@ export default function InvoiceDetail() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2 font-medium">Megnevezés</th>
-                      <th className="text-right py-2 font-medium">Mennyiség</th>
-                      <th className="text-right py-2 font-medium">Egységár</th>
-                      <th className="text-right py-2 font-medium">Nettó</th>
-                      <th className="text-right py-2 font-medium">ÁFA</th>
-                      <th className="text-right py-2 font-medium">Bruttó</th>
+                      <th className="text-left py-2 font-medium">Description</th>
+                      <th className="text-right py-2 font-medium">Qty</th>
+                      <th className="text-right py-2 font-medium">Unit Price</th>
+                      <th className="text-right py-2 font-medium">Subtotal</th>
+                      <th className="text-right py-2 font-medium">Sales Tax</th>
+                      <th className="text-right py-2 font-medium">Total</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -536,21 +553,15 @@ export default function InvoiceDetail() {
                       <tr key={index} className="border-b last:border-0">
                         <td className="py-2">{item.description}</td>
                         <td className="text-right py-2">
-                          {item.quantity ? `${item.quantity} ${item.unit || "db"}` : "-"}
+                          {item.quantity ? `${item.quantity} ${item.unit || "ea"}` : "-"}
                         </td>
-                        <td className="text-right py-2">
-                          {item.unit_price ? `${item.unit_price.toLocaleString("hu-HU")} Ft` : "-"}
-                        </td>
-                        <td className="text-right py-2">
-                          {item.net_amount ? `${item.net_amount.toLocaleString("hu-HU")} Ft` : "-"}
-                        </td>
+                        <td className="text-right py-2">{fmtMoney(item.unit_price)}</td>
+                        <td className="text-right py-2">{fmtMoney(item.net_amount)}</td>
                         <td className="text-right py-2 text-muted-foreground">
-                          {item.vat_amount ? `${item.vat_amount.toLocaleString("hu-HU")} Ft` : "-"}
-                          {item.vat_rate && ` (${item.vat_rate})`}
+                          {fmtMoney(itemTaxAmount(item))}
+                          {itemTaxRate(item) && ` (${itemTaxRate(item)})`}
                         </td>
-                        <td className="text-right py-2 font-medium">
-                          {item.gross_amount ? `${item.gross_amount.toLocaleString("hu-HU")} Ft` : "-"}
-                        </td>
+                        <td className="text-right py-2 font-medium">{fmtMoney(item.gross_amount)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -564,30 +575,30 @@ export default function InvoiceDetail() {
         <Dialog open={isEditing} onOpenChange={setIsEditing}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Számla szerkesztése</DialogTitle>
+              <DialogTitle>Edit receipt</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               {/* Vendor Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Kibocsátó neve</Label>
-                  <Input 
-                    value={editForm.vendor_name || ""} 
+                  <Label>Vendor name</Label>
+                  <Input
+                    value={editForm.vendor_name || ""}
                     onChange={(e) => setEditForm({ ...editForm, vendor_name: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Adószám</Label>
-                  <Input 
-                    value={editForm.vendor_tax_id || ""} 
+                  <Label>EIN / Tax ID</Label>
+                  <Input
+                    value={editForm.vendor_tax_id || ""}
                     onChange={(e) => setEditForm({ ...editForm, vendor_tax_id: e.target.value })}
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Cím</Label>
-                <Input 
-                  value={editForm.vendor_address || ""} 
+                <Label>Address</Label>
+                <Input
+                  value={editForm.vendor_address || ""}
                   onChange={(e) => setEditForm({ ...editForm, vendor_address: e.target.value })}
                 />
               </div>
@@ -595,17 +606,17 @@ export default function InvoiceDetail() {
               {/* Invoice Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Számlaszám</Label>
-                  <Input 
-                    value={editForm.invoice_number || ""} 
+                  <Label>Invoice #</Label>
+                  <Input
+                    value={editForm.invoice_number || ""}
                     onChange={(e) => setEditForm({ ...editForm, invoice_number: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Számla dátuma</Label>
-                  <Input 
+                  <Label>Invoice date</Label>
+                  <Input
                     type="date"
-                    value={editForm.invoice_date || ""} 
+                    value={editForm.invoice_date || ""}
                     onChange={(e) => setEditForm({ ...editForm, invoice_date: e.target.value })}
                   />
                 </div>
@@ -613,18 +624,10 @@ export default function InvoiceDetail() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Teljesítés dátuma</Label>
-                  <Input 
+                  <Label>Due date</Label>
+                  <Input
                     type="date"
-                    value={editForm.fulfillment_date || ""} 
-                    onChange={(e) => setEditForm({ ...editForm, fulfillment_date: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Fizetési határidő</Label>
-                  <Input 
-                    type="date"
-                    value={editForm.due_date || ""} 
+                    value={editForm.due_date || ""}
                     onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
                   />
                 </div>
@@ -632,9 +635,9 @@ export default function InvoiceDetail() {
 
               {/* Item */}
               <div className="space-y-2">
-                <Label>Tétel megnevezése</Label>
-                <Input 
-                  value={editForm.item_description || ""} 
+                <Label>Item description</Label>
+                <Input
+                  value={editForm.item_description || ""}
                   onChange={(e) => setEditForm({ ...editForm, item_description: e.target.value })}
                 />
               </div>
@@ -642,26 +645,26 @@ export default function InvoiceDetail() {
               {/* Amounts */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Nettó (Ft)</Label>
-                  <Input 
+                  <Label>Subtotal ($)</Label>
+                  <Input
                     type="number"
-                    value={editForm.net_amount || ""} 
+                    value={editForm.net_amount || ""}
                     onChange={(e) => setEditForm({ ...editForm, net_amount: e.target.value ? Number(e.target.value) : null })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>ÁFA (Ft)</Label>
-                  <Input 
+                  <Label>Sales Tax ($)</Label>
+                  <Input
                     type="number"
-                    value={editForm.vat_amount || ""} 
+                    value={editForm.vat_amount || ""}
                     onChange={(e) => setEditForm({ ...editForm, vat_amount: e.target.value ? Number(e.target.value) : null })}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Bruttó (Ft)</Label>
-                  <Input 
+                  <Label>Total ($)</Label>
+                  <Input
                     type="number"
-                    value={editForm.gross_amount || ""} 
+                    value={editForm.gross_amount || ""}
                     onChange={(e) => setEditForm({ ...editForm, gross_amount: e.target.value ? Number(e.target.value) : null })}
                   />
                 </div>
@@ -669,32 +672,21 @@ export default function InvoiceDetail() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>ÁFA kulcs</Label>
-                  <Select 
-                    value={editForm.vat_rate || ""} 
-                    onValueChange={(v) => setEditForm({ ...editForm, vat_rate: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Válassz..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="27%">27%</SelectItem>
-                      <SelectItem value="18%">18%</SelectItem>
-                      <SelectItem value="5%">5%</SelectItem>
-                      <SelectItem value="0%">0%</SelectItem>
-                      <SelectItem value="AAM">AAM</SelectItem>
-                      <SelectItem value="TAM">TAM</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>Sales tax rate</Label>
+                  <Input
+                    placeholder="e.g. 8.25%"
+                    value={editForm.vat_rate || ""}
+                    onChange={(e) => setEditForm({ ...editForm, vat_rate: e.target.value })}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>Kategória</Label>
-                  <Select 
-                    value={editForm.expense_category || ""} 
+                  <Label>Category</Label>
+                  <Select
+                    value={editForm.expense_category || ""}
                     onValueChange={(v) => setEditForm({ ...editForm, expense_category: v })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Válassz..." />
+                      <SelectValue placeholder="Select..." />
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(categoryLabels).map(([key, label]) => (
@@ -706,18 +698,18 @@ export default function InvoiceDetail() {
               </div>
 
               <div className="space-y-2">
-                <Label>Fizetési mód</Label>
-                <Select 
-                  value={editForm.payment_method || ""} 
+                <Label>Payment method</Label>
+                <Select
+                  value={editForm.payment_method || ""}
                   onValueChange={(v) => setEditForm({ ...editForm, payment_method: v })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Válassz..." />
+                    <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="készpénz">Készpénz</SelectItem>
-                    <SelectItem value="átutalás">Átutalás</SelectItem>
-                    <SelectItem value="bankkártya">Bankkártya</SelectItem>
+                    {Object.entries(paymentLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -725,7 +717,7 @@ export default function InvoiceDetail() {
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsEditing(false)}>
                 <X className="h-4 w-4 mr-2" />
-                Mégse
+                Cancel
               </Button>
               <Button onClick={saveEdits} disabled={saving}>
                 {saving ? (
@@ -733,7 +725,7 @@ export default function InvoiceDetail() {
                 ) : (
                   <Save className="h-4 w-4 mr-2" />
                 )}
-                Mentés
+                Save
               </Button>
             </DialogFooter>
           </DialogContent>

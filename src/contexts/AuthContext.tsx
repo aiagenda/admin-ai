@@ -61,9 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast.success(t("authPage.signIn") + " ✓");
       navigate("/");
       return { error: null };
-    } catch (error: any) {
+    } catch (error) {
       posthog.captureException(error);
-      toast.error(error.message || t("authPage.toastSignInFailed"));
+      toast.error((error as Error)?.message || t("authPage.toastSignInFailed"));
       return { error };
     }
   };
@@ -84,9 +84,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       posthog.capture("user signed up", { method: "email" });
       toast.success(t("authPage.signUp") + " — check your email");
       return { error: null };
-    } catch (error: any) {
+    } catch (error) {
       posthog.captureException(error);
-      toast.error(error.message || t("authPage.toastSignUpFailed"));
+      toast.error((error as Error)?.message || t("authPage.toastSignUpFailed"));
       return { error };
     }
   };

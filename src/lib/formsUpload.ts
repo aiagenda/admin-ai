@@ -43,7 +43,7 @@ export function humanizeName(filename: string): string {
   const withoutExt = filename.replace(/\.(pdf|docx)$/i, "");
   
   // Replace underscores, hyphens, dots with spaces
-  const spaced = withoutExt.replace(/[_\-\.]/g, " ");
+  const spaced = withoutExt.replace(/[_\-.]/g, " ");
   
   // Capitalize first letter
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
@@ -100,7 +100,7 @@ export function sanitizeFilename(filename: string): string {
   name = name.replace(/\s+/g, '-');
   
   // Remove characters not allowed in Supabase storage: / \ ? % * : | " < >
-  name = name.replace(/[\/\\?%*:|"<>]/g, '');
+  name = name.replace(/[/\\?%*:|"<>]/g, '');
   
   // Remove multiple consecutive dashes
   name = name.replace(/-+/g, '-');

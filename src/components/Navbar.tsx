@@ -83,7 +83,7 @@ export function Navbar() {
         }
 
         try {
-          const { data } = await (supabase.rpc as any)("can_access_invoices", { _user_id: user.id });
+          const { data } = await supabase.rpc("can_access_invoices", { _user_id: user.id });
           if (data === true) {
             setHasInvoiceAccess(true);
             return;
@@ -93,7 +93,7 @@ export function Navbar() {
         }
 
         const { data: subData } = await (supabase
-          .from("user_subscriptions" as any)
+          .from("user_subscriptions")
           .select("plan_type")
           .eq("user_id", user.id)
           .single()) as { data: { plan_type: string } | null };

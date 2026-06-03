@@ -122,7 +122,7 @@ export default function Archive() {
         );
 
         setDocuments(docsWithAnalyses);
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error fetching documents:", error);
         toast.error("Failed to load documents");
       } finally {
@@ -352,11 +352,12 @@ export default function Archive() {
           if (!a.analyses?.deadline) return 1;
           if (!b.analyses?.deadline) return -1;
           return new Date(a.analyses.deadline).getTime() - new Date(b.analyses.deadline).getTime();
-        case "severity":
+        case "severity": {
           const severityOrder = { urgent: 0, action_needed: 1, info: 2 };
           const aSev = a.analyses?.severity || "info";
           const bSev = b.analyses?.severity || "info";
           return (severityOrder[aSev as keyof typeof severityOrder] || 2) - (severityOrder[bSev as keyof typeof severityOrder] || 2);
+        }
         default:
           return 0;
       }
@@ -440,7 +441,7 @@ export default function Archive() {
       setEditingDocId(null);
       setEditingTags([]);
       toast.success("Tags updated");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving tags:", error);
       toast.error("Failed to save tags");
     }
@@ -469,7 +470,7 @@ export default function Archive() {
       setBulkCategory("");
       setSelectedDocs([]);
       toast.success(`Updated category for ${selectedDocs.length} document(s)`);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error assigning category:", error);
       toast.error("Failed to assign category");
     }

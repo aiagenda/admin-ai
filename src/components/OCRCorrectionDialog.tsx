@@ -69,7 +69,7 @@ export function OCRCorrectionDialog({
       setHasHandwrittenNumbers(false);
       setAccuracy("good");
       setComment("");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving OCR feedback:", error);
       toast.error("Failed to save feedback");
     }
@@ -140,7 +140,7 @@ export function OCRCorrectionDialog({
 
               <div className="space-y-2">
                 <Label htmlFor="accuracy">Recognition accuracy</Label>
-                <Select value={accuracy} onValueChange={(value: any) => setAccuracy(value)}>
+                <Select value={accuracy} onValueChange={(value) => setAccuracy(value as typeof accuracy)}>
                   <SelectTrigger id="accuracy">
                     <SelectValue />
                   </SelectTrigger>

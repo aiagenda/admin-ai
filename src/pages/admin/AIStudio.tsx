@@ -90,9 +90,9 @@ export default function AIStudio() {
       setLoading(true);
 
       const [promptRes, fieldRes, qualityRes] = await Promise.all([
-        (supabase.from("ai_prompt_versions" as any).select("*").order("created_at", { ascending: false })) as any,
-        (supabase.from("ai_field_definitions" as any).select("*").order("sort_order", { ascending: true })) as any,
-        (supabase.rpc("get_ai_quality_summary", { _days: 30 })) as any,
+        supabase.from("ai_prompt_versions").select("*").order("created_at", { ascending: false }),
+        supabase.from("ai_field_definitions").select("*").order("sort_order", { ascending: true }),
+        supabase.rpc("get_ai_quality_summary", { _days: 30 }),
       ]);
 
       if (promptRes.error) throw promptRes.error;
@@ -105,8 +105,8 @@ export default function AIStudio() {
         const q = Array.isArray(qualityRes.data) ? qualityRes.data[0] : qualityRes.data;
         setQuality((q || null) as QualitySummary | null);
       }
-    } catch (error: any) {
-      toast.error(`AI Studio betöltési hiba: ${error.message || "ismeretlen hiba"}`);
+    } catch (error) {
+      toast.error(`AI Studio betöltési hiba: ${(error as Error)?.message || "ismeretlen hiba"}`);
     } finally {
       setLoading(false);
     }
@@ -122,7 +122,7 @@ export default function AIStudio() {
       setSaving(true);
       const nextVersion = (filteredPrompts[0]?.version || 0) + 1;
 
-      const { error } = await (supabase.from("ai_prompt_versions" as any).insert({
+      const { error } = await (supabase.from("ai_prompt_versions").insert({
         doc_type: docType,
         language_code: languageCode,
         version: nextVersion,
@@ -131,7 +131,7 @@ export default function AIStudio() {
         schema_prompt: schemaPrompt || null,
         notes: promptNotes || null,
         is_active: filteredPrompts.length === 0,
-      }) as any);
+      }));
 
       if (error) throw error;
 
@@ -141,8 +141,8 @@ export default function AIStudio() {
       setPromptNotes("");
       toast.success(`Új prompt verzió létrehozva (v${nextVersion}).`);
       await loadAll();
-    } catch (error: any) {
-      toast.error(`Prompt mentési hiba: ${error.message || "ismeretlen hiba"}`);
+    } catch (error) {
+      toast.error(`Prompt mentési hiba: ${(error as Error)?.message || "ismeretlen hiba"}`);
     } finally {
       setSaving(false);
     }
@@ -152,24 +152,24 @@ export default function AIStudio() {
     try {
       setSaving(true);
       const { error: deactivateError } = await (supabase
-        .from("ai_prompt_versions" as any)
+        .from("ai_prompt_versions")
         .update({ is_active: false })
         .eq("doc_type", prompt.doc_type)
-        .eq("language_code", prompt.language_code) as any);
+        .eq("language_code", prompt.language_code));
 
       if (deactivateError) throw deactivateError;
 
       const { error: activateError } = await (supabase
-        .from("ai_prompt_versions" as any)
+        .from("ai_prompt_versions")
         .update({ is_active: true })
-        .eq("id", prompt.id) as any);
+        .eq("id", prompt.id));
 
       if (activateError) throw activateError;
 
       toast.success(`Aktív prompt: ${prompt.name} (v${prompt.version})`);
       await loadAll();
-    } catch (error: any) {
-      toast.error(`Aktiválási hiba: ${error.message || "ismeretlen hiba"}`);
+    } catch (error) {
+      toast.error(`Aktiválási hiba: ${(error as Error)?.message || "ismeretlen hiba"}`);
     } finally {
       setSaving(false);
     }
@@ -185,7 +185,7 @@ export default function AIStudio() {
       setSaving(true);
       const nextOrder = (filteredFields[filteredFields.length - 1]?.sort_order || 0) + 10;
 
-      const { error } = await (supabase.from("ai_field_definitions" as any).upsert({
+      const { error } = await (supabase.from("ai_field_definitions").upsert({
         doc_type: docType,
         field_key: fieldKey.trim(),
         display_name: fieldDisplayName.trim(),
@@ -194,7 +194,7 @@ export default function AIStudio() {
         prompt_snippet: fieldPromptSnippet || null,
         sort_order: nextOrder,
         is_active: true,
-      }, { onConflict: "doc_type,field_key" }) as any);
+      }, { onConflict: "doc_type,field_key" }));
 
       if (error) throw error;
 
@@ -204,8 +204,8 @@ export default function AIStudio() {
       setFieldDataType("text");
       toast.success("Field definíció mentve.");
       await loadAll();
-    } catch (error: any) {
-      toast.error(`Field mentési hiba: ${error.message || "ismeretlen hiba"}`);
+    } catch (error) {
+      toast.error(`Field mentési hiba: ${(error as Error)?.message || "ismeretlen hiba"}`);
     } finally {
       setSaving(false);
     }
@@ -214,13 +214,13 @@ export default function AIStudio() {
   async function toggleField(field: FieldDefinition) {
     try {
       const { error } = await (supabase
-        .from("ai_field_definitions" as any)
+        .from("ai_field_definitions")
         .update({ is_active: !field.is_active })
-        .eq("id", field.id) as any);
+        .eq("id", field.id));
       if (error) throw error;
       await loadAll();
-    } catch (error: any) {
-      toast.error(`Field frissítési hiba: ${error.message || "ismeretlen hiba"}`);
+    } catch (error) {
+      toast.error(`Field frissítési hiba: ${(error as Error)?.message || "ismeretlen hiba"}`);
     }
   }
 

@@ -840,7 +840,7 @@ async function getFeedbackImprovements(
 ): Promise<string> {
   try {
     // Get negative feedback from similar documents (same category)
-    let feedbackQuery = supabase
+    const feedbackQuery = supabase
       .from("analysis_feedback")
       .select("feedback_type, comment, summary_type")
       .in("feedback_type", ["not_helpful", "confusing"])

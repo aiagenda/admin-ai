@@ -17,6 +17,9 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    // vendor-exceljs (~940kB) is the only chunk above 500kB; it is lazy-loaded
+    // only when exporting from the bookkeeping archive, so it never blocks first paint.
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -79,8 +82,9 @@ export default defineConfig(({ mode }) => ({
           // PDF generation — only on export paths (lazy-load candidate)
           "vendor-pdf": ["jspdf", "pdfmake"],
 
-          // Excel export — only on accountant export feature
-          "vendor-excel": ["exceljs", "xlsx"],
+          // Excel export — split: InvoiceArchive uses exceljs, ExportForAccountant uses xlsx
+          "vendor-exceljs": ["exceljs"],
+          "vendor-xlsx": ["xlsx"],
 
           // Animation — framer-motion is large, separate chunk
           "vendor-animation": ["framer-motion"],

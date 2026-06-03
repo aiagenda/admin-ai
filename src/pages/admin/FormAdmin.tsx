@@ -249,10 +249,10 @@ export default function FormAdmin() {
         setExistingKeys(prev => [...prev, uniqueKey]);
         successCount++;
 
-      } catch (err: any) {
+      } catch (err) {
         toast({
           title: "Hiba",
-          description: `${file.name}: ${err.message}`,
+          description: `${file.name}: ${(err as Error)?.message}`,
           variant: "destructive",
         });
         errorCount++;

@@ -27,7 +27,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from "date-fns";
-import { hu } from "date-fns/locale";
 
 interface Invoice {
   id: string;
@@ -59,18 +58,53 @@ interface ExpenseCategory {
   name_hu: string;
 }
 
+// IRS Schedule C (Form 1040) expense categories
 const categoryLabels: Record<string, string> = {
-  fuel: "Üzemanyag",
-  office: "Irodaszer",
-  travel: "Utazás",
-  accommodation: "Szállás",
-  food: "Vendéglátás",
-  phone: "Telefon/Internet",
-  software: "Szoftver/Előfizetés",
-  maintenance: "Karbantartás",
-  marketing: "Marketing/Reklám",
-  other: "Egyéb",
+  advertising: "Advertising",
+  car_truck: "Car & Truck",
+  commissions_fees: "Commissions & Fees",
+  contract_labor: "Contract Labor",
+  depreciation: "Depreciation",
+  insurance: "Insurance",
+  interest: "Interest",
+  legal_professional: "Legal & Professional",
+  office_expense: "Office Expense",
+  rent_lease: "Rent or Lease",
+  repairs: "Repairs & Maintenance",
+  supplies: "Supplies",
+  taxes_licenses: "Taxes & Licenses",
+  travel: "Travel",
+  meals: "Meals (50%)",
+  utilities: "Utilities",
+  wages: "Wages",
+  other: "Other Expenses",
 };
+
+// IRS Schedule C line reference for each category (used in accountant export)
+const scheduleCLine: Record<string, string> = {
+  advertising: "Line 8",
+  car_truck: "Line 9",
+  commissions_fees: "Line 10",
+  contract_labor: "Line 11",
+  depreciation: "Line 13",
+  insurance: "Line 15",
+  interest: "Line 16",
+  legal_professional: "Line 17",
+  office_expense: "Line 18",
+  rent_lease: "Line 20",
+  repairs: "Line 21",
+  supplies: "Line 22",
+  taxes_licenses: "Line 23",
+  travel: "Line 24a",
+  meals: "Line 24b",
+  utilities: "Line 25",
+  wages: "Line 26",
+  other: "Line 27a",
+};
+
+// Format a number as US dollars
+const fmtUSD = (n: number | null | undefined): string =>
+  (n ?? 0).toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export default function InvoiceArchive() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -94,7 +128,7 @@ export default function InvoiceArchive() {
     e.stopPropagation(); // Don't navigate to detail page
     
     if (!session?.access_token) {
-      toast.error("Kérjük jelentkezz be újra");
+      toast.error("Please sign in again");
       return;
     }
 
@@ -123,22 +157,22 @@ export default function InvoiceArchive() {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error || "Feldolgozási hiba");
+        throw new Error(result.error || "Processing error");
       }
 
-      toast.success("Számla újrafeldolgozva!");
+      toast.success("Invoice reprocessed!");
       
       // Refresh invoice list
       const { data } = await (supabase
-        .from("invoices" as any)
+        .from("invoices")
         .select("*")
         .eq("user_id", user?.id)
         .order("upload_date", { ascending: false })) as { data: Invoice[] | null };
       
       if (data) setInvoices(data);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Reprocess error:", error);
-      toast.error(error.message || "Hiba az újrafeldolgozás során");
+      toast.error(error instanceof Error ? error.message : "Error during reprocessing");
     } finally {
       setReprocessingId(null);
     }
@@ -256,7 +290,7 @@ export default function InvoiceArchive() {
 
         // Check subscription
         const { data: subData } = await (supabase
-          .from('user_subscriptions' as any)
+          .from('user_subscriptions')
           .select('plan_type')
           .eq('user_id', user.id)
           .single()) as { data: { plan_type: string } | null };
@@ -280,16 +314,16 @@ export default function InvoiceArchive() {
 
       try {
         const { data, error } = await (supabase
-          .from("invoices" as any)
+          .from("invoices")
           .select("*")
           .eq("user_id", user.id)
-          .order("upload_date", { ascending: false })) as { data: Invoice[] | null; error: any };
+          .order("upload_date", { ascending: false })) as { data: Invoice[] | null; error: unknown };
 
         if (error) throw error;
         setInvoices(data || []);
-      } catch (error: any) {
+      } catch (error) {
         console.error("Error fetching invoices:", error);
-        toast.error("Hiba a számlák betöltése során");
+        toast.error("Failed to load invoices");
       } finally {
         setLoading(false);
       }
@@ -331,33 +365,49 @@ export default function InvoiceArchive() {
   // Export to Excel with embedded invoice images
   const exportToExcel = async () => {
     if (filteredInvoices.length === 0) {
-      toast.error("Nincs exportálható számla");
+      toast.error("No receipts to export");
       return;
     }
     setExportingExcel(true);
     try {
       const { default: ExcelJS } = await import("exceljs");
       const wb = new ExcelJS.Workbook();
-      const ws = wb.addWorksheet("Számlák", { views: [{ state: "frozen", ySplit: 1 }] });
+      wb.creator = "GovLetter";
+      wb.created = new Date();
+      const ws = wb.addWorksheet("Expenses", {
+        views: [{ state: "frozen", ySplit: 1 }],
+        pageSetup: { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0 },
+      });
 
-      const headers = [
-        "Dátum",
-        "Számlaszám",
-        "Kibocsátó",
-        "Tétel",
-        "Nettó",
-        "ÁFA%",
-        "ÁFA",
-        "Bruttó",
-        "Kategória",
-        "Fájlnév",
-        "Számla",
+      // Currency ($#,##0.00) and US date (MM/DD/YYYY) number formats
+      const MONEY_FMT = '"$"#,##0.00';
+      const DATE_FMT = "mm/dd/yyyy";
+
+      ws.columns = [
+        { header: "Date", key: "date", width: 12, style: { numFmt: DATE_FMT } },
+        { header: "Invoice #", key: "invoice_number", width: 16 },
+        { header: "Vendor", key: "vendor", width: 26 },
+        { header: "Description", key: "description", width: 34 },
+        { header: "Category", key: "category", width: 22 },
+        { header: "Schedule C", key: "schedule_c", width: 11 },
+        { header: "Subtotal", key: "subtotal", width: 13, style: { numFmt: MONEY_FMT } },
+        { header: "Sales Tax", key: "sales_tax", width: 12, style: { numFmt: MONEY_FMT } },
+        { header: "Total", key: "total", width: 13, style: { numFmt: MONEY_FMT } },
+        { header: "Payment", key: "payment", width: 13 },
+        { header: "File", key: "file", width: 26 },
+        { header: "Receipt", key: "receipt", width: 24 },
       ];
-      const headerRow = ws.getRow(1);
-      headers.forEach((h, i) => headerRow.getCell(i + 1).value = h);
-      headerRow.font = { bold: true };
 
-      const IMG_COL = 11;
+      const headerRow = ws.getRow(1);
+      headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      headerRow.alignment = { vertical: "middle", horizontal: "center" };
+      headerRow.height = 20;
+      headerRow.eachCell((cell) => {
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F4E78" } };
+        cell.border = { bottom: { style: "thin", color: { argb: "FF1F4E78" } } };
+      });
+
+      const RECEIPT_COL = 12;
       const IMG_WIDTH = 160;
       const IMG_HEIGHT = 100;
       const ROW_HEIGHT_WITH_IMG = 78;
@@ -366,16 +416,25 @@ export default function InvoiceArchive() {
         const inv = filteredInvoices[i];
         const rowIndex = i + 2;
         const row = ws.getRow(rowIndex);
-        row.getCell(1).value = inv.invoice_date || inv.upload_date.split("T")[0];
+        const dateStr = inv.invoice_date || inv.upload_date.split("T")[0];
+        const parsedDate = dateStr ? new Date(dateStr) : null;
+        row.getCell(1).value = parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate : dateStr;
         row.getCell(2).value = inv.invoice_number ?? "";
         row.getCell(3).value = inv.vendor_name ?? "";
         row.getCell(4).value = inv.item_description ?? "";
-        row.getCell(5).value = inv.net_amount ?? "";
-        row.getCell(6).value = inv.vat_rate ?? "";
-        row.getCell(7).value = inv.vat_amount ?? "";
-        row.getCell(8).value = inv.gross_amount ?? "";
-        row.getCell(9).value = (categoryLabels[inv.expense_category || "other"] || inv.expense_category) ?? "";
-        row.getCell(10).value = inv.filename;
+        const catKey = inv.expense_category || "other";
+        row.getCell(5).value = categoryLabels[catKey] || catKey;
+        row.getCell(6).value = scheduleCLine[catKey] || "";
+        row.getCell(7).value = inv.net_amount ?? null;
+        row.getCell(8).value = inv.vat_amount ?? null;
+        row.getCell(9).value = inv.gross_amount ?? null;
+        row.getCell(10).value = inv.vat_rate ? `Tax ${inv.vat_rate}` : "";
+        row.getCell(11).value = inv.filename;
+        if (i % 2 === 1) {
+          row.eachCell((cell) => {
+            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF2F6FB" } };
+          });
+        }
 
         const fileUrl = inv.file_url;
         const isImage = fileUrl && IMAGE_EXTENSIONS.test(inv.filename);
@@ -395,7 +454,7 @@ export default function InvoiceArchive() {
                   extension: excelExt,
                 });
                 ws.addImage(imageId, {
-                  tl: { col: IMG_COL - 1, row: rowIndex - 1 },
+                  tl: { col: RECEIPT_COL - 1, row: rowIndex - 1 },
                   ext: { width: IMG_WIDTH, height: IMG_HEIGHT },
                 });
                 row.height = ROW_HEIGHT_WITH_IMG;
@@ -407,19 +466,31 @@ export default function InvoiceArchive() {
         }
       }
 
-      ws.getColumn(IMG_COL).width = 22;
+      // Totals row
+      const totalRowIndex = filteredInvoices.length + 2;
+      const totalRow = ws.getRow(totalRowIndex);
+      totalRow.getCell(4).value = "TOTAL";
+      totalRow.getCell(7).value = totals.net;
+      totalRow.getCell(8).value = totals.vat;
+      totalRow.getCell(9).value = totals.gross;
+      totalRow.font = { bold: true };
+      [7, 8, 9].forEach((c) => { totalRow.getCell(c).numFmt = MONEY_FMT; });
+      totalRow.eachCell((cell) => {
+        cell.border = { top: { style: "double", color: { argb: "FF1F4E78" } } };
+      });
+
       const buffer = await wb.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `szamlak_export_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+      a.download = `expense_report_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success("Excel exportálás sikeres! A számlaképek beágyazva.");
+      toast.success("Excel export ready — receipt images embedded.");
     } catch (e) {
       console.error("Excel export error:", e);
-      toast.error("Hiba az exportálás során");
+      toast.error("Export failed. Please try again.");
     } finally {
       setExportingExcel(false);
     }
@@ -440,7 +511,7 @@ export default function InvoiceArchive() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Betöltés...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -453,22 +524,22 @@ export default function InvoiceArchive() {
           <Card className="text-center">
             <CardHeader>
               <Lock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <CardTitle>Könyvelés modul</CardTitle>
+              <CardTitle>Bookkeeping module</CardTitle>
               <CardDescription>
-                Ez a funkció csak Professzionális előfizetéssel érhető el
+                This feature is available with a Professional subscription
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                A Könyvelés modullal automatikusan felismerheted és kategorizálhatod a számláidat,
-                majd exportálhatod őket a könyvelődnek.
+                The Bookkeeping module automatically reads and categorizes your receipts and
+                invoices, then exports them for your accountant.
               </p>
               <div className="flex gap-4 justify-center">
                 <Button onClick={() => navigate("/pricing")}>
-                  Előfizetési csomagok
+                  View plans
                 </Button>
                 <Button variant="outline" onClick={() => navigate("/")}>
-                  Vissza a főoldalra
+                  Back to home
                 </Button>
               </div>
             </CardContent>
@@ -482,14 +553,15 @@ export default function InvoiceArchive() {
     const now = new Date();
     switch (period) {
       case "all":
-        return "Összes időszak";
+        return "All time";
       case "month":
-        return format(now, "yyyy. MMMM", { locale: hu });
-      case "quarter":
+        return format(now, "MMMM yyyy");
+      case "quarter": {
         const quarter = Math.floor(now.getMonth() / 3) + 1;
-        return `${now.getFullYear()}. Q${quarter}`;
+        return `Q${quarter} ${now.getFullYear()}`;
+      }
       case "year":
-        return `${now.getFullYear()}. év`;
+        return `${now.getFullYear()}`;
       default:
         return "";
     }
@@ -503,20 +575,20 @@ export default function InvoiceArchive() {
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Receipt className="h-6 w-6 text-primary" />
-              Könyvelés
+              Bookkeeping
             </h1>
             <p className="text-muted-foreground">
-              Számlák kezelése és összesítők
+              Manage receipts and expense summaries
             </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={exportToExcel} disabled={exportingExcel}>
               {exportingExcel ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-              Export Excel
+              Export to Excel
             </Button>
             <Button onClick={() => navigate("/invoices/upload")}>
               <Plus className="h-4 w-4 mr-2" />
-              Új számla
+              New receipt
             </Button>
           </div>
         </div>
@@ -526,11 +598,11 @@ export default function InvoiceArchive() {
           <TabsList className="grid w-full grid-cols-2 max-w-md">
             <TabsTrigger value="dashboard" className="gap-2">
               <BarChart3 className="h-4 w-4" />
-              Összesítő
+              Summary
             </TabsTrigger>
             <TabsTrigger value="list" className="gap-2">
               <FileText className="h-4 w-4" />
-              Számlák ({invoices.length})
+              Receipts ({invoices.length})
             </TabsTrigger>
           </TabsList>
 
@@ -544,10 +616,10 @@ export default function InvoiceArchive() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Összes időszak</SelectItem>
-                  <SelectItem value="month">Aktuális hónap</SelectItem>
-                  <SelectItem value="quarter">Aktuális negyedév</SelectItem>
-                  <SelectItem value="year">Aktuális év</SelectItem>
+                  <SelectItem value="all">All time</SelectItem>
+                  <SelectItem value="month">This month</SelectItem>
+                  <SelectItem value="quarter">This quarter</SelectItem>
+                  <SelectItem value="year">This year</SelectItem>
                 </SelectContent>
               </Select>
               <span className="text-muted-foreground font-medium">
@@ -563,13 +635,13 @@ export default function InvoiceArchive() {
                     <Loader2 className="h-4 w-4 text-amber-600 animate-spin" />
                     <span className="text-amber-700 dark:text-amber-300">
                       {dashboardStats.processingCount > 0 && (
-                        <>{dashboardStats.processingCount} számla feldolgozás alatt</>
+                        <>{dashboardStats.processingCount} receipt(s) processing</>
                       )}
                       {dashboardStats.processingCount > 0 && dashboardStats.errorCount > 0 && ", "}
                       {dashboardStats.errorCount > 0 && (
-                        <span className="text-red-600">{dashboardStats.errorCount} számla hibás</span>
+                        <span className="text-red-600">{dashboardStats.errorCount} receipt(s) failed</span>
                       )}
-                      {" "}- az összesítés csak a feldolgozott számlákat tartalmazza
+                      {" "}- summaries include processed receipts only
                     </span>
                   </div>
                 </CardContent>
@@ -582,10 +654,10 @@ export default function InvoiceArchive() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">Számlák száma</p>
+                      <p className="text-sm text-muted-foreground">Receipts</p>
                       <p className="text-2xl font-bold">{dashboardStats.completedCount}</p>
                       {dashboardStats.processingCount > 0 && (
-                        <p className="text-xs text-amber-600">+{dashboardStats.processingCount} feldolgozás alatt</p>
+                        <p className="text-xs text-amber-600">+{dashboardStats.processingCount} processing</p>
                       )}
                     </div>
                     <FileText className="h-8 w-8 text-muted-foreground" />
@@ -596,8 +668,8 @@ export default function InvoiceArchive() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">Nettó összesen</p>
-                      <p className="text-2xl font-bold">{dashboardStats.totalNet.toLocaleString("hu-HU")} Ft</p>
+                      <p className="text-sm text-muted-foreground">Subtotal</p>
+                      <p className="text-2xl font-bold">{fmtUSD(dashboardStats.totalNet)}</p>
                     </div>
                     <TrendingDown className="h-8 w-8 text-orange-500" />
                   </div>
@@ -607,8 +679,8 @@ export default function InvoiceArchive() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">ÁFA összesen</p>
-                      <p className="text-2xl font-bold text-primary">{dashboardStats.totalVat.toLocaleString("hu-HU")} Ft</p>
+                      <p className="text-sm text-muted-foreground">Sales Tax</p>
+                      <p className="text-2xl font-bold text-primary">{fmtUSD(dashboardStats.totalVat)}</p>
                     </div>
                     <PieChart className="h-8 w-8 text-primary" />
                   </div>
@@ -618,8 +690,8 @@ export default function InvoiceArchive() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">Bruttó összesen</p>
-                      <p className="text-2xl font-bold">{dashboardStats.totalGross.toLocaleString("hu-HU")} Ft</p>
+                      <p className="text-sm text-muted-foreground">Total</p>
+                      <p className="text-2xl font-bold">{fmtUSD(dashboardStats.totalGross)}</p>
                     </div>
                     <TrendingUp className="h-8 w-8 text-green-500" />
                   </div>
@@ -633,12 +705,12 @@ export default function InvoiceArchive() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <PieChart className="h-5 w-5" />
-                    Kategória szerinti bontás
+                    By category (Schedule C)
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {Object.keys(dashboardStats.byCategory).length === 0 ? (
-                    <p className="text-muted-foreground text-center py-4">Nincs adat</p>
+                    <p className="text-muted-foreground text-center py-4">No data</p>
                   ) : (
                     <div className="space-y-3">
                       {Object.entries(dashboardStats.byCategory)
@@ -647,12 +719,12 @@ export default function InvoiceArchive() {
                           <div key={cat} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Badge variant="outline">{categoryLabels[cat] || cat}</Badge>
-                              <span className="text-sm text-muted-foreground">({data.count} db)</span>
+                              <span className="text-sm text-muted-foreground">({data.count})</span>
                             </div>
                             <div className="text-right">
-                              <p className="font-medium">{data.gross.toLocaleString("hu-HU")} Ft</p>
+                              <p className="font-medium">{fmtUSD(data.gross)}</p>
                               <p className="text-xs text-muted-foreground">
-                                Nettó: {data.net.toLocaleString("hu-HU")} Ft
+                                Subtotal: {fmtUSD(data.net)}
                               </p>
                             </div>
                           </div>
@@ -666,12 +738,12 @@ export default function InvoiceArchive() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <BarChart3 className="h-5 w-5" />
-                    ÁFA kulcs szerinti bontás
+                    By sales tax rate
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {Object.keys(dashboardStats.byVatRate).length === 0 ? (
-                    <p className="text-muted-foreground text-center py-4">Nincs adat</p>
+                    <p className="text-muted-foreground text-center py-4">No data</p>
                   ) : (
                     <div className="space-y-3">
                       {Object.entries(dashboardStats.byVatRate)
@@ -680,12 +752,12 @@ export default function InvoiceArchive() {
                           <div key={rate} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Badge variant="secondary">{rate}</Badge>
-                              <span className="text-sm text-muted-foreground">({data.count} db)</span>
+                              <span className="text-sm text-muted-foreground">({data.count})</span>
                             </div>
                             <div className="text-right">
-                              <p className="font-medium text-primary">{data.vat.toLocaleString("hu-HU")} Ft ÁFA</p>
+                              <p className="font-medium text-primary">{fmtUSD(data.vat)} tax</p>
                               <p className="text-xs text-muted-foreground">
-                                Nettó: {data.net.toLocaleString("hu-HU")} Ft
+                                Subtotal: {fmtUSD(data.net)}
                               </p>
                             </div>
                           </div>
@@ -696,85 +768,71 @@ export default function InvoiceArchive() {
               </Card>
             </div>
 
-            {/* VAT Calculator */}
+            {/* Deduction Summary */}
             <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-purple-500/5">
               <CardContent className="p-5">
                 <h4 className="font-semibold text-lg flex items-center gap-2 mb-4">
                   <PieChart className="h-5 w-5 text-primary" />
-                  ÁFA Kalkulátor
+                  Deduction Summary
                 </h4>
-                
+
                 <div className="grid sm:grid-cols-3 gap-4 mb-4">
-                  {/* Deductible VAT (from expenses) */}
+                  {/* Total deductible expenses */}
                   <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border">
-                    <p className="text-xs text-muted-foreground mb-1">Levonható ÁFA (kiadások)</p>
+                    <p className="text-xs text-muted-foreground mb-1">Deductible expenses (subtotal)</p>
                     <p className="text-xl font-bold text-orange-600">
-                      {dashboardStats.totalVat.toLocaleString("hu-HU")} Ft
+                      {fmtUSD(dashboardStats.totalNet)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {dashboardStats.completedCount} számla alapján
+                      Based on {dashboardStats.completedCount} receipt(s)
                     </p>
                   </div>
-                  
-                  {/* Revenue VAT (manual input) */}
+
+                  {/* Estimated marginal tax rate (manual input) */}
                   <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border">
-                    <p className="text-xs text-muted-foreground mb-1">Fizetendő ÁFA (bevételek)</p>
+                    <p className="text-xs text-muted-foreground mb-1">Estimated tax rate</p>
                     <div className="flex items-center gap-2">
                       <Input
                         type="number"
-                        placeholder="0"
+                        placeholder="24"
                         value={revenueVat}
                         onChange={(e) => setRevenueVat(e.target.value)}
                         className="text-xl font-bold h-9 text-green-600"
                       />
-                      <span className="text-sm text-muted-foreground">Ft</span>
+                      <span className="text-sm text-muted-foreground">%</span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Számlázó programból (Billingo, stb.)
+                      Your combined marginal rate
                     </p>
                   </div>
-                  
-                  {/* VAT Balance */}
-                  <div className={`rounded-lg p-4 border ${
-                    revenueVat && Number(revenueVat) - dashboardStats.totalVat > 0
-                      ? "bg-red-50 dark:bg-red-950/30 border-red-200"
-                      : revenueVat && Number(revenueVat) - dashboardStats.totalVat < 0
-                        ? "bg-green-50 dark:bg-green-950/30 border-green-200"
-                        : "bg-white dark:bg-slate-900"
-                  }`}>
-                    <p className="text-xs text-muted-foreground mb-1">ÁFA Egyenleg</p>
+
+                  {/* Estimated tax savings */}
+                  <div className="rounded-lg p-4 border bg-green-50 dark:bg-green-950/30 border-green-200">
+                    <p className="text-xs text-muted-foreground mb-1">Estimated tax savings</p>
                     {revenueVat ? (
                       <>
-                        <p className={`text-xl font-bold ${
-                          Number(revenueVat) - dashboardStats.totalVat > 0
-                            ? "text-red-600"
-                            : "text-green-600"
-                        }`}>
-                          {(Number(revenueVat) - dashboardStats.totalVat).toLocaleString("hu-HU")} Ft
+                        <p className="text-xl font-bold text-green-600">
+                          {fmtUSD(dashboardStats.totalNet * (Number(revenueVat) / 100))}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {Number(revenueVat) - dashboardStats.totalVat > 0
-                            ? "Fizetendő a NAV-nak"
-                            : Number(revenueVat) - dashboardStats.totalVat < 0
-                              ? "Visszaigényelhető"
-                              : "Nullás egyenleg"
-                          }
+                          If all expenses are deductible
                         </p>
                       </>
                     ) : (
                       <>
-                        <p className="text-xl font-bold text-muted-foreground">— Ft</p>
+                        <p className="text-xl font-bold text-muted-foreground">—</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Add meg a bevételi ÁFA-t
+                          Enter your tax rate
                         </p>
                       </>
                     )}
                   </div>
                 </div>
-                
+
                 <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
-                  <strong>Tipp:</strong> A bevételi ÁFA-t a számlázó programodból (Billingo, Számlázz.hu, NAV Online Számla) tudod kiolvasni. 
-                  A kiadási oldalon lévő számlák automatikusan kerülnek ide. A pontos ÁFA bevalláshoz mindig egyeztess könyvelőddel!
+                  <strong>Note:</strong> These figures are estimates for planning only. Deductibility
+                  depends on your business use and IRS rules (e.g., meals are generally 50% deductible).
+                  Always confirm with your accountant or CPA before filing.
                 </div>
               </CardContent>
             </Card>
@@ -790,7 +848,7 @@ export default function InvoiceArchive() {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="Keresés (kibocsátó, számlaszám, tétel...)"
+                        placeholder="Search (vendor, invoice #, item...)"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10"
@@ -800,10 +858,10 @@ export default function InvoiceArchive() {
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                     <SelectTrigger className="w-full sm:w-[180px]">
                       <Filter className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="Kategória" />
+                      <SelectValue placeholder="Category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Összes kategória</SelectItem>
+                      <SelectItem value="all">All categories</SelectItem>
                       {Object.entries(categoryLabels).map(([key, label]) => (
                         <SelectItem key={key} value={key}>{label}</SelectItem>
                       ))}
@@ -815,14 +873,14 @@ export default function InvoiceArchive() {
                       value={dateRange.start}
                       onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
                       className="w-[140px]"
-                      placeholder="Kezdő dátum"
+                      placeholder="Start date"
                     />
                     <Input
                       type="date"
                       value={dateRange.end}
                       onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
                       className="w-[140px]"
-                      placeholder="Vég dátum"
+                      placeholder="End date"
                     />
                   </div>
                 </div>
@@ -834,20 +892,20 @@ export default function InvoiceArchive() {
               <div className="grid grid-cols-3 gap-4">
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground">Nettó összesen</p>
-                    <p className="text-xl font-bold">{totals.net.toLocaleString("hu-HU")} Ft</p>
+                    <p className="text-sm text-muted-foreground">Subtotal</p>
+                    <p className="text-xl font-bold">{fmtUSD(totals.net)}</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground">ÁFA összesen</p>
-                    <p className="text-xl font-bold">{totals.vat.toLocaleString("hu-HU")} Ft</p>
+                    <p className="text-sm text-muted-foreground">Sales Tax</p>
+                    <p className="text-xl font-bold">{fmtUSD(totals.vat)}</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground">Bruttó összesen</p>
-                    <p className="text-xl font-bold text-primary">{totals.gross.toLocaleString("hu-HU")} Ft</p>
+                    <p className="text-sm text-muted-foreground">Total</p>
+                    <p className="text-xl font-bold text-primary">{fmtUSD(totals.gross)}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -858,13 +916,13 @@ export default function InvoiceArchive() {
               <Card className="text-center py-12">
                 <CardContent>
                   <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Nincs még számla</h3>
+                  <h3 className="text-lg font-medium mb-2">No receipts yet</h3>
                   <p className="text-muted-foreground mb-4">
-                    Töltsd fel az első számládat az automatikus feldolgozáshoz
+                    Upload your first receipt for automatic processing
                   </p>
                   <Button onClick={() => navigate("/invoices/upload")}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Számla feltöltése
+                    Upload receipt
                   </Button>
                 </CardContent>
               </Card>
@@ -894,13 +952,13 @@ export default function InvoiceArchive() {
                             {invoice.status === "processing" && (
                               <Badge variant="outline" className="gap-1 text-amber-600 border-amber-300">
                                 <Loader2 className="h-3 w-3 animate-spin" />
-                                Feldolgozás alatt
+                                Processing
                               </Badge>
                             )}
                             {invoice.status === "error" && (
                               <Badge variant="destructive" className="gap-1">
                                 <AlertCircle className="h-3 w-3" />
-                                Hiba
+                                Error
                               </Badge>
                             )}
                           </div>
@@ -910,9 +968,9 @@ export default function InvoiceArchive() {
                             )}
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {invoice.invoice_date 
-                                ? format(new Date(invoice.invoice_date), "yyyy. MMM d.", { locale: hu })
-                                : format(new Date(invoice.upload_date), "yyyy. MMM d.", { locale: hu })
+                              {invoice.invoice_date
+                                ? format(new Date(invoice.invoice_date), "MMM d, yyyy")
+                                : format(new Date(invoice.upload_date), "MMM d, yyyy")
                               }
                             </span>
                             {invoice.item_description && (
@@ -934,21 +992,21 @@ export default function InvoiceArchive() {
                               ) : (
                                 <>
                                   <Receipt className="h-4 w-4 mr-1" />
-                                  Újra
+                                  Retry
                                 </>
                               )}
                             </Button>
                           )}
                           <div>
                             <p className="font-bold text-lg">
-                              {invoice.gross_amount 
-                                ? `${invoice.gross_amount.toLocaleString("hu-HU")} Ft`
+                              {invoice.gross_amount
+                                ? fmtUSD(invoice.gross_amount)
                                 : "-"
                               }
                             </p>
                             {invoice.vat_rate && (
                               <p className="text-sm text-muted-foreground">
-                                ÁFA: {invoice.vat_rate}
+                                Tax: {invoice.vat_rate}
                               </p>
                             )}
                           </div>

@@ -18,8 +18,8 @@ import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import Upload from "./pages/Upload";
-import Result from "./pages/Result";
-import Pricing from "./pages/Pricing";
+const Result = lazy(() => import("./pages/Result"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 import NotFound from "./pages/NotFound";
 
 // Lazy-loaded routes — split into separate chunks, loaded on demand
