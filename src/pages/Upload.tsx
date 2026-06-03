@@ -154,7 +154,7 @@ export default function Upload() {
 
     const nonEmptyFiles = fileArray.filter((f) => f.size > 0);
     if (nonEmptyFiles.length === 0) {
-      toast.error("A kiválasztott fájl üres (0 byte). Kérlek válassz másik dokumentumot.");
+      toast.error(t("uploadPage.emptyFile"));
       return;
     }
 
@@ -173,7 +173,7 @@ export default function Upload() {
     }
 
     if (validFiles.length < fileArray.length) {
-      toast.warning(`${fileArray.length - validFiles.length} fájl nem támogatott vagy túl nagy`);
+      toast.warning(`${fileArray.length - validFiles.length} file(s) not supported or too large`);
     }
 
     let firstFile = validFiles[0];
@@ -183,7 +183,7 @@ export default function Upload() {
       try {
         firstFile = await optimizeImage(firstFile);
         if (firstFile.size === 0) {
-          toast.error("A kamera/fájlforrás üres képet adott vissza. Kérlek készíts új fotót.");
+          toast.error("The camera returned an empty image. Please take a new photo.");
           return;
         }
       } catch (error) {
@@ -191,7 +191,7 @@ export default function Upload() {
         const name = firstFile.name.toLowerCase();
         const isHeic = firstFile.type.includes("heic") || firstFile.type.includes("heif") || /\.(heic|heif)$/i.test(name);
         if (isHeic) {
-          toast.error("A HEIC kép feldolgozása sikertelen. Kérlek válassz JPG/PNG fájlt, vagy használd az egyszerű fotó opciót.");
+          toast.error("HEIC conversion failed. Please use a JPG or PNG file instead.");
           return;
         }
         toast.warning(t("uploadPage.imageOptimizeWarn"));
@@ -199,7 +199,7 @@ export default function Upload() {
     }
 
     if (firstFile.size < 1024) {
-      toast.error("A fájl túl kicsi vagy sérült. Kérlek készíts új fotót.");
+      toast.error("File is too small or corrupted. Please take a new photo.");
       return;
     }
 
@@ -240,11 +240,11 @@ export default function Upload() {
       return;
     }
     if (file.size === 0) {
-      toast.error("A fájl üres. Készíts új fényképet vagy válassz másik fájlt.");
+      toast.error(t("uploadPage.emptyFile"));
       return;
     }
     if (file.size < 1024) {
-      toast.error("A fájl túl kicsi vagy sérült, kérlek válassz másik dokumentumot.");
+      toast.error("File is too small or corrupted. Please choose another document.");
       return;
     }
 
@@ -361,7 +361,7 @@ export default function Upload() {
           if (!res.ok || !result?.success) {
             console.error("Edge Function error:", result);
             const details = result?.error || result?.message || t("uploadPage.unknownBackend");
-            toast.error(`Elemzési hiba: ${details}`);
+            toast.error(`Analysis error: ${details}`);
             // Don't throw here - let polling handle status updates
             // The Edge Function will update status to "error" if it fails
           }
@@ -374,7 +374,7 @@ export default function Upload() {
             .update({ status: "error" })
             .eq("id", doc.id)
             .then(() => {
-              toast.error("Nem sikerült elindítani az elemzést");
+              toast.error("Failed to start analysis. Please try again.");
               setProcessingDocId(null);
               setProcessingStatus("");
               setProcessingElapsedSec(0);

@@ -31,7 +31,7 @@ export function HelpTooltip({
             className="text-xs text-primary hover:underline mt-2 block"
             onClick={(e) => e.stopPropagation()}
           >
-            További információ →
+            Learn more →
           </Link>
         )}
       </TooltipContent>

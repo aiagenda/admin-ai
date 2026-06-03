@@ -10,6 +10,7 @@ import { HelpTooltip } from "@/components/HelpTooltip";
 import { SmartSuggestions } from "@/components/SmartSuggestions";
 import { FormCard } from "@/components/FormCard";
 import { GuidedActions } from "@/components/GuidedActions";
+import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 import { getActionPaths } from "@/lib/actionPaths";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -729,6 +730,8 @@ export default function Result() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           {tr("resultPage.back")}
         </Button>
+
+        <LegalDisclaimer variant="analysis" />
 
         <Card>
           <CardHeader>

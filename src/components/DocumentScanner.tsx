@@ -103,7 +103,7 @@ async function assessImageQuality(imageSrc: string): Promise<QualityAssessment> 
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) {
-    return { level: "warning", score: 70, brightness: 0, blur: 0, tips: ["Nem sikerült automatikusan felmérni a minőséget."] };
+    return { level: "warning", score: 70, brightness: 0, blur: 0, tips: ["Could not automatically assess quality."] };
   }
 
   canvas.width = width;
@@ -145,30 +145,30 @@ async function assessImageQuality(imageSrc: string): Promise<QualityAssessment> 
 
   if (brightness < 70) {
     score -= 25;
-    tips.push("A kép sötét. Próbálj erősebb fényben fotózni.");
+    tips.push("Image is too dark. Try better lighting.");
   } else if (brightness > 215) {
     score -= 20;
-    tips.push("A kép túl világos. Kerüld a közvetlen becsillanást.");
+    tips.push("Image is too bright. Avoid direct glare.");
   }
 
   if (blur < 18) {
     score -= 35;
-    tips.push("A kép homályos. Tartsd stabilabban a telefont, és fókuszálj újra.");
+    tips.push("Image is blurry. Hold your phone steady and refocus.");
   } else if (blur < 26) {
     score -= 15;
-    tips.push("A kép élessége javítható. Ha fontos adat van rajta, érdemes újrafotózni.");
+    tips.push("Image sharpness can be improved. Consider retaking if it contains important data.");
   }
 
   if (width < 500 || height < 500) {
     score -= 10;
-    tips.push("Alacsony felbontású fotó. Próbálj közelebb menni a dokumentumhoz.");
+    tips.push("Low resolution. Try moving closer to the document.");
   }
 
   score = Math.max(0, Math.min(100, score));
   let level: QualityLevel = "good";
   if (score < 55) level = "poor";
   else if (score < 80) level = "warning";
-  if (tips.length === 0) tips.push("A kép minősége megfelelő az elemzéshez.");
+  if (tips.length === 0) tips.push("Image quality is good for analysis.");
 
   return { level, score, brightness, blur, tips };
 }
@@ -236,8 +236,8 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
       const e = err as { message?: string; name?: string };
       setCameraError(
         e?.message?.includes("Permission") || e?.name === "NotAllowedError"
-          ? "Kamera hozzáférés megtagadva. Engedélyezd a böngészőben, vagy használd a fájl feltöltést."
-          : "Kamera nem elérhető (pl. PWA mód). Használd a „Fájl kiválasztása” lehetőséget.",
+          ? "Camera access denied. Allow it in your browser settings, or use file upload instead."
+          : "Camera unavailable (e.g. PWA mode). Use the 'Choose file' option instead.",
       );
       trackEvent("scanner_camera_error", { name: e?.name || "unknown" });
     }
@@ -286,7 +286,7 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
     try {
       quality = await assessImageQuality(url);
     } catch {
-      quality = { level: "warning", score: 70, brightness: 0, blur: 0, tips: ["A minőségellenőrzés részben sikerült."] };
+      quality = { level: "warning", score: 70, brightness: 0, blur: 0, tips: ["Quality check partially succeeded."] };
     }
 
     setPages((prev) => {
@@ -405,13 +405,13 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
   };
 
   const copy = mode === "invoice"
-    ? { frame: "Tartsd a számlát a keretben", capture: "Fotó készítése", crop: "Oldalak használata" }
-    : { frame: "Tartsd a dokumentumot a keretben", capture: "Fotó készítése", crop: "Oldalak használata" };
+    ? { frame: "Keep the invoice in the frame", capture: "Take photo", crop: "Use pages" }
+    : { frame: "Keep the document in the frame", capture: "Take photo", crop: "Use pages" };
 
   const qualityStyles = {
-    good: { border: "border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-950/30", icon: <CheckCircle2 className="h-4 w-4 text-green-600" />, title: "Jó minőség" },
-    warning: { border: "border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30", icon: <Info className="h-4 w-4 text-amber-600" />, title: "Javítható minőség" },
-    poor: { border: "border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30", icon: <AlertTriangle className="h-4 w-4 text-red-600" />, title: "Gyenge minőség" },
+    good: { border: "border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-950/30", icon: <CheckCircle2 className="h-4 w-4 text-green-600" />, title: "Good quality" },
+    warning: { border: "border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30", icon: <Info className="h-4 w-4 text-amber-600" />, title: "Fair quality" },
+    poor: { border: "border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30", icon: <AlertTriangle className="h-4 w-4 text-red-600" />, title: "Poor quality" },
   };
 
   const currentQualityStyle = currentPage?.quality ? qualityStyles[currentPage.quality.level] : qualityStyles.warning;
@@ -422,17 +422,17 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
         <DialogHeader className="p-4 pb-0">
           <DialogTitle className="flex items-center gap-2">
             <Scan className="h-5 w-5 text-primary" />
-            {title || (mode === "invoice" ? "Számla szkennelése" : "Dokumentum szkennelése")}
+            {title || (mode === "invoice" ? "Scan invoice" : "Scan document")}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            {mode === "invoice" ? "Számla fotózása kamerával vagy fájlból, majd vágás." : "Dokumentum fotózása kamerával vagy fájlból, majd vágás."}
+            {mode === "invoice" ? "Take a photo of the invoice or choose a file, then crop." : "Take a photo or choose a file, then crop."}
           </DialogDescription>
 
           <div className="flex items-center gap-2 pt-2">
             <div className={`h-1.5 flex-1 rounded-full ${step === "camera" ? "bg-primary" : "bg-primary/30"}`} />
             <div className={`h-1.5 flex-1 rounded-full ${step === "review" ? "bg-primary" : "bg-primary/30"}`} />
           </div>
-          <p className="text-xs text-muted-foreground pt-1">{step === "camera" ? "1/2 Fotó készítése" : "2/2 Ellenőrzés és vágás"}</p>
+          <p className="text-xs text-muted-foreground pt-1">{step === "camera" ? "1/2 Take photo" : "2/2 Review & crop"}</p>
         </DialogHeader>
 
         {step === "camera" && (
@@ -440,12 +440,12 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
             {!cameraStarted && !cameraError ? (
               <div className="aspect-[4/3] flex flex-col items-center justify-center text-white p-6 text-center">
                 <Camera className="h-12 w-12 mb-4 opacity-70" />
-                <p className="font-medium mb-1">Kamera használata</p>
-                <p className="text-sm text-white/70 mb-4">PWA és mobil böngészőkben a kamera csak koppintásra indul.</p>
+                <p className="font-medium mb-1">Use camera</p>
+                <p className="text-sm text-white/70 mb-4">In PWA and mobile browsers the camera starts on tap.</p>
                 <div className="flex w-full max-w-sm flex-col gap-2">
-                  <Button size="lg" className="gap-2" onClick={startCamera}><Camera className="h-5 w-5" />Kamera indítása</Button>
+                  <Button size="lg" className="gap-2" onClick={startCamera}><Camera className="h-5 w-5" />Start camera</Button>
                   <Button variant="outline" className="gap-2 text-white border-white/40 hover:bg-white/10" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="h-4 w-4" /> Fájl kiválasztása
+                    <Upload className="h-4 w-4" /> Choose file
                   </Button>
                 </div>
               </div>
@@ -453,10 +453,10 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
               <div className="aspect-[4/3] flex flex-col items-center justify-center text-white p-6 text-center">
                 <Camera className="h-12 w-12 mb-2 opacity-50" />
                 <p className="font-medium">{cameraError}</p>
-                <p className="text-sm text-white/70 mt-1">Használd a „Fájl kiválasztása” lehetőséget, és válassz egy képet.</p>
+                <p className="text-sm text-white/70 mt-1">Use the "Choose file" option to select an image.</p>
                 <div className="flex gap-2 mt-4">
-                  <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>Fájl kiválasztása</Button>
-                  <Button variant="outline" className="text-white border-white/40" onClick={onClose}>Bezárás</Button>
+                  <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>Choose file</Button>
+                  <Button variant="outline" className="text-white border-white/40" onClick={onClose}>Close</Button>
                 </div>
               </div>
             ) : (
@@ -480,15 +480,15 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
                 </div>
 
                 <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-2 text-xs text-white/90">
-                  <span className="rounded-full bg-black/50 px-2.5 py-1">Mind a 4 sarok legyen látható</span>
-                  <span className="rounded-full bg-black/50 px-2.5 py-1">Kerüld a becsillanást</span>
+                  <span className="rounded-full bg-black/50 px-2.5 py-1">Keep all 4 corners visible</span>
+                  <span className="rounded-full bg-black/50 px-2.5 py-1">Avoid glare</span>
                   <span className="rounded-full bg-black/50 px-2.5 py-1">Tartsd stabilan a telefont</span>
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                   <p className="text-white/90 text-center text-sm mb-3">{copy.frame}</p>
                   <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1 bg-black/40 border-white/30 text-white hover:bg-black/60" size="lg" onClick={onClose}>Mégse</Button>
+                    <Button variant="outline" className="flex-1 bg-black/40 border-white/30 text-white hover:bg-black/60" size="lg" onClick={onClose}>Cancel</Button>
                     <Button className="flex-1 gap-2" size="lg" onClick={handleCapture}><Camera className="h-5 w-5" />{copy.capture}</Button>
                   </div>
                 </div>
@@ -501,7 +501,7 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
           <div className="p-4 space-y-4">
             {assessingQuality ? (
               <div className="rounded-lg border bg-muted/50 p-3 text-sm flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> Képminőség ellenőrzése...
+                <Loader2 className="h-4 w-4 animate-spin" /> Checking image quality...
               </div>
             ) : (
               <>
@@ -515,12 +515,12 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
                   </ul>
                   {isPoorQuality && !currentPage.poorAcknowledged && (
                     <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                      <Button variant="outline" className="sm:flex-1" onClick={removeCurrentPage}>Újrafotózom inkább</Button>
+                      <Button variant="outline" className="sm:flex-1" onClick={removeCurrentPage}>Retake photo</Button>
                       <Button variant="secondary" className="sm:flex-1" onClick={() => {
                         updateCurrentPage((p) => ({ ...p, poorAcknowledged: true }));
                         trackEvent("scanner_override_poor", { page: currentIndex + 1 });
                       }}>
-                        Mégis ezzel folytatom
+                        Use this anyway
                       </Button>
                     </div>
                   )}
@@ -528,7 +528,7 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
 
                 {pages.length > 1 && (
                   <div className="rounded-lg border bg-muted/30 p-2 text-xs text-muted-foreground">
-                    Minőség összesen: {qualitySummary.good} jó, {qualitySummary.warning} javítható, {qualitySummary.poor} gyenge oldal
+                    Overall quality: {qualitySummary.good} good, {qualitySummary.warning} fair, {qualitySummary.poor} poor
                   </div>
                 )}
               </>
@@ -568,20 +568,20 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <Button variant="outline" onClick={removeCurrentPage}><Trash2 className="mr-2 h-4 w-4" />Oldal törlése</Button>
+              <Button variant="outline" onClick={removeCurrentPage}><Trash2 className="mr-2 h-4 w-4" />Remove page</Button>
               <Button variant="outline" onClick={() => {
                 setStep("camera");
                 setCameraStarted(false);
                 startCamera();
-              }}><Plus className="mr-2 h-4 w-4" />Oldal hozzáadása</Button>
+              }}><Plus className="mr-2 h-4 w-4" />Add page</Button>
 
-              <Button variant="outline" disabled={currentIndex === 0} onClick={() => movePage(-1)}><ArrowLeft className="mr-2 h-4 w-4" />Előrébb</Button>
-              <Button variant="outline" disabled={currentIndex === pages.length - 1} onClick={() => movePage(1)}>Hátrébb<ArrowRight className="ml-2 h-4 w-4" /></Button>
+              <Button variant="outline" disabled={currentIndex === 0} onClick={() => movePage(-1)}><ArrowLeft className="mr-2 h-4 w-4" />Move earlier</Button>
+              <Button variant="outline" disabled={currentIndex === pages.length - 1} onClick={() => movePage(1)}>Move later<ArrowRight className="ml-2 h-4 w-4" /></Button>
             </div>
 
             <Button className="w-full gap-2" onClick={handleCropComplete} disabled={!canProceed}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              {hasUnacknowledgedPoorPage ? "Van gyenge minőségű oldal" : copy.crop}
+              {hasUnacknowledgedPoorPage ? "There is a poor quality page" : copy.crop}
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">Összes oldal: {pages.length}</p>

@@ -1,7 +1,7 @@
 {
   "privacy": {
     "title": "Privacy Policy",
-    "intro": "This Privacy Policy explains how we collect, use, disclose, and protect information when you use our websites and services (the “Services”), including document upload, analysis, and related features. It is not legal advice. A qualified attorney should review the final text for your entity, markets, and data flows.",
+    "intro": "This Privacy Policy explains how we collect, use, disclose, and protect information when you use our websites and services (the “Services”), including document upload, analysis, and related features. It is not legal advice.",
     "lastUpdatedLabel": "Last updated:",
     "lastUpdated": "May 6, 2026",
     "sections": [
@@ -87,7 +87,7 @@
   },
   "terms": {
     "title": "Terms of Service",
-    "intro": "These Terms govern access to and use of the Services. They are a starting point for a US/EU SaaS offering and require attorney review before production use.",
+    "intro": "These Terms govern your access to and use of the GovLetter services. Please read them carefully.",
     "lastUpdatedLabel": "Last updated:",
     "lastUpdated": "May 6, 2026",
     "sections": [

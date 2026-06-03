@@ -120,8 +120,8 @@ export function UsageLimit() {
       <CardContent className="space-y-3">
         {hasPrepaid && (
           <p className="text-sm text-muted-foreground">
-            {t(`${u}.prepaid`, { basic: pb, pro: pp }).split(":")[0] + ":"} <span className="font-medium text-foreground">{pb}</span> alap ·{" "}
-            <span className="font-medium text-foreground">{pp}</span> pro elemzés
+            Prepaid credits: <span className="font-medium text-foreground">{pb}</span> basic ·{" "}
+            <span className="font-medium text-foreground">{pp}</span> pro analyses
           </p>
         )}
 

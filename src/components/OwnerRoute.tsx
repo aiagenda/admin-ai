@@ -20,7 +20,7 @@ export function OwnerRoute({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Ellenőrzés...</p>
+          <p className="text-muted-foreground">Verifying access…</p>
         </div>
       </div>
     );
@@ -34,11 +34,11 @@ export function OwnerRoute({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center max-w-md p-8">
-          <h1 className="text-2xl font-bold mb-4">Hozzáférés megtagadva</h1>
+          <h1 className="text-2xl font-bold mb-4">Access denied</h1>
           <p className="text-muted-foreground mb-6">
-            Ez az oldal csak a rendszer tulajdonosának érhető el.
+            This page is restricted to the system owner.
           </p>
-          <a href="/" className="text-primary hover:underline">Vissza a kezdőlapra</a>
+          <a href="/" className="text-primary hover:underline">Back to home</a>
         </div>
       </div>
     );

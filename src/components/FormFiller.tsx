@@ -12,7 +12,6 @@ import {
   Download,
   Printer,
   CheckCircle2,
-  AlertCircle,
   ExternalLink,
   Sparkles,
   FileDown,
@@ -27,6 +26,7 @@ import {
 } from "@/lib/formPrefill";
 import { hasVerifiedFieldMap } from "@/lib/formFieldMaps";
 import { fillAndDownloadPdf } from "@/lib/fillPdfForm";
+import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 
 interface FormFillerProps {
   formId: string;
@@ -404,17 +404,7 @@ export function FormFiller({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-2 text-sm text-muted-foreground">
-            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-            <p>
-              We pre-fill from your letter to save time, but always double-check every value against the
-              official form before submitting. This is not tax or legal advice.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <LegalDisclaimer variant="forms" />
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
 import type { ActionPath, ActionPathsResult } from "@/lib/actionPaths";
 import type { Form } from "@/pages/Result";
 import { FormCard } from "@/components/FormCard";
+import { LegalDisclaimer } from "@/components/LegalDisclaimer";
 
 interface GuidedActionsProps {
   result: ActionPathsResult;
@@ -171,6 +172,7 @@ export function GuidedActions({ result, formsByKey, analysisId }: GuidedActionsP
             </button>
           ))}
         </div>
+        <LegalDisclaimer variant="general" className="mt-4" compact />
       </CardContent>
     </Card>
   );

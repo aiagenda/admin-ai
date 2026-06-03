@@ -5,12 +5,12 @@ import type { User } from "@supabase/supabase-js";
 export type PlanType = "free" | "basic" | "pro" | "monthly" | "business" | "enterprise";
 
 const PLAN_LABELS: Record<PlanType, string> = {
-  free: "Ingyenes",
-  basic: "Alap (régi)",
-  pro: "Pro (régi)",
-  monthly: "Havi 10",
+  free: "Free",
+  basic: "Basic",
+  pro: "Pro",
+  monthly: "Monthly 10",
   business: "Business 50",
-  enterprise: "Professzionális",
+  enterprise: "CPA / Professional",
 };
 
 const ALLOWED = new Set<string>(["free", "basic", "pro", "monthly", "business", "enterprise"]);

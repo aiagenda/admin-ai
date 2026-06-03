@@ -45,7 +45,7 @@ export function usePushNotification() {
 
   const requestPermission = async (): Promise<boolean> => {
     if (!('Notification' in window)) {
-      toast.error('A böngésző nem támogatja az értesítéseket');
+      toast.error('This browser does not support push notifications');
       return false;
     }
 
@@ -55,7 +55,7 @@ export function usePushNotification() {
 
   const subscribe = async (): Promise<boolean> => {
     if (!user) {
-      toast.error('Be kell jelentkezned');
+      toast.error('Please sign in first');
       return false;
     }
 
@@ -64,7 +64,7 @@ export function usePushNotification() {
       // Request permission
       const hasPermission = await requestPermission();
       if (!hasPermission) {
-        toast.error('Az értesítési engedély megtagadva');
+        toast.error('Notification permission denied');
         return false;
       }
 
@@ -77,7 +77,7 @@ export function usePushNotification() {
       if (!publicKey) {
         console.error('VAPID_PUBLIC_KEY not found in environment variables');
         console.log('Available env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
-        toast.error('VAPID kulcs nincs beállítva. Ellenőrizd a .env fájlt és indítsd újra a dev szervert.');
+        toast.error('VAPID key not configured. Check your .env file and restart the dev server.');
         return false;
       }
 
@@ -90,7 +90,7 @@ export function usePushNotification() {
         console.log('Application server key converted successfully');
       } catch (keyError) {
         console.error('Error converting VAPID key:', keyError);
-        toast.error('Hiba a VAPID kulcs feldolgozása során. Ellenőrizd a kulcs formátumát.');
+        toast.error('Error processing VAPID key. Check the key format.');
         return false;
       }
 
@@ -104,11 +104,11 @@ export function usePushNotification() {
       } catch (subscribeError) {
         console.error('Push subscription error:', subscribeError);
         const e = subscribeError as { name?: string; message?: string };
-        // Push notifications nem működnek localhost-on HTTPS nélkül (kivéve ha service worker van)
+        // Push notifications require HTTPS (except localhost with a service worker)
         if (e.name === 'AbortError' || e.message?.includes('push service error')) {
-          toast.error('Push értesítések csak HTTPS-en vagy localhost-on működnek. Production környezetben próbáld meg.');
+          toast.error('Push notifications require HTTPS. Try in production.');
         } else {
-          toast.error('Hiba a push subscription létrehozása során: ' + (e.message || 'Ismeretlen hiba'));
+          toast.error('Failed to create push subscription: ' + (e.message || 'Unknown error'));
         }
         return false;
       }
@@ -136,11 +136,11 @@ export function usePushNotification() {
       if (saveError) throw saveError;
 
       setIsSubscribed(true);
-      toast.success('Push értesítések engedélyezve!');
+      toast.success('Push notifications enabled!');
       return true;
     } catch (error) {
       console.error('Error subscribing to push:', error);
-      toast.error('Hiba az értesítések engedélyezése során: ' + ((error as Error)?.message || 'Ismeretlen hiba'));
+      toast.error('Failed to enable notifications: ' + ((error as Error)?.message || 'Unknown error'));
       return false;
     } finally {
       setIsLoading(false);
@@ -168,12 +168,12 @@ export function usePushNotification() {
         if (error) throw error;
 
         setIsSubscribed(false);
-        toast.success('Push értesítések kikapcsolva');
+        toast.success('Push notifications disabled');
         return true;
       }
     } catch (error) {
       console.error('Error unsubscribing from push:', error);
-      toast.error('Hiba az értesítések kikapcsolása során');
+      toast.error('Failed to disable notifications');
       return false;
     } finally {
       setIsLoading(false);

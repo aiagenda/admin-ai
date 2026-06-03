@@ -76,23 +76,23 @@ export function PWAInstallBanner() {
           <Smartphone className="h-5 w-5 text-primary" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-medium text-sm">Jobb élmény mobilra</p>
+          <p className="font-medium text-sm">Better on mobile</p>
           <p className="text-xs text-muted-foreground">
             {isIOS
-              ? "Safari: Megosztás → Hozzáadás a Kezdőképernyőhöz"
-              : "Telepítsd az alkalmazást a kezdőképernyőre"}
+              ? "Safari: Share → Add to Home Screen"
+              : "Install the app on your home screen"}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {!isIOS && (
             <Button size="sm" onClick={handleInstall} className="gap-1.5">
               <Download className="h-4 w-4" />
-              Telepítés
+              Install
             </Button>
           )}
           {isIOS && (
             <Button size="sm" onClick={() => setVisible(false)}>
-              Rendben
+              Got it
             </Button>
           )}
           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleDismiss}>
