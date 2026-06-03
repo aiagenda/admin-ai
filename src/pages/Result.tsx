@@ -9,6 +9,8 @@ import { ArrowLeft, Calendar, AlertCircle, Info, AlertTriangle, Copy, Download, 
 import { HelpTooltip } from "@/components/HelpTooltip";
 import { SmartSuggestions } from "@/components/SmartSuggestions";
 import { FormCard } from "@/components/FormCard";
+import { GuidedActions } from "@/components/GuidedActions";
+import { getActionPaths } from "@/lib/actionPaths";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import posthog from "posthog-js";
@@ -80,6 +82,7 @@ export default function Result() {
   const [form, setForm] = useState<Form | null>(null);
   const [requiredForms, setRequiredForms] = useState<Form[]>([]);
   const [paymentReliefForms, setPaymentReliefForms] = useState<Form[]>([]);
+  const [actionFormsByKey, setActionFormsByKey] = useState<Map<string, Form>>(new Map());
   const [loading, setLoading] = useState(true);
   const [feedbackGiven, setFeedbackGiven] = useState(false);
   const [feedbackType, setFeedbackType] = useState<"helpful" | "not_helpful" | "confusing" | null>(null);
@@ -136,6 +139,25 @@ export default function Result() {
 
           if (!formError && formData) {
             setForm(formData as Form);
+          }
+        }
+
+        // Fetch the forms referenced by the guided action paths for this doc_type
+        const guided = getActionPaths(analysisData.doc_type);
+        if (guided) {
+          const pathFormKeys = Array.from(
+            new Set(guided.paths.flatMap((p) => p.formKeys)),
+          );
+          if (pathFormKeys.length > 0) {
+            const { data: pathForms } = await supabase
+              .from("forms")
+              .select("*")
+              .in("key", pathFormKeys);
+            if (pathForms) {
+              const map = new Map<string, Form>();
+              (pathForms as Form[]).forEach((f) => map.set(f.key, f));
+              setActionFormsByKey(map);
+            }
           }
         }
 
@@ -692,6 +714,9 @@ export default function Result() {
   const todoSimple = parseTodoList(analysis.todo_simple, analysis.what_to_do);
   const todoLegal = parseTodoList(analysis.todo_legal, null);
 
+  // Guided "what would you like to do?" paths for this document type
+  const guidedActions = getActionPaths(analysis.doc_type);
+
   // Calculate todo progress percentage
   const todoProgressPercentage = todoSimple.length > 0
     ? Math.round((Object.values(todoProgress).filter(Boolean).length / todoSimple.length) * 100)
@@ -901,7 +926,21 @@ export default function Result() {
               )}
             </div>
 
-            {requiredForms.length > 0 && (
+            {/* Guided decision flow: ask the user what they want to do, then
+                reveal only the relevant steps + AI-prefilled form. */}
+            {guidedActions && (
+              <div className="border-t pt-6">
+                <GuidedActions
+                  result={guidedActions}
+                  formsByKey={actionFormsByKey}
+                  analysisId={analysis.id || id}
+                />
+              </div>
+            )}
+
+            {/* Legacy form lists — only when there is no tailored guided flow,
+                to avoid overwhelming the user with duplicate options. */}
+            {!guidedActions && requiredForms.length > 0 && (
               <div className="border-t pt-6 space-y-3">
                 <h3 className="text-lg font-semibold">Required Forms</h3>
                 <div className="space-y-4">
@@ -912,7 +951,7 @@ export default function Result() {
               </div>
             )}
 
-            {paymentReliefForms.length > 0 && (
+            {!guidedActions && paymentReliefForms.length > 0 && (
               <div className="border-t pt-6 space-y-3">
                 <h3 className="text-lg font-semibold">Payment Plan / Relief – Forms</h3>
                 <p className="text-sm text-muted-foreground">
@@ -926,7 +965,7 @@ export default function Result() {
               </div>
             )}
 
-            {form && (
+            {!guidedActions && form && (
               <div className="border-t pt-6 space-y-3">
                 <h3 className="text-lg font-semibold">Required Official Form</h3>
                 <FormCard form={form} />

@@ -1,24 +1,30 @@
-import { useState, useEffect, useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, Download, Printer, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
+import {
+  Loader2,
+  Save,
+  Download,
+  Printer,
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink,
+  Sparkles,
+  FileDown,
+} from "lucide-react";
 import { toast } from "sonner";
-
-interface FormField {
-  name: string;
-  type: "text" | "textarea" | "number" | "date" | "checkbox" | "select";
-  label: string;
-  required?: boolean;
-  placeholder?: string;
-  options?: string[];
-}
+import { supabase } from "@/integrations/supabase/client";
+import {
+  buildPrefillValues,
+  getFormFields,
+  type AnalysisForPrefill,
+  type PrefillFieldDef,
+} from "@/lib/formPrefill";
 
 interface FormFillerProps {
   formId: string;
@@ -39,33 +45,24 @@ export function FormFiller({
   onlineUrl,
   instructions,
 }: FormFillerProps) {
-  const { t } = useTranslation("common");
-  const [fields, setFields] = useState<FormField[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+  const analysisId = searchParams.get("analysis");
+
+  const fields = useMemo<PrefillFieldDef[]>(() => getFormFields(formKey), [formKey]);
+  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [prefilledKeys, setPrefilledKeys] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(Boolean(analysisId));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [formData, setFormData] = useState<Record<string, unknown>>({});
 
   const externalOfficialUrl = (fillableUrl || onlineUrl || "").trim() || null;
 
-  const defaultFields = useMemo<FormField[]>(
-    () => [
-      { name: "name", type: "text", label: t("formFiller.field.name"), required: true, placeholder: t("formFiller.ph.name") },
-      { name: "email", type: "text", label: t("formFiller.field.email"), required: true, placeholder: t("formFiller.ph.email") },
-      { name: "phone", type: "text", label: t("formFiller.field.phone"), placeholder: t("formFiller.ph.phone") },
-      { name: "address", type: "textarea", label: t("formFiller.field.address"), required: true, placeholder: t("formFiller.ph.address") },
-      { name: "date", type: "date", label: t("formFiller.field.date"), required: true },
-      { name: "signature", type: "checkbox", label: t("formFiller.field.signature"), required: true },
-    ],
-    [t],
-  );
-
+  // Load any locally saved draft first.
   useEffect(() => {
     const savedData = localStorage.getItem(`form_${formKey}`);
     if (savedData) {
       try {
-        const parsed = JSON.parse(savedData) as Record<string, unknown>;
-        setFormData(parsed);
+        setFormData(JSON.parse(savedData) as Record<string, string>);
         setSaved(true);
       } catch (e) {
         console.error(e);
@@ -73,29 +70,74 @@ export function FormFiller({
     }
   }, [formKey]);
 
+  // Prefill from the analyzed document.
   useEffect(() => {
-    setFields(defaultFields);
-    setLoading(false);
-  }, [defaultFields]);
+    let cancelled = false;
+    async function loadPrefill() {
+      if (!analysisId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const { data } = await supabase
+          .from("analyses")
+          .select("recipient_name, amount, agency, issuer, doc_type, deadline, extracted_fields")
+          .eq("id", analysisId)
+          .single();
 
-  const handleFieldChange = (name: string, value: unknown) => {
+        if (!cancelled && data) {
+          const values = buildPrefillValues(data as AnalysisForPrefill);
+          const filled = new Set<string>();
+          setFormData((prev) => {
+            const next = { ...prev };
+            for (const [k, v] of Object.entries(values)) {
+              // Don't overwrite a value the user already saved/typed.
+              if (v && !next[k]) {
+                next[k] = v;
+                filled.add(k);
+              }
+            }
+            return next;
+          });
+          setPrefilledKeys(filled);
+        }
+      } catch (e) {
+        console.error("Prefill error:", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    loadPrefill();
+    return () => {
+      cancelled = true;
+    };
+  }, [analysisId]);
+
+  const handleFieldChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     setSaved(false);
+    // Once edited, it's no longer "auto-filled".
+    setPrefilledKeys((prev) => {
+      if (!prev.has(name)) return prev;
+      const next = new Set(prev);
+      next.delete(name);
+      return next;
+    });
   };
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     try {
       localStorage.setItem(`form_${formKey}`, JSON.stringify(formData));
       setSaved(true);
-      toast.success(t("formFiller.progressSaved"));
+      toast.success("Progress saved");
     } catch {
-      toast.error(t("formFiller.saveError"));
+      toast.error("Could not save progress");
     }
-  };
+  }, [formKey, formData]);
 
-  const handleDownload = () => {
+  const handleDownloadOfficial = () => {
     if (!pdfUrl) {
-      toast.info(t("formFiller.pdfSoon"));
+      toast.info("Official PDF coming soon");
       return;
     }
     const a = document.createElement("a");
@@ -107,24 +149,73 @@ export function FormFiller({
     a.click();
     document.body.removeChild(a);
   };
+
   const handlePrint = () => window.print();
 
-  const handleSubmit = async () => {
-    const missing = fields.filter((f) => f.required && !formData[f.name]).map((f) => f.label);
+  // Generate a clean, completed worksheet PDF from the reviewed data.
+  const handleGeneratePdf = async () => {
+    const missing = fields
+      .filter((f) => f.required && !formData[f.name]?.trim())
+      .map((f) => f.label);
     if (missing.length) {
-      toast.error(`${t("formFiller.missingRequired")} ${missing.join(", ")}`);
+      toast.error(`Please complete: ${missing.join(", ")}`);
       return;
     }
     setSaving(true);
     try {
-      await Promise.resolve(handleSave());
-      toast.success(t("formFiller.submitSuccess"));
-      localStorage.removeItem(`form_${formKey}`);
-      setFormData({});
-      setSaved(false);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : t("formFiller.unknownError");
-      toast.error(`${t("formFiller.submitError")} ${msg}`);
+      handleSave();
+      const { default: jsPDF } = await import("jspdf");
+      const doc = new jsPDF({ unit: "pt", format: "letter" });
+      const left = 56;
+      let y = 64;
+
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text(formName, left, y);
+      y += 22;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(110);
+      doc.text("Completed worksheet — review, then transfer to the official form or file online.", left, y);
+      doc.setTextColor(20);
+      y += 28;
+
+      doc.setDrawColor(220);
+      doc.line(left, y, 556, y);
+      y += 24;
+
+      for (const f of fields) {
+        const value = formData[f.name]?.trim() || "—";
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text(`${f.label}:`, left, y);
+        doc.setFont("helvetica", "normal");
+        const lines = doc.splitTextToSize(value, 320);
+        doc.text(lines, left + 200, y);
+        y += Math.max(18, lines.length * 14);
+        if (y > 720) {
+          doc.addPage();
+          y = 64;
+        }
+      }
+
+      y += 16;
+      doc.setDrawColor(220);
+      doc.line(left, y, 556, y);
+      y += 20;
+      doc.setFontSize(8);
+      doc.setTextColor(130);
+      doc.text(
+        `Generated by GovLetter on ${new Date().toLocaleDateString("en-US")}. Not tax or legal advice.`,
+        left,
+        y,
+      );
+
+      doc.save(`${formKey}-worksheet.pdf`);
+      toast.success("Worksheet PDF created");
+    } catch (e) {
+      console.error("PDF generation error:", e);
+      toast.error("Could not generate PDF");
     } finally {
       setSaving(false);
     }
@@ -138,101 +229,141 @@ export function FormFiller({
     );
   }
 
+  const prefilledCount = prefilledKeys.size;
+
   return (
     <div className="space-y-6">
+      {prefilledCount > 0 && (
+        <Card className="border-primary/30 bg-primary/[0.03]">
+          <CardContent className="flex items-start gap-3 pt-6">
+            <Sparkles className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+            <div className="text-sm">
+              <p className="font-medium">We pre-filled {prefilledCount} field{prefilledCount > 1 ? "s" : ""} from your letter.</p>
+              <p className="text-muted-foreground">Review each value, fix anything that's off, and complete the rest. Pre-filled fields are marked.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {externalOfficialUrl && (
         <Card>
           <CardContent className="pt-6">
             <Button type="button" variant="secondary" className="w-full sm:w-auto" asChild>
               <a href={externalOfficialUrl} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4 mr-2" />
-                {t("formFiller.openOfficialOnline")}
+                Open the official online form
               </a>
             </Button>
           </CardContent>
         </Card>
       )}
+
       {instructions && (
         <Card>
           <CardHeader>
-            <CardTitle>{t("formFiller.instructionsTitle")}</CardTitle>
+            <CardTitle className="text-base">Filing instructions</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm whitespace-pre-line">{instructions}</p>
+            <p className="text-sm whitespace-pre-line text-muted-foreground">{instructions}</p>
           </CardContent>
         </Card>
       )}
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>{formName}</CardTitle>
-              <CardDescription>{t("formFiller.fillFieldsBelow")}</CardDescription>
+              <CardDescription>Review and confirm your details below</CardDescription>
             </div>
             {saved && (
               <Badge variant="outline" className="flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
-                {t("formFiller.saved")}
+                Saved
               </Badge>
             )}
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {fields.map((field) => (
-              <div key={field.name} className="space-y-2">
-                <Label htmlFor={field.name}>
-                  {field.label}
-                  {field.required && <span className="text-destructive ml-1">*</span>}
-                </Label>
-                {field.type === "text" && (
-                  <Input id={field.name} type="text" value={(formData[field.name] as string) || ""} onChange={(e) => handleFieldChange(field.name, e.target.value)} placeholder={field.placeholder} required={field.required} />
-                )}
-                {field.type === "textarea" && (
-                  <Textarea id={field.name} value={(formData[field.name] as string) || ""} onChange={(e) => handleFieldChange(field.name, e.target.value)} placeholder={field.placeholder} required={field.required} rows={3} />
-                )}
-                {field.type === "number" && (
-                  <Input id={field.name} type="number" value={(formData[field.name] as string) || ""} onChange={(e) => handleFieldChange(field.name, e.target.value)} placeholder={field.placeholder} required={field.required} />
-                )}
-                {field.type === "date" && (
-                  <Input id={field.name} type="date" value={(formData[field.name] as string) || ""} onChange={(e) => handleFieldChange(field.name, e.target.value)} required={field.required} />
-                )}
-                {field.type === "checkbox" && (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id={field.name} checked={Boolean(formData[field.name])} onCheckedChange={(c) => handleFieldChange(field.name, c)} required={field.required} />
-                    <Label htmlFor={field.name} className="font-normal cursor-pointer">{field.label}</Label>
+          <div className="space-y-5">
+            {fields.map((field) => {
+              const isPrefilled = prefilledKeys.has(field.name);
+              return (
+                <div key={field.name} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor={field.name}>
+                      {field.label}
+                      {field.required && <span className="text-destructive ml-1">*</span>}
+                    </Label>
+                    {isPrefilled && (
+                      <Badge variant="secondary" className="gap-1 text-[10px] py-0 h-5">
+                        <Sparkles className="h-2.5 w-2.5" />
+                        From your letter
+                      </Badge>
+                    )}
                   </div>
-                )}
-                {field.type === "select" && (
-                  <Select value={(formData[field.name] as string) || ""} onValueChange={(v) => handleFieldChange(field.name, v)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={field.placeholder || t("formFiller.selectPlaceholder")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {field.options?.map((o) => (
-                        <SelectItem key={o} value={o}>{o}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            ))}
+                  {field.type === "textarea" ? (
+                    <Textarea
+                      id={field.name}
+                      value={formData[field.name] || ""}
+                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      placeholder={field.placeholder}
+                      rows={3}
+                      className={isPrefilled ? "border-primary/40" : ""}
+                    />
+                  ) : (
+                    <Input
+                      id={field.name}
+                      type={field.type === "number" ? "number" : "text"}
+                      value={formData[field.name] || ""}
+                      onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                      placeholder={field.placeholder}
+                      className={isPrefilled ? "border-primary/40" : ""}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
+
           <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t">
-            <Button type="button" onClick={handleSave} variant="outline" disabled={saving}><Save className="h-4 w-4 mr-2" />{t("formFiller.save")}</Button>
-            <Button type="button" onClick={handleDownload} variant="outline" disabled={saving}><Download className="h-4 w-4 mr-2" />{t("formFiller.downloadPdf")}</Button>
-            <Button type="button" onClick={handlePrint} variant="outline" disabled={saving}><Printer className="h-4 w-4 mr-2" />{t("formFiller.print")}</Button>
-            <Button type="button" onClick={handleSubmit} disabled={saving} className="ml-auto">
-              {saving ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("formFiller.submitting")}</>) : t("formFiller.submit")}
+            <Button type="button" onClick={handleSave} variant="outline" disabled={saving}>
+              <Save className="h-4 w-4 mr-2" />
+              Save draft
+            </Button>
+            <Button type="button" onClick={handleDownloadOfficial} variant="outline" disabled={saving}>
+              <Download className="h-4 w-4 mr-2" />
+              Official blank PDF
+            </Button>
+            <Button type="button" onClick={handlePrint} variant="outline" disabled={saving}>
+              <Printer className="h-4 w-4 mr-2" />
+              Print
+            </Button>
+            <Button type="button" onClick={handleGeneratePdf} disabled={saving} className="ml-auto">
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Generating…
+                </>
+              ) : (
+                <>
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Confirm & generate PDF
+                </>
+              )}
             </Button>
           </div>
         </CardContent>
       </Card>
+
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-            <p>{t("formFiller.footerHint")}</p>
+            <p>
+              We pre-fill from your letter to save time, but always double-check every value against the
+              official form before submitting. This is not tax or legal advice.
+            </p>
           </div>
         </CardContent>
       </Card>

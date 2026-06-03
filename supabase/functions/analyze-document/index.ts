@@ -7,6 +7,17 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
+type ExtractedFields = {
+  taxpayer_name?: string | null;
+  address?: string | null;
+  city_state_zip?: string | null;
+  tax_year?: string | null;
+  notice_number?: string | null;
+  account_number?: string | null;
+  amount_due?: string | null;
+  agency?: string | null;
+};
+
 type AnalysisResult = {
   simple_summary: string; // Includes real-life example (e.g., "Ez olyan, mint amikor Józsi...")
   confidence?: number; // Optional model confidence (0-1)
@@ -25,6 +36,7 @@ type AnalysisResult = {
   doc_type?: string | null; // Document type for playbook matching (e.g., "nav_missing_info", "nav_fine", "execution")
   state_code?: string | null; // US state code (e.g. CA, NY) when applicable
   issuer?: string | null; // Document issuer (e.g., "NAV", "bíróság", "önkormányzat")
+  extracted_fields?: ExtractedFields | null; // Structured fields for form prefill
   // Legacy fields for backward compatibility
   what_is_it?: string;
   what_to_do?: string[] | string;
@@ -612,7 +624,17 @@ function getUsLanguagePrompt(todayStr: string): string {
   "mentioned_laws": ["26 U.S.C. §6331", "IRC §6651"] or [],
   "doc_type": "irs_notice_balance_due" | "irs_notice_intent_to_levy" | "irs_notice_generic" | "state_tax_balance_due" | "state_tax_audit" | "state_tax_refund_offset" | "state_tax_generic" | "state_tax_CA_balance_due" (pattern: state_tax_XX_balance_due for any US state) | "ssa_overpayment" | "ssa_benefit_change" | "ssa_generic" | "uscis_rfe" | "uscis_biometrics" | "uscis_decision" | "medicare_premium" | "medicare_lis" | "medicare_generic" | "va_debt" | "va_benefit" | "unemployment_determination" | "court_summons" | "court_judgment" | "child_support" | "bank_collection" | "credit_card_chargeoff" | "mortgage_default" | "utility_disconnect" | "hoa_violation" | "eviction_notice" | "medical_bill" | "insurance_eob" | "official_letter_generic" | "unknown",
   "state_code": "two-letter US state code or null (e.g. CA, NY, TX)",
-  "issuer": "irs" | "state_tax_authority" | "ssa" | "uscis" | "cms" | "va" | "court" | "bank" | "utility" | "hoa" | "landlord" | "hospital" | "insurer" | "employer" | "other" or null
+  "issuer": "irs" | "state_tax_authority" | "ssa" | "uscis" | "cms" | "va" | "court" | "bank" | "utility" | "hoa" | "landlord" | "hospital" | "insurer" | "employer" | "other" or null,
+  "extracted_fields": {
+    "taxpayer_name": "the recipient/taxpayer full name exactly as printed, or null",
+    "address": "street address line of the recipient, or null",
+    "city_state_zip": "city, state, ZIP of the recipient, or null",
+    "tax_year": "the tax year or period the notice concerns (e.g. \"2023\"), or null",
+    "notice_number": "the notice/letter identifier (e.g. \"CP14\", \"LT11\"), or null",
+    "account_number": "account, case, or reference number, or null",
+    "amount_due": "the amount owed/in question as printed (keep the $ and decimals), or null",
+    "agency": "the issuing agency name as printed (e.g. \"Internal Revenue Service\"), or null"
+  }
 }
 
 IMPORTANT RULES:
@@ -1436,6 +1458,7 @@ Deno.serve(async (req) => {
         issuer: analysis.issuer || null,
         state_code: analysis.state_code || null,
         agency: analysis.issuer || null,
+        extracted_fields: analysis.extracted_fields || null,
         deadline_descriptions: deadlineDesc,
         form_key: playbookFormKey,
         required_forms: playbookRequiredForms.length > 0 ? playbookRequiredForms : null,

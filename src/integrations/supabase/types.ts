@@ -249,6 +249,7 @@ export type Database = {
           detected_tags: string[] | null
           doc_type: string | null
           document_id: string
+          extracted_fields: Json | null
           form_key: string | null
           id: string
           issuer: string | null
@@ -275,6 +276,7 @@ export type Database = {
           detected_tags?: string[] | null
           doc_type?: string | null
           document_id: string
+          extracted_fields?: Json | null
           form_key?: string | null
           id?: string
           issuer?: string | null
@@ -301,6 +303,7 @@ export type Database = {
           detected_tags?: string[] | null
           doc_type?: string | null
           document_id?: string
+          extracted_fields?: Json | null
           form_key?: string | null
           id?: string
           issuer?: string | null
@@ -716,6 +719,7 @@ export type Database = {
           is_default: boolean | null
           name: string
           name_hu: string
+          schedule_c_line: string | null
           sort_order: number | null
           user_id: string | null
         }
@@ -727,6 +731,7 @@ export type Database = {
           is_default?: boolean | null
           name: string
           name_hu: string
+          schedule_c_line?: string | null
           sort_order?: number | null
           user_id?: string | null
         }
@@ -738,6 +743,7 @@ export type Database = {
           is_default?: boolean | null
           name?: string
           name_hu?: string
+          schedule_c_line?: string | null
           sort_order?: number | null
           user_id?: string | null
         }
