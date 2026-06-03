@@ -82,6 +82,9 @@ export default defineConfig(({ mode }) => ({
           // PDF generation — only on export paths (lazy-load candidate)
           "vendor-pdf": ["jspdf", "pdfmake"],
 
+          // PDF form filling — only when filling an official IRS form (lazy)
+          "vendor-pdflib": ["pdf-lib"],
+
           // Excel export — split: InvoiceArchive uses exceljs, ExportForAccountant uses xlsx
           "vendor-exceljs": ["exceljs"],
           "vendor-xlsx": ["xlsx"],

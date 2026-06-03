@@ -25,6 +25,8 @@ import {
   type AnalysisForPrefill,
   type PrefillFieldDef,
 } from "@/lib/formPrefill";
+import { hasVerifiedFieldMap } from "@/lib/formFieldMaps";
+import { fillAndDownloadPdf } from "@/lib/fillPdfForm";
 
 interface FormFillerProps {
   formId: string;
@@ -151,6 +153,30 @@ export function FormFiller({
   };
 
   const handlePrint = () => window.print();
+
+  const canFillOfficial = hasVerifiedFieldMap(formKey);
+
+  // Fill the real official IRS PDF's form fields and download it.
+  const handleFillOfficial = async () => {
+    const missing = fields
+      .filter((f) => f.required && !formData[f.name]?.trim())
+      .map((f) => f.label);
+    if (missing.length) {
+      toast.error(`Please complete: ${missing.join(", ")}`);
+      return;
+    }
+    setSaving(true);
+    try {
+      handleSave();
+      const { filledCount } = await fillAndDownloadPdf(formKey, pdfUrl, formData, `${formKey}-filled.pdf`);
+      toast.success(`Filled ${filledCount} field${filledCount === 1 ? "" : "s"} on the official form — review before signing.`);
+    } catch (e) {
+      console.error("Official PDF fill error:", e);
+      toast.error("Could not fill the official PDF — use the worksheet or online form instead.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Generate a clean, completed worksheet PDF from the reviewed data.
   const handleGeneratePdf = async () => {
@@ -333,25 +359,47 @@ export function FormFiller({
             </Button>
             <Button type="button" onClick={handleDownloadOfficial} variant="outline" disabled={saving}>
               <Download className="h-4 w-4 mr-2" />
-              Official blank PDF
+              Blank PDF
             </Button>
             <Button type="button" onClick={handlePrint} variant="outline" disabled={saving}>
               <Printer className="h-4 w-4 mr-2" />
               Print
             </Button>
-            <Button type="button" onClick={handleGeneratePdf} disabled={saving} className="ml-auto">
-              {saving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating…
-                </>
-              ) : (
-                <>
+            {canFillOfficial ? (
+              <div className="ml-auto flex flex-wrap gap-3">
+                <Button type="button" onClick={handleGeneratePdf} variant="outline" disabled={saving}>
                   <FileDown className="h-4 w-4 mr-2" />
-                  Confirm & generate PDF
-                </>
-              )}
-            </Button>
+                  Worksheet
+                </Button>
+                <Button type="button" onClick={handleFillOfficial} disabled={saving}>
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Filling…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Download filled official PDF
+                    </>
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <Button type="button" onClick={handleGeneratePdf} disabled={saving} className="ml-auto">
+                {saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating…
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="h-4 w-4 mr-2" />
+                    Confirm & generate PDF
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
