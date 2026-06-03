@@ -41,12 +41,27 @@ export async function fillAndDownloadPdf(
 
   for (const [fieldName, value] of Object.entries(values)) {
     if (!value) continue;
+    let field;
     try {
-      const field = form.getTextField(fieldName);
+      field = form.getTextField(fieldName);
+    } catch {
+      missing.push(fieldName);
+      continue;
+    }
+    try {
       field.setText(value);
       filledCount += 1;
     } catch {
-      missing.push(fieldName);
+      // Comb fields (SSN/EIN/ZIP) enforce a maxLength and reject formatted
+      // values like "123-45-6789". Retry with alphanumerics only, truncated.
+      try {
+        const max = field.getMaxLength();
+        const stripped = value.replace(/[^A-Za-z0-9]/g, "");
+        field.setText(max != null ? stripped.slice(0, max) : stripped);
+        filledCount += 1;
+      } catch {
+        missing.push(fieldName);
+      }
     }
   }
 

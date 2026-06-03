@@ -44,6 +44,11 @@ function splitCityStateZip(v?: string): { city: string; state: string; zip: stri
 
 const P1 = "topmostSubform[0].Page1[0].";
 
+/** Combine street + city/state/zip into one line for single-address forms. */
+function combinedAddress(ctx: FillContext): string {
+  return [ctx.address, ctx.city_state_zip].filter(Boolean).join(", ");
+}
+
 // Per-form maps ---------------------------------------------------------------
 
 const f9465: FieldSetter = (ctx) => {
@@ -82,10 +87,98 @@ const f843: FieldSetter = (ctx) => {
   return out;
 };
 
+// Form 1040-X — Amended return. Identity block on page 1. The address fields
+// (f1_09..f1_13) live under an extra `Address_ReadOrder` subform.
+const X1040_AR = "topmostSubform[0].Page1[0].Address_ReadOrder[0].";
+const f1040x: FieldSetter = (ctx) => {
+  const { first, last } = splitName(ctx.taxpayer_name);
+  const { city, state, zip } = splitCityStateZip(ctx.city_state_zip);
+  const out: Record<string, string> = {};
+  if (ctx.tax_year) out[`${P1}f1_01[0]`] = ctx.tax_year;
+  if (first) out[`${P1}f1_03[0]`] = first;
+  if (last) out[`${P1}f1_04[0]`] = last;
+  if (ctx.ssn_ein) out[`${P1}f1_05[0]`] = ctx.ssn_ein;
+  if (ctx.address) out[`${X1040_AR}f1_09[0]`] = ctx.address;
+  if (city) out[`${X1040_AR}f1_11[0]`] = city;
+  if (state) out[`${X1040_AR}f1_12[0]`] = state;
+  if (zip) out[`${X1040_AR}f1_13[0]`] = zip;
+  if (!city && !state && !zip && ctx.city_state_zip) out[`${X1040_AR}f1_11[0]`] = ctx.city_state_zip;
+  return out;
+};
+
+// Form 12153 — Collection Due Process hearing request. Descriptive field names.
+const f12153: FieldSetter = (ctx) => {
+  const { city, state, zip } = splitCityStateZip(ctx.city_state_zip);
+  const out: Record<string, string> = {};
+  if (ctx.taxpayer_name) out[`${P1}TaxpayerName1[0]`] = ctx.taxpayer_name;
+  if (ctx.ssn_ein) out[`${P1}TIN_1[0]`] = ctx.ssn_ein;
+  if (ctx.address) out[`${P1}CurrentAddress1[0]`] = ctx.address;
+  if (city) out[`${P1}City1[0]`] = city;
+  if (state) out[`${P1}State1[0]`] = state;
+  if (zip) out[`${P1}ZIPCode1[0]`] = zip;
+  if (!city && !state && !zip && ctx.city_state_zip) out[`${P1}City1[0]`] = ctx.city_state_zip;
+  if (ctx.phone) out[`${P1}TelephoneNumberBestTime1[0].TelephoneNumber[0]`] = ctx.phone;
+  return out;
+};
+
+// Form 2848 — Power of Attorney. Descriptive field names; single address field.
+const f2848: FieldSetter = (ctx) => {
+  const out: Record<string, string> = {};
+  if (ctx.taxpayer_name) out[`${P1}TaxpayerName[0]`] = ctx.taxpayer_name;
+  const addr = combinedAddress(ctx);
+  if (addr) out[`${P1}TaxpayerAddress[0]`] = addr;
+  if (ctx.ssn_ein) out[`${P1}TaxpayerIDSSN[0]`] = ctx.ssn_ein;
+  if (ctx.phone) out[`${P1}TaxpayerTelephone[0]`] = ctx.phone;
+  if (ctx.representative_name) out[`${P1}RepresentativesName1[0]`] = ctx.representative_name;
+  return out;
+};
+
+// Form 656 — Offer in Compromise. Note the different page subform prefix.
+const F656P1 = "topmostSubform[0].F656_Page1[0].";
+const f656: FieldSetter = (ctx) => {
+  const out: Record<string, string> = {};
+  if (ctx.taxpayer_name) out[`${F656P1}Your_First_Middle_Last_Name[0]`] = ctx.taxpayer_name;
+  if (ctx.ssn_ein) out[`${F656P1}YourSocialSecurityNumber[0]`] = ctx.ssn_ein;
+  const addr = combinedAddress(ctx);
+  if (addr) out[`${F656P1}Your_Home_Address[0]`] = addr;
+  return out;
+};
+
+// Form 433-A — Collection Information Statement (Individuals). Nested paths;
+// name + single combined address only (the rest is a financial statement).
+const A433 = "topmostSubform[0].Page1[0].c1[0].Lines1a-b[0].";
+const f433a: FieldSetter = (ctx) => {
+  const out: Record<string, string> = {};
+  if (ctx.taxpayer_name) out[`${A433}p1-t4[0]`] = ctx.taxpayer_name;
+  const addr = combinedAddress(ctx);
+  if (addr) out[`${A433}p1-t5[0]`] = addr;
+  return out;
+};
+
+// Form 433-B — Collection Information Statement (Businesses). Descriptive names.
+const B433 = "topmostSubform[0].Page1[0].Line1a-f[0].";
+const f433b: FieldSetter = (ctx) => {
+  const { city, state, zip } = splitCityStateZip(ctx.city_state_zip);
+  const out: Record<string, string> = {};
+  if (ctx.taxpayer_name) out[`${B433}p1_1_1a[0]`] = ctx.taxpayer_name; // business name
+  if (ctx.address) out[`${B433}p1_4_1bMailAdd[0]`] = ctx.address;
+  if (city) out[`${B433}p1_5_1bCity[0]`] = city;
+  if (state) out[`${B433}p1_6_1bstate[0]`] = state;
+  if (zip) out[`${B433}p1_7_1bZIP[0]`] = zip;
+  if (!city && !state && !zip && ctx.city_state_zip) out[`${B433}p1_5_1bCity[0]`] = ctx.city_state_zip;
+  return out;
+};
+
 /** Map of form key → AcroForm field setter. Only these forms get true fill. */
 const FIELD_MAPS: Record<string, FieldSetter> = {
   irs_form_9465: f9465,
   irs_form_843: f843,
+  irs_form_1040x: f1040x,
+  irs_form_12153: f12153,
+  irs_form_2848: f2848,
+  irs_form_656: f656,
+  irs_form_433a: f433a,
+  irs_form_433b: f433b,
 };
 
 export function hasVerifiedFieldMap(formKey: string): boolean {
