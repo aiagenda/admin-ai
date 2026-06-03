@@ -212,25 +212,51 @@ const f9423: FieldSetter = (ctx) => {
   return out;
 };
 
-// VA Form 20-0995 — Decision Review Request: Supplemental Claim. Uses split
-// SSN (3-2-4) and split ZIP (5-4), and a separate first/last name.
-const VA = "form1[0].#subform[16].";
-const f_va_0995: FieldSetter = (ctx) => {
+// VA forms share a common mailing-address block with split SSN (3-2-4) and
+// split ZIP (5-4). Only the subform prefix and the name/SSN leaf names differ.
+function vaMap(prefix: string, firstField: string, lastField: string, ssnPrefix: string): FieldSetter {
+  return (ctx) => {
+    const { first, last } = splitName(ctx.taxpayer_name);
+    const { city, state, zip } = splitCityStateZip(ctx.city_state_zip);
+    const ssn = splitSSN(ctx.ssn_ein);
+    const z = splitZip(zip);
+    const out: Record<string, string> = {};
+    if (first) out[`${prefix}${firstField}[0]`] = first;
+    if (last) out[`${prefix}${lastField}[0]`] = last;
+    if (ssn.a) out[`${prefix}${ssnPrefix}FirstThreeNumbers[0]`] = ssn.a;
+    if (ssn.b) out[`${prefix}${ssnPrefix}SecondTwoNumbers[0]`] = ssn.b;
+    if (ssn.c) out[`${prefix}${ssnPrefix}LastFourNumbers[0]`] = ssn.c;
+    if (ctx.address) out[`${prefix}CurrentMailingAddress_NumberAndStreet[0]`] = ctx.address;
+    if (city) out[`${prefix}CurrentMailingAddress_City[0]`] = city;
+    if (state) out[`${prefix}CurrentMailingAddress_StateOrProvince[0]`] = state;
+    if (z.five) out[`${prefix}CurrentMailingAddress_ZIPOrPostalCode_FirstFiveNumbers[0]`] = z.five;
+    if (z.four) out[`${prefix}CurrentMailingAddress_ZIPOrPostalCode_LastFourNumbers[0]`] = z.four;
+    return out;
+  };
+}
+
+// VA 20-0995 (Supplemental Claim), 21-526EZ (Disability Compensation),
+// 20-0996 (Higher-Level Review).
+const f_va_0995 = vaMap("form1[0].#subform[16].", "VeteransFirstName", "VeteransLastName", "");
+const f_va_526ez = vaMap("F[0].Page_10[0].", "Veteran_Service_Member_First_Name", "Veteran_Service_Member_Last_Name", "SocialSecurityNumber_");
+const f_va_0996 = vaMap("form1[0].#subform[2].", "Veterans_First_Name", "Veterans_Last_Name", "Veterans_SocialSecurityNumber_");
+
+// Form 14039 — Identity Theft Affidavit. Victim info is in section_c, with a
+// split ZIP and a nested home phone field.
+const SC14039 = "form1[0].Page1[0].section_c[0].";
+const f14039: FieldSetter = (ctx) => {
   const { first, last } = splitName(ctx.taxpayer_name);
-  const { city, state, zip } = splitCityStateZip(ctx.city_state_zip);
-  const ssn = splitSSN(ctx.ssn_ein);
+  const { city, zip } = splitCityStateZip(ctx.city_state_zip);
   const z = splitZip(zip);
   const out: Record<string, string> = {};
-  if (first) out[`${VA}VeteransFirstName[0]`] = first;
-  if (last) out[`${VA}VeteransLastName[0]`] = last;
-  if (ssn.a) out[`${VA}FirstThreeNumbers[0]`] = ssn.a;
-  if (ssn.b) out[`${VA}SecondTwoNumbers[0]`] = ssn.b;
-  if (ssn.c) out[`${VA}LastFourNumbers[0]`] = ssn.c;
-  if (ctx.address) out[`${VA}CurrentMailingAddress_NumberAndStreet[0]`] = ctx.address;
-  if (city) out[`${VA}CurrentMailingAddress_City[0]`] = city;
-  if (state) out[`${VA}CurrentMailingAddress_StateOrProvince[0]`] = state;
-  if (z.five) out[`${VA}CurrentMailingAddress_ZIPOrPostalCode_FirstFiveNumbers[0]`] = z.five;
-  if (z.four) out[`${VA}CurrentMailingAddress_ZIPOrPostalCode_LastFourNumbers[0]`] = z.four;
+  if (first) out[`${SC14039}first_name[0]`] = first;
+  if (last) out[`${SC14039}last_name[0]`] = last;
+  if (ctx.ssn_ein) out[`${SC14039}TIN[0]`] = ctx.ssn_ein;
+  if (ctx.address) out[`${SC14039}current_mailing_address[0]`] = ctx.address;
+  if (city) out[`${SC14039}city[0]`] = city;
+  if (z.five) out[`${SC14039}zip_code[0].first_5[0]`] = z.five;
+  if (z.four) out[`${SC14039}zip_code[0].last_4[0]`] = z.four;
+  if (ctx.phone) out[`${SC14039}telephone_number[0].home[0]`] = ctx.phone;
   return out;
 };
 
@@ -246,7 +272,10 @@ const FIELD_MAPS: Record<string, FieldSetter> = {
   irs_form_433b: f433b,
   irs_form_911: f911,
   irs_form_9423: f9423,
+  irs_form_14039: f14039,
   va_form_20_0995: f_va_0995,
+  va_form_21_526ez: f_va_526ez,
+  va_form_20_0996: f_va_0996,
 };
 
 export function hasVerifiedFieldMap(formKey: string): boolean {

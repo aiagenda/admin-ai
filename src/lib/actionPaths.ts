@@ -202,6 +202,17 @@ function irsGeneric(): ActionPathsResult {
         ],
         formKeys: ["irs_form_911"],
       },
+      {
+        key: "identity_theft",
+        label: "Someone used my identity",
+        description: "If this notice suggests a fraudulent return or tax-related identity theft, report it to the IRS.",
+        tone: "caution",
+        steps: [
+          "Complete Form 14039 (Identity Theft Affidavit).",
+          "Attach it as instructed and keep copies of everything.",
+        ],
+        formKeys: ["irs_form_14039"],
+      },
     ],
   };
 }
@@ -222,6 +233,16 @@ function vaBenefitOrDebt(): ActionPathsResult {
           "File within any deadline stated on your decision letter.",
         ],
         formKeys: ["va_form_20_0995"],
+      },
+      {
+        key: "higher_level_review",
+        label: "Ask a senior reviewer (Higher-Level Review)",
+        description: "Disagree with the decision but have no new evidence? Request a more experienced reviewer.",
+        steps: [
+          "Complete VA Form 20-0996 (Higher-Level Review).",
+          "Explain what you believe was decided incorrectly.",
+        ],
+        formKeys: ["va_form_20_0996"],
       },
       {
         key: "va_contact",
