@@ -51,6 +51,18 @@ const HEADER_VA    = { text: "U.S. Department of Veterans Affairs — Debt Manag
 const HEADER_CMS   = { text: "Centers for Medicare & Medicaid Services", style: "agency" };
 const HEADER_DOL   = { text: "State of Texas — Texas Workforce Commission", style: "agency" };
 const HEADER_COURT = { text: "SUPERIOR COURT OF THE STATE OF CALIFORNIA\nCOUNTY OF LOS ANGELES", style: "agency" };
+const HEADER_NY_DTF = { text: "New York State Department of Taxation and Finance", style: "agency" };
+const HEADER_TX_COMPTROLLER = { text: "Texas Comptroller of Public Accounts", style: "agency" };
+const HEADER_IL_DOR = { text: "Illinois Department of Revenue", style: "agency" };
+const HEADER_CHASE = { text: "JPMorgan Chase Bank, N.A. — Recovery Department", style: "agency" };
+const HEADER_CAPONE = { text: "Capital One — Card Services", style: "agency" };
+const HEADER_WELLS = { text: "Wells Fargo Home Mortgage", style: "agency" };
+const HEADER_DUKE = { text: "Duke Energy — Customer Billing", style: "agency" };
+const HEADER_HOA = { text: "Oakwood Estates Homeowners Association", style: "agency" };
+const HEADER_DHS = { text: "U.S. Department of Homeland Security — USCIS", style: "agency" };
+const HEADER_SSA_GEN = { text: "Social Security Administration — Office of Central Operations", style: "agency" };
+const HEADER_OIG = { text: "U.S. Postal Service Office of Inspector General", style: "agency" };
+
 
 const baseStyles = {
   agency: { fontSize: 11, bold: true, color: "#1a3a6b", margin: [0, 0, 0, 4] },
@@ -917,6 +929,27 @@ const docs = [
     ],
   },
 },
+
+
+// 21–38: additional doc_type coverage (see US_TEST_MANIFEST.md)
+{ file: "21_NY_DTF_State_Tax_Audit.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_NY_DTF, hr(), { columns: [addressBlock(["Robert T. Chen", "88 Broadway, Apt 12F", "New York, NY 10005"]), { stack: [metaRow("Notice:", "Audit Initiation"), metaRow("Tax Year:", "2022"), metaRow("Due:", "June 20, 2025")], alignment: "right" }] }, { text: "Notice of Audit — NYS Personal Income Tax", style: "h1" }, urgentBox("Respond by June 20, 2025 with documentation."), { ol: ["1099-NEC substantiation", "Estimated tax payment proof", "Schedule C expenses over $5,000"] }, { text: "Case NY-AUD-2022-884120 | tax.ny.gov", style: "notice" }] } },
+{ file: "22_TX_Comptroller_Refund_Offset.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_TX_COMPTROLLER, hr(), addressBlock(["Maria S. Delgado", "4100 Travis St", "Houston, TX 77002"]), { text: "Refund Offset Notice", style: "h1" }, metaRow("Refund:", "$842.00"), metaRow("Offset to prior debt:", "$842.00"), metaRow("Balance still due:", "$312.44"), { text: "Texas Tax Code §111.304", style: "notice" }] } },
+{ file: "23_IL_DOR_State_Tax_Generic.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_IL_DOR, hr(), addressBlock(["Kevin P. Walsh", "233 S Wacker Dr", "Chicago, IL 60606"]), { text: "Illinois DOR — Information Request", style: "h1" }, { text: "Respond within 30 days at tax.illinois.gov. Account IL-2023-9921844.", margin: [0,0,0,8] }, { text: "35 ILCS 5/506", style: "notice" }] } },
+{ file: "24_USCIS_Biometrics_Appointment.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_DHS, hr(), addressBlock(["Ana L. Gutierrez", "1200 Peachtree St NE", "Atlanta, GA 30309"]), { text: "Biometrics Appointment Notice", style: "h1" }, metaRow("Receipt:", "LIN2490187654"), metaRow("When:", "June 12, 2025 10:30 AM"), metaRow("Where:", "2150 Parklake Dr NE, Atlanta GA"), { text: "Bring photo ID and this notice.", style: "notice" }] } },
+{ file: "25_USCIS_Approval_Notice_I485.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_DHS, hr(), addressBlock(["Ana L. Gutierrez", "1200 Peachtree St NE", "Atlanta, GA 30309"]), { text: "Form I-485 Approved", style: "h1" }, infoBox("Adjustment of status APPROVED effective June 1, 2025.", "#1a7a4a"), { text: "Green card mailed separately within 120 days.", style: "notice" }] } },
+{ file: "26_Medicare_LIS_Application_Result.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_CMS, hr(), addressBlock(["Dorothy F. Nguyen", "901 Oak Lane", "Miami, FL 33101"]), { text: "Extra Help (LIS) Approved", style: "h1" }, { text: "2025 copays reduced per Part D LIS.", margin: [0,0,0,8] }, { text: "Report income changes within 10 days.", style: "notice" }] } },
+{ file: "27_Medicare_General_Enrollment.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_CMS, hr(), addressBlock(["Harold J. Pierce", "44 Elm St", "Columbus, OH 43215"]), { text: "Medicare Part B Enrollment Notice", style: "h1" }, { text: "Enroll by September 30, 2025 to avoid late penalty.", margin: [0,0,0,8] }, { text: "medicare.gov | 1-800-MEDICARE", style: "notice" }] } },
+{ file: "28_VA_Benefit_Rating_Decision.pdf", def: { ...PAGE, styles: baseStyles, content: [{ text: "VA Regional Office", style: "agency" }, hr(), addressBlock(["Thomas E. Ward", "5521 Patriot Way", "Colorado Springs, CO 80906"]), { text: "Rating Decision", style: "h1" }, metaRow("Combined rating:", "70%"), metaRow("Monthly:", "$1,759.19"), { text: "Appeal within one year.", style: "notice" }] } },
+{ file: "29_Court_Default_Judgment.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_COURT, hr(), addressBlock(["Pacific Rentals LLC", "900 Wilshire Blvd", "Los Angeles, CA 90017"]), { text: "Default Judgment — 24STCV12345", style: "h1" }, metaRow("Amount:", "$8,420.00"), { text: "Motion to set aside within 180 days if improper service.", style: "notice" }] } },
+{ file: "30_Child_Support_Enforcement.pdf", def: { ...PAGE, styles: baseStyles, content: [{ text: "Florida Child Support Program", style: "agency" }, hr(), addressBlock(["Michael R. Brooks", "2200 Biscayne Blvd", "Miami, FL 33137"]), { text: "Income Withholding / Arrears Notice", style: "h1" }, metaRow("Monthly:", "$1,240.00"), metaRow("Arrears:", "$3,880.00"), urgentBox("Contact within 15 days to avoid license suspension.")] } },
+{ file: "31_Chase_Bank_Collection.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_CHASE, hr(), addressBlock(["Jennifer L. Price", "15 Cedar Ave", "Denver, CO 80202"]), { text: "Final Demand — Credit Card", style: "h1" }, metaRow("Balance:", "$4,218.55"), metaRow("Due:", "May 25, 2025"), { text: "Debt collector communication. 1-800-935-9935", style: "notice" }] } },
+{ file: "32_Capital_One_Chargeoff.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_CAPONE, hr(), addressBlock(["David K. Owens", "300 Main St", "Raleigh, NC 27601"]), { text: "Charge-Off Notice", style: "h1" }, metaRow("Balance:", "$6,902.11"), metaRow("Date:", "April 30, 2025"), { text: "May be reported to credit bureaus.", style: "notice" }] } },
+{ file: "33_Wells_Fargo_Mortgage_Default.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_WELLS, hr(), addressBlock(["Patricia A. Gomez", "742 Hillcrest Dr", "Phoenix, AZ 85016"]), { text: "Notice of Default", style: "h1" }, urgentBox("Cure $3,842.19 by June 15, 2025."), metaRow("Loan:", "WF-8821044992"), { text: "HUD counselor: 1-800-569-4287", style: "notice" }] } },
+{ file: "34_Duke_Energy_Disconnect_Notice.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_DUKE, hr(), addressBlock(["Samuel W. Reed", "118 Pine St", "Charlotte, NC 28202"]), { text: "Disconnect Notice", style: "h1" }, urgentBox("Pay $287.44 by May 28, 2025."), metaRow("Account:", "NC-8849201")] } },
+{ file: "35_HOA_Covenant_Violation.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_HOA, hr(), addressBlock(["Lee & Kim Park", "88 Magnolia Court", "Orlando, FL 32801"]), { text: "CC&R Violation — Unapproved paint", style: "h1" }, { text: "Remedy within 14 days or $50/day fines.", margin: [0,0,0,8] }, metaRow("Fines:", "$150.00")] } },
+{ file: "36_SSA_Generic_Correspondence.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_SSA_GEN, hr(), addressBlock(["Nancy E. Clark", "600 Pennsylvania Ave SE", "Washington, DC 20003"]), { text: "Verify Your SSA Record", style: "h1" }, { text: "Confirm address and direct deposit within 30 days.", margin: [0,0,0,8] }, { text: "Not a benefit change notice.", style: "notice" }] } },
+{ file: "37_IRS_CP71C_Reminder_Generic.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_IRS, hr(), addressBlock(["John A. Doe", "1247 Maple St", "Austin, TX 78701"]), { text: "CP71C Reminder", style: "h1" }, { text: "Balance due $3,421.87 for 2023.", margin: [0,0,0,8] }, { text: "irs.gov/payments", style: "notice" }] } },
+{ file: "38_USPS_OIG_Official_Letter.pdf", def: { ...PAGE, styles: baseStyles, content: [HEADER_OIG, hr(), addressBlock(["Small Business Owner", "500 Market St", "San Francisco, CA 94105"]), { text: "Complaint 2025-44102 — Investigation Open", style: "h1" }, { text: "SAMPLE TEST DOCUMENT", style: "notice" }] } },
 
 ]; // end docs array
 

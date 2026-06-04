@@ -1,28 +1,27 @@
-# Teszt dokumentumok – GovLetter
+# US test documents (GovLetter)
 
-10 letölthető teszt fájl (5 számla + 5 hivatalos levél) az app feltöltésének teszteléséhez.
+Synthetic PDFs for upload QA — **not** real government mail.
 
-## Fájlok
+## Download (recommended)
 
-**Számlák (1–5):**
-- `01_Szamla_MOL_uzemanyag.html` – MOL üzemanyag
-- `02_Szamla_Alza_irodaszer.html` – Alza irodaszer
-- `03_Szamla_Szalloda_Budapest.html` – Szálloda vendégszámla
-- `04_Szamla_Szoftver_elofizetes.html` – Szoftver előfizetés
-- `05_Szamla_Egyeb_szolgaltatas.html` – Takarítási szolgáltatás
+**Complete pack (38 notices + federal/state/civil + invoices + handwritten PNGs):**
 
-**Hivatalos levelek (6–10):**
-- `06_Level_NAV_adoazonosito.html` – NAV adóazonosító értesítés
-- `07_Level_NAV_SZJA_visszaigénylés.html` – NAV SZJA visszaigénylés
-- `08_Level_KSH_felmeres.html` – KSH felmérés
-- `09_Level_Ceg_ajanlat.html` – Cég ajánlat
-- `10_Level_Bank_ertesites.html` – Bank értesítés
+- After deploy: https://www.govletter.com/downloads/GovLetter_US_complete_test_pack.zip
+- In repo: `public/downloads/GovLetter_US_complete_test_pack.zip`
 
-## PDF készítése (az app PDF-et fogad)
+**Invoices / bookkeeping only:** `test-documents/us/invoices/GovLetter_US_invoice_test_pack.zip`
 
-1. Nyisd meg a kívánt `.html` fájlt böngészőben (dupla kattintás vagy jobb klikk → Megnyitás böngészővel).
-2. Nyomtatás: **Ctrl+P** (Windows) / **Cmd+P** (Mac).
-3. Célnál válaszd: **Mentés PDF-ként** / **Save as PDF**.
-4. Mentsd el a PDF-et, majd töltsd fel az GovLetter alkalmazásba (Dokumentum feltöltése vagy Könyvelés).
+See **US_TEST_MANIFEST.md** for file → `doc_type` mapping.
 
-Alternatíva: ha az app képet is fogad, a nyomtatási ablakból „Mentés PDF-ként” helyett készíthetsz képernyőképet a megnyitott oldalról, és azt töltheted fel.
+## Regenerate
+
+```bash
+npm run test-docs:all
+```
+
+## App usage
+
+| Flow | Route | Files |
+|------|-------|-------|
+| Official notices | Upload | `01`–`38` PDFs in pack `/notices/` |
+| Invoices & receipts | Bookkeeping | `/invoices_typed/`, `/invoices_handwritten/` |
