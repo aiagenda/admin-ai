@@ -36,7 +36,7 @@ export function useCountUp({
         const elapsed = now - startTimeRef.current;
         const progress = Math.min(elapsed / duration, 1);
         
-        // Easing function: easeOutCubic (gyors indulás, lassú befejezés)
+        // Easing function: easeOutCubic (fast start, slow finish)
         const easeOutCubic = 1 - Math.pow(1 - progress, 3);
         const currentCount = Math.floor(easeOutCubic * end);
         

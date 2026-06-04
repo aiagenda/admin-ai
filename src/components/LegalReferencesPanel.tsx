@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ExternalLink, Scale, BookOpen, CheckCircle2, AlertTriangle, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { isUsMarket } from "@/lib/market";
 import { formatPlaybookName } from "@/lib/displayLabels";
 import { useTranslation } from "react-i18next";
 
@@ -83,7 +82,7 @@ export function LegalReferencesPanel({
         }
 
         // 2. Also fetch laws by topics (HU only)
-        if (!isUsMarket() && detectedTags && detectedTags.length > 0) {
+        if (!detectedTags && detectedTags.length > 0) {
           const { data: topicLaws } = await supabase.rpc("get_laws_by_topics", {
             _topics: detectedTags,
           });
@@ -108,7 +107,7 @@ export function LegalReferencesPanel({
           _doc_type: docType || null,
           _state_code: null,
           _agency: null,
-          _market: isUsMarket() ? "us" : "hu",
+          _market: "us",
         });
 
         if (playbookData && playbookData.length > 0) {

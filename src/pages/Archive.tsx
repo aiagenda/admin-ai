@@ -723,7 +723,7 @@ export default function Archive() {
               <p className="font-medium">Select all ({filteredAndSortedDocuments.length})</p>
             </Card>
 
-            {/* Dokumentum lista */}
+            {/* Document list */}
             {filteredAndSortedDocuments.map((doc) => {
               const selected = selectedDocs.includes(doc.id);
               const isCompareSelected = compareDoc1 === doc.id || compareDoc2 === doc.id;

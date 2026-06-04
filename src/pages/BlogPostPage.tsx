@@ -3,7 +3,6 @@ import { SEOHead } from "@/components/SEOHead";
 import { useParams, Link } from "react-router-dom";
 import { getSiteOrigin } from "@/lib/site";
 import { useTranslation } from "react-i18next";
-import { isUsMarket } from "@/lib/market";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -62,10 +61,9 @@ export default function BlogPostPage() {
   const { slug = "" } = useParams<{ slug: string }>();
   const { t } = useTranslation("nav");
   const navigate = useNavigate();
-  const us = isUsMarket();
   const brandName = t("brand");
 
-  const [post, setPost] = useState<BlogPostEntry | null>(() => staticPost(us, slug) ?? null);
+  const [post, setPost] = useState<BlogPostEntry | null>(() => staticPost(slug) ?? null);
   const [loading, setLoading] = useState(!post);
   const [notFound, setNotFound] = useState(false);
 
@@ -74,14 +72,14 @@ export default function BlogPostPage() {
     void (async () => {
       setLoading(true);
       setNotFound(false);
-      const cms = await fetchPublishedBlogPost(slug, us);
+      const cms = await fetchPublishedBlogPost(slug);
       if (cancelled) return;
       if (cms) {
         setPost(cms);
         setLoading(false);
         return;
       }
-      const fallback = staticPost(us, slug);
+      const fallback = staticPost(slug);
       if (fallback) {
         setPost(fallback);
         setLoading(false);
@@ -94,7 +92,7 @@ export default function BlogPostPage() {
     return () => {
       cancelled = true;
     };
-  }, [slug, us]);
+  }, [slug]);
 
   if (loading) {
     return (
@@ -108,8 +106,8 @@ export default function BlogPostPage() {
     return (
       <div className="min-h-screen py-12 px-4">
         <div className="container mx-auto max-w-3xl text-center space-y-4">
-          <h1 className="text-3xl font-bold">{us ? "Article not found" : "A cikk nem található"}</h1>
-          <Button onClick={() => navigate("/blog")}>← {us ? "Back to blog" : "Vissza a bloghoz"}</Button>
+          <h1 className="text-3xl font-bold">Article not found</h1>
+          <Button onClick={() => navigate("/blog")}>← Back to blog</Button>
         </div>
       </div>
     );
@@ -132,15 +130,13 @@ export default function BlogPostPage() {
 
       <article className="container mx-auto max-w-3xl space-y-6">
         <Link to="/blog" className="text-sm text-muted-foreground hover:text-primary">
-          ← {us ? "Back to blog" : "Vissza a bloghoz"}
+          ← Back to blog
         </Link>
 
         <h1 className="text-3xl md:text-4xl font-bold leading-tight">{post.title}</h1>
 
         <p className="text-muted-foreground text-sm">
-          {us
-            ? `Published ${new Date(post.datePublished).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`
-            : `Közzétéve: ${new Date(post.datePublished).toLocaleDateString("hu-HU")}`}
+          {`Published ${new Date(post.datePublished).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`}
         </p>
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-4 text-[15px] leading-relaxed">
@@ -149,20 +145,18 @@ export default function BlogPostPage() {
           ))}
         </div>
 
-        {us && (
-          <div className="mt-8 p-5 rounded-xl border bg-muted/40 space-y-3">
-            <p className="font-medium text-base">Understand your specific notice instantly</p>
-            <p className="text-sm text-muted-foreground">
-              Upload a photo or PDF of your letter. GovLetter identifies the notice type, extracts your deadlines, and gives you plain-English next steps in under 60 seconds.
-            </p>
-            <Button onClick={() => navigate("/upload")}>Upload your letter — first one free →</Button>
-          </div>
-        )}
+        <div className="mt-8 p-5 rounded-xl border bg-muted/40 space-y-3">
+          <p className="font-medium text-base">Understand your specific notice instantly</p>
+          <p className="text-sm text-muted-foreground">
+            Upload a photo or PDF of your letter. GovLetter identifies the notice type, extracts your deadlines, and gives you plain-English next steps in under 60 seconds.
+          </p>
+          <Button onClick={() => navigate("/upload")}>Upload your letter — first one free →</Button>
+        </div>
 
         {post.faqSchema && post.faqSchema.length > 0 && (
           <div className="mt-8 space-y-4">
             <h2 className="text-xl font-semibold">
-              {us ? "Frequently asked questions" : "Gyakori kérdések"}
+              Frequently asked questions
             </h2>
             {post.faqSchema.map((item, i) => (
               <div key={i} className="border rounded-lg p-4 space-y-1">

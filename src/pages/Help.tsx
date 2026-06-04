@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle, ChevronDown, ChevronUp, FileText, Upload, Archive, Tag, Calendar, CheckSquare, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PageSEO } from "@/components/PageSEO";
-import { isUsMarket } from "@/lib/market";
 import { getSiteOrigin } from "@/lib/site";
 
 interface FAQItem {
@@ -76,39 +75,6 @@ const US_FAQ: FAQItem[] = [
   },
 ];
 
-const HU_FAQ: FAQItem[] = [
-  {
-    category: "Általános",
-    question: "Mi a GovLetter?",
-    answer: "A GovLetter egy intelligens dokumentumelemző szolgáltatás, amely segít megérteni a hivatalos dokumentumokat. Feltölt egy PDF-et, és mi magyarul elmagyarázzuk, miről szól és mit kell tennie.",
-  },
-  {
-    category: "Általános",
-    question: "Hogyan működik?",
-    answer: "Egyszerűen töltse fel PDF dokumentumát. Az AI rendszerünk elemzi a dokumentumot, kinyeri a fontos információkat (határidők, összegek, bankszámlaszámok), és kétféle magyarázatot ad: egy egyszerű, mindennapi nyelven, és egy részletes, professzionális értelmezést.",
-  },
-  {
-    category: "Feltöltés",
-    question: "Milyen fájlformátumokat támogat?",
-    answer: "Jelenleg PDF, JPG, PNG és HEIC formátumú dokumentumokat tudunk feldolgozni, maximum 20 MB-ig.",
-  },
-  {
-    category: "Feltöltés",
-    question: "Mennyi ideig tart az elemzés?",
-    answer: "Az elemzés általában 30-60 másodpercig tart.",
-  },
-  {
-    category: "Eredmények",
-    question: "Mi a különbség az 'Egyszerű magyarázat' és a 'Részletes magyarázat' között?",
-    answer: "Az 'Egyszerű magyarázat' mindennapi nyelven, példákkal segít megérteni a dokumentumot. A 'Részletes magyarázat' professzionális, jogi szempontból pontosabb értelmezést ad.",
-  },
-  {
-    category: "Árazás",
-    question: "Mennyibe kerül a GovLetter?",
-    answer: "Az első dokumentum ingyenes. Utána dokumentumonként 1 490 Ft (Basic) vagy 3 990 Ft (Pro), illetve havi csomagok érhetők el 4 990 Ft-tól.",
-  },
-];
-
 function FAQSection({ items, title }: { items: FAQItem[]; title: string }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const categories = [...new Set(items.map((i) => i.category))];
@@ -163,33 +129,29 @@ const usFaqSchema = {
 };
 
 export default function Help() {
-  const us = isUsMarket();
-  const faq = us ? US_FAQ : HU_FAQ;
+  const faq = US_FAQ;
 
   return (
     <div className="min-h-screen py-12 px-4">
       <PageSEO
         pageKey="help"
         path="/help"
-        structuredData={us ? usFaqSchema : undefined}
+        structuredData={usFaqSchema}
       />
       <div className="container mx-auto max-w-3xl space-y-8">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <HelpCircle className="h-8 w-8 text-primary" />
             <h1 className="text-4xl font-bold">
-              {us ? "Help & FAQ" : "Súgó és GYIK"}
+              Help & FAQ
             </h1>
           </div>
           <p className="text-muted-foreground">
-            {us
-              ? "Everything you need to know about understanding government letters with GovLetter."
-              : "Minden, amit tudni kell a GovLetter használatáról."}
+            Everything you need to know about understanding government letters with GovLetter.
           </p>
         </div>
 
-        {us && (
-          <div className="grid sm:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-3 gap-3">
             <Link to="/irs-notices" className="block">
               <Card className="h-full hover:border-primary/40 transition-colors cursor-pointer">
                 <CardContent className="pt-4 pb-3 flex items-start gap-2">
@@ -223,16 +185,13 @@ export default function Help() {
                 </CardContent>
               </Card>
             </Link>
-          </div>
-        )}
+        </div>
 
         <FAQSection items={faq} title="FAQ" />
 
-        {us && (
-          <p className="text-xs text-muted-foreground border-t pt-4">
-            GovLetter is a document-explanation tool, not a tax advisor or law firm. Outputs should be verified against your original notice. For complex tax situations, consult a qualified CPA, enrolled agent, or tax attorney.
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground border-t pt-4">
+          GovLetter is a document-explanation tool, not a tax advisor or law firm. Outputs should be verified against your original notice. For complex tax situations, consult a qualified CPA, enrolled agent, or tax attorney.
+        </p>
       </div>
     </div>
   );

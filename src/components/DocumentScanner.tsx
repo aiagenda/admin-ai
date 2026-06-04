@@ -584,7 +584,7 @@ export function DocumentScanner({ open, onClose, onCapture, onCaptureBatch, titl
               {hasUnacknowledgedPoorPage ? "There is a poor quality page" : copy.crop}
             </Button>
 
-            <p className="text-xs text-muted-foreground text-center">Összes oldal: {pages.length}</p>
+            <p className="text-xs text-muted-foreground text-center">Total pages: {pages.length}</p>
           </div>
         )}
 

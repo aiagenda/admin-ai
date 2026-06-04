@@ -2,11 +2,8 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { isUsMarket } from "@/lib/market";
 
-const t = isUsMarket()
-  ? { checking: "Checking access…", denied: "Access denied", deniedDesc: "This page requires administrator permissions.", backHome: "Back to home" }
-  : { checking: "Ellenőrzés…",      denied: "Hozzáférés megtagadva", deniedDesc: "Ehhez az oldalhoz adminisztrátori jogosultság szükséges.", backHome: "Vissza a kezdőlapra" };
+const t = { checking: "Checking access…", denied: "Access denied", deniedDesc: "This page requires administrator permissions.", backHome: "Back to home" };
 
 export function AdminRoute({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();

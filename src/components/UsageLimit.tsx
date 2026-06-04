@@ -153,7 +153,7 @@ export function UsageLimit() {
           <div className="pt-2 border-t">
             <p className="text-sm text-destructive mb-3">{t(`${u}.atLimit`)}</p>
             <Button size="sm" onClick={() => navigate("/pricing")} className="w-full">
-              Árak
+              Pricing
             </Button>
           </div>
         )}
@@ -162,7 +162,7 @@ export function UsageLimit() {
           <div className="pt-2 border-t">
             <p className="text-sm text-warning mb-3">{t(`${u}.nearLimit`)}</p>
             <Button size="sm" variant="outline" onClick={() => navigate("/pricing")} className="w-full">
-              Csomagok
+              Plans
             </Button>
           </div>
         )}
@@ -171,7 +171,7 @@ export function UsageLimit() {
           <div className="pt-2 border-t">
             <p className="text-xs text-muted-foreground mb-2">{t(`${u}.freeHint`)}</p>
             <Button size="sm" variant="outline" onClick={() => navigate("/pricing")} className="w-full">
-              Árak
+              Pricing
             </Button>
           </div>
         )}

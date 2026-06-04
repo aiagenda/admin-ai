@@ -2,8 +2,7 @@ import { useEffect } from "react";
 import { getSiteOrigin } from "@/lib/site";
 
 const DEFAULT_OG_SITE_NAME = "GovLetter";
-import { isUsMarket } from "@/lib/market";
-const DEFAULT_LOCALE = isUsMarket() ? "en_US" : "hu_HU";
+const DEFAULT_LOCALE = "en_US";
 
 interface SEOHeadProps {
   title: string;
@@ -11,10 +10,10 @@ interface SEOHeadProps {
   path?: string;
   keywords?: string;
   ogType?: "website" | "article";
-  /** Teljes URL, vagy `/ikon.png` relatív a site originhoz */
+  /** Full URL, or `/icon.png` relative to the site origin */
   ogImage?: string;
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
-  /** Bejelentkezés, callback, 404: ne indexeljen a Google */
+  /** Login, callback, 404: should not be indexed by Google */
   noindex?: boolean;
   ogSiteName?: string;
   /** Open Graph locale, pl. `hu_HU` / `en_US` */

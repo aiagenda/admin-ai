@@ -42,15 +42,7 @@ const InvoiceArchive = lazy(() => import("./pages/InvoiceArchive"));
 const InvoiceUpload = lazy(() => import("./pages/InvoiceUpload"));
 const InvoiceDetail = lazy(() => import("./pages/InvoiceDetail"));
 const BlogPostPage = lazy(() => import("./pages/BlogPostPage"));
-const ComparisonSzamlazzPage = lazy(() => import("./pages/ComparisonSzamlazzPage"));
-const ComparisonBillingoPage = lazy(() => import("./pages/ComparisonBillingoPage"));
-const ComparisonChatGptPage = lazy(() => import("./pages/ComparisonChatGptPage"));
 const BlogIndexPage = lazy(() => import("./pages/BlogIndexPage"));
-const GyikPage = lazy(() => import("./pages/GyikPage"));
-const ArakPage = lazy(() => import("./pages/ArakPage"));
-const UseCaseArchivumPage = lazy(() => import("./pages/UseCaseArchivumPage"));
-const UseCaseSzamlaOCRPage = lazy(() => import("./pages/UseCaseSzamlaOCRPage"));
-const UseCaseNavPage = lazy(() => import("./pages/UseCaseNavPage"));
 const IRSNoticesPage = lazy(() => import("./pages/IRSNoticesPage"));
 const SSALettersPage = lazy(() => import("./pages/SSALettersPage"));
 const StateTaxPage = lazy(() => import("./pages/StateTaxPage"));
@@ -159,7 +151,7 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
-                {/* Könyvelés modul - Számlák */}
+                {/* Bookkeeping module - Invoices */}
                 <Route
                   path="/invoices"
                   element={
@@ -248,19 +240,8 @@ const App = () => (
                     </AdminRoute>
                   }
                 />
-                <Route path="/arak" element={<ArakPage />} />
-                <Route path="/gyik" element={<GyikPage />} />
                 <Route path="/blog" element={<BlogIndexPage />} />
                 <Route path="/blog/:slug" element={<BlogPostPage />} />
-                <Route path="/nav-hatarozat-ertelmezes" element={<UseCaseNavPage />} />
-                <Route path="/szamla-ocr" element={<UseCaseSzamlaOCRPage />} />
-                <Route path="/dokumentum-archivum" element={<UseCaseArchivumPage />} />
-                <Route path="/govletter-vs-chatgpt" element={<ComparisonChatGptPage />} />
-                <Route path="/govletter-vs-billingo" element={<ComparisonBillingoPage />} />
-                <Route path="/govletter-vs-szamlazz" element={<ComparisonSzamlazzPage />} />
-                <Route path="/adminai-vs-chatgpt" element={<Navigate to="/govletter-vs-chatgpt" replace />} />
-                <Route path="/adminai-vs-billingo" element={<Navigate to="/govletter-vs-billingo" replace />} />
-                <Route path="/adminai-vs-szamlazz" element={<Navigate to="/govletter-vs-szamlazz" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
                 </Suspense>

@@ -6,7 +6,6 @@ import { ArrowLeft, CreditCard, Check, Loader2, Shield, Lock } from "lucide-reac
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { isUsMarket } from "@/lib/market";
 import { PageSEO } from "@/components/PageSEO";
 import posthog from "posthog-js";
 
@@ -103,73 +102,19 @@ const US_PLANS: Record<PlanKey, PlanDef> = {
   },
 };
 
-// ─── HU / Forint plans ────────────────────────────────────────────────────────
-const HU_PLANS: Record<PlanKey, PlanDef> = {
-  basic_doc: {
-    name: "Basic – 1 dokumentum",
-    price: "1 490 Ft",
-    period: "egyszeri",
-    features: ["1 alkalommal elemzés", "Normál mélység", "E-mail értesítés"],
-    isSubscription: false,
-  },
-  pro_doc: {
-    name: "Pro – 1 dokumentum",
-    price: "3 990 Ft",
-    period: "egyszeri",
-    features: ["Mélyebb elemzés", "Válaszminta", "PDF export (ahol elérhető)"],
-    isSubscription: false,
-  },
-  monthly: {
-    name: "Havi 10 dokumentum",
-    price: "4 990 Ft",
-    period: "hó",
-    features: ["10 feltöltés / naptári hó", "Jó megoldás, ha hónapról hónapra jön levél"],
-    isSubscription: true,
-  },
-  business: {
-    name: "Business 50",
-    price: "14 990 Ft",
-    period: "hó",
-    features: ["50 dokumentum / hó", "Több család, iroda, cég"],
-    isSubscription: true,
-  },
-  enterprise: {
-    name: "Professzionális (könyvelés + prémium)",
-    price: "9 990 Ft+",
-    period: "hó",
-    features: ["Könyvelés / OCR bővítések", "Prémium hozzáférés"],
-    isSubscription: true,
-  },
-  alap: {
-    name: "Havi 10 (régi)",
-    price: "2 990 Ft+",
-    period: "hó",
-    features: ["STRIPE_PRICE_ALAP azonosító alatt"],
-    isSubscription: true,
-  },
-  professzionalis: {
-    name: "Pro / Enterprise (régi)",
-    price: "9 990 Ft+",
-    period: "hó",
-    features: ["STRIPE_PRICE_PRO → Professzionális hozzáférés"],
-    isSubscription: true,
-  },
-};
-
 export default function Checkout() {
   const navigate = useNavigate();
   const { user, session } = useAuth();
   const [searchParams] = useSearchParams();
   const planParam = (searchParams.get("plan") as PlanKey | null) || "monthly";
-  const us = isUsMarket();
-  const PLANS = us ? US_PLANS : HU_PLANS;
+  const PLANS = US_PLANS;
   const plan: PlanKey = planParam in PLANS ? planParam : "monthly";
   const selected = PLANS[plan] ?? PLANS.monthly;
   const [loading, setLoading] = useState(false);
 
   const handlePayment = async () => {
     if (!user || !session?.access_token) {
-      toast.error(us ? "Sign in required" : "Be kell jelentkezned");
+      toast.error("Sign in required");
       navigate("/auth");
       return;
     }
@@ -185,11 +130,11 @@ export default function Checkout() {
           plan_name: selected.name,
           plan_price: selected.price,
           is_subscription: selected.isSubscription,
-          market: us ? "us" : "hu",
+          market: "us",
         });
         window.location.href = data.url;
       } else {
-        throw new Error(us ? "No Stripe URL returned" : "Nem jött vissza Stripe URL");
+        throw new Error("No Stripe URL returned");
       }
     } catch (err) {
       posthog.captureException(err instanceof Error ? err : new Error(String(err)));
@@ -207,10 +152,10 @@ export default function Checkout() {
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => navigate("/pricing")}>
             <ArrowLeft className="h-4 w-4 mr-1" />
-            {us ? "Back" : "Vissza"}
+            Back
           </Button>
           <h1 className="text-2xl font-bold">
-            {us ? "Complete your order" : "Rendelés összegzése"}
+            Complete your order
           </h1>
         </div>
 
@@ -221,8 +166,8 @@ export default function Checkout() {
                 <CardTitle className="text-xl">{selected.name}</CardTitle>
                 <CardDescription>
                   {selected.isSubscription
-                    ? (us ? "Recurring subscription — cancel anytime" : "Megújuló előfizetés – bármikor lemondható")
-                    : (us ? "One-time payment" : "Egyszeri fizetés")}
+                    ? "Recurring subscription — cancel anytime"
+                    : "One-time payment"}
                 </CardDescription>
               </div>
               <div className="text-right">
@@ -243,16 +188,16 @@ export default function Checkout() {
 
             <div className="border-t pt-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{us ? "Subtotal" : "Összeg"}</span>
+                <span className="text-muted-foreground">Subtotal</span>
                 <span className="font-medium">{selected.price}</span>
               </div>
               {selected.isSubscription && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    {us ? "Billing" : "Számlázás"}
+                    Billing
                   </span>
                   <span className="font-medium">
-                    {us ? "Monthly" : "Havonta"}
+                    Monthly
                   </span>
                 </div>
               )}
@@ -264,30 +209,26 @@ export default function Checkout() {
               ) : (
                 <CreditCard className="h-5 w-5 mr-2" />
               )}
-              {loading
-                ? (us ? "Redirecting to Stripe…" : "Átirányítás Stripe-ra…")
-                : (us ? "Pay with card →" : "Fizetés kártyával →")}
+              {loading ? "Redirecting to Stripe…" : "Pay with card →"}
             </Button>
 
             <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Lock className="h-3 w-3" />
-                {us ? "Secure checkout by Stripe" : "Biztonságos fizetés (Stripe)"}
+                Secure checkout by Stripe
               </span>
               <span className="flex items-center gap-1">
                 <Shield className="h-3 w-3" />
-                {us ? "Card data never touches our servers" : "Kártyaadatok nem kerülnek a szerverünkre"}
+                Card data never touches our servers
               </span>
             </div>
 
-            {us && (
-              <p className="text-xs text-center text-muted-foreground">
-                By completing this purchase you agree to our{" "}
-                <a href="/legal/terms" className="underline">Terms of Service</a>{" "}
-                and{" "}
-                <a href="/legal/privacy" className="underline">Privacy Policy</a>.
-              </p>
-            )}
+            <p className="text-xs text-center text-muted-foreground">
+              By completing this purchase you agree to our{" "}
+              <a href="/legal/terms" className="underline">Terms of Service</a>{" "}
+              and{" "}
+              <a href="/legal/privacy" className="underline">Privacy Policy</a>.
+            </p>
           </CardContent>
         </Card>
       </div>

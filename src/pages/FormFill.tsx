@@ -28,7 +28,7 @@ export default function FormFill() {
   useEffect(() => {
     async function loadForm() {
       if (!formKey) {
-        toast.error("Hiányzó űrlap kulcs");
+        toast.error("Missing form key");
         navigate("/archive");
         return;
       }
@@ -45,7 +45,7 @@ export default function FormFill() {
         }
 
         if (!data) {
-          toast.error("Űrlap nem található");
+          toast.error("Form not found");
           navigate("/archive");
           return;
         }
@@ -53,7 +53,7 @@ export default function FormFill() {
         setForm(data as Form);
       } catch (error) {
         console.error("Error loading form:", error);
-        toast.error("Hiba az űrlap betöltése során: " + ((error as Error)?.message || "Ismeretlen hiba"));
+        toast.error("Error loading form: " + ((error as Error)?.message || "Unknown error"));
         navigate("/archive");
       } finally {
         setLoading(false);
@@ -77,9 +77,9 @@ export default function FormFill() {
     return (
       <div className="container mx-auto max-w-4xl py-8 px-4">
         <div className="text-center py-8">
-          <p className="text-muted-foreground">Űrlap nem található</p>
+          <p className="text-muted-foreground">Form not found</p>
           <Button onClick={() => navigate("/archive")} className="mt-4">
-            Vissza az archívumhoz
+            Back to archive
           </Button>
         </div>
       </div>

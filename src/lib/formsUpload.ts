@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type FormPrefix = "NAV" | "MAK" | "LAND" | "GOV" | "MOKK" | "POST" | "GEN";
+export type FormPrefix = "IRS" | "SSA" | "VA" | "USCIS" | "STATE" | "COURT" | "GEN";
 
 export interface InstitutionOption {
   value: string;
@@ -8,15 +8,13 @@ export interface InstitutionOption {
 }
 
 export const INSTITUTIONS: InstitutionOption[] = [
-  { value: "Nemzeti Adó- és Vámhivatal", label: "NAV" },
-  { value: "Magyar Államkincstár", label: "MÁK" },
-  { value: "Földhivatal", label: "Földhivatal" },
-  { value: "Kormányablak", label: "Kormányablak" },
-  { value: "MOKK", label: "MOKK" },
-  { value: "Magyar Posta", label: "Magyar Posta" },
-  { value: "Kúria", label: "Kúria" },
-  { value: "Országos Bírósági Hivatal", label: "Országos Bírósági Hivatal" },
-  { value: "Egyéb", label: "Egyéb" },
+  { value: "Internal Revenue Service", label: "IRS" },
+  { value: "Social Security Administration", label: "SSA" },
+  { value: "Department of Veterans Affairs", label: "VA" },
+  { value: "U.S. Citizenship and Immigration Services", label: "USCIS" },
+  { value: "State Tax Agency", label: "State Tax Agency" },
+  { value: "Court", label: "Court" },
+  { value: "Other", label: "Other" },
 ];
 
 /**
@@ -24,14 +22,14 @@ export const INSTITUTIONS: InstitutionOption[] = [
  */
 export function inferPrefixFromFilename(filename: string): FormPrefix {
   const lower = filename.toLowerCase();
-  
-  if (lower.includes("nav")) return "NAV";
-  if (lower.includes("mak") || lower.includes("allamkincstar") || lower.includes("államkincstár")) return "MAK";
-  if (lower.includes("foldhivatal") || lower.includes("földhivatal")) return "LAND";
-  if (lower.includes("kormanyablak") || lower.includes("kormányablak")) return "GOV";
-  if (lower.includes("mokk")) return "MOKK";
-  if (lower.includes("posta")) return "POST";
-  
+
+  if (lower.includes("irs")) return "IRS";
+  if (lower.includes("ssa") || lower.includes("social-security") || lower.includes("social_security")) return "SSA";
+  if (lower.includes("uscis") || lower.includes("immigration")) return "USCIS";
+  if (lower.includes("veteran") || lower.includes("va-") || lower.includes("va_")) return "VA";
+  if (lower.includes("court") || lower.includes("summons")) return "COURT";
+  if (lower.includes("state") || lower.includes("ftb") || lower.includes("franchise")) return "STATE";
+
   return "GEN";
 }
 
@@ -176,12 +174,12 @@ export function publicUrlFor(supabaseUrl: string, bucket: string, path: string):
  */
 export function guessInstitution(prefix: FormPrefix): string {
   switch (prefix) {
-    case "NAV": return "Nemzeti Adó- és Vámhivatal";
-    case "MAK": return "Magyar Államkincstár";
-    case "LAND": return "Földhivatal";
-    case "GOV": return "Kormányablak";
-    case "MOKK": return "MOKK";
-    case "POST": return "Magyar Posta";
-    default: return "Egyéb";
+    case "IRS": return "Internal Revenue Service";
+    case "SSA": return "Social Security Administration";
+    case "VA": return "Department of Veterans Affairs";
+    case "USCIS": return "U.S. Citizenship and Immigration Services";
+    case "STATE": return "State Tax Agency";
+    case "COURT": return "Court";
+    default: return "Other";
   }
 }

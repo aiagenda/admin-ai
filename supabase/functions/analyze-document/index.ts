@@ -243,7 +243,7 @@ async function getOCRImprovements(
     if (commonMistakes.length > 0) {
       const uniqueMistakes = Array.from(new Set(commonMistakes));
       improvements += `- Common character confusions: ${uniqueMistakes.join(", ")}\n`;
-      improvements += "- When in doubt, use context clues (e.g., bank account numbers follow specific patterns, amounts are usually in HUF)\n";
+      improvements += "- When in doubt, use context clues (e.g., bank account numbers follow specific patterns, amounts are usually in USD or with a $ sign)\n";
     }
 
     if (corrections.length > 0) {
@@ -303,7 +303,7 @@ async function extractTextWithVisionOCR(
                     type: "text",
                     text: await (async () => {
                       // Base OCR prompt
-                      let ocrPrompt = `Extract all text from this Hungarian administrative document image. 
+                      let ocrPrompt = `Extract all text from this US government/official document image. 
 Pay special attention to HANDWRITTEN NUMBERS:
 - Amounts (összeg) may be handwritten - extract them carefully, digit by digit
 - Bank account numbers (bankszámlaszám) may contain handwritten digits - be very careful with similar-looking characters (0 vs O, 1 vs I, 5 vs S, 6 vs G)
@@ -390,7 +390,7 @@ async function extractTextWithGLMOCR(
 
   for (let i = 0; i < pagesToProcess; i++) {
     const imageBase64 = imageBase64Array[i];
-    let ocrPrompt = `Extract all text from this Hungarian administrative document image.
+    let ocrPrompt = `Extract all text from this US government/official document image.
 Return only the extracted text, no analysis.`;
 
     if (supabase) {
@@ -599,10 +599,9 @@ function normalizeDeadlines(deadlines: string[]): string[] {
 }
 
 
-/** US launch: English-only analysis; Hungarian playbooks/KB stay in DB but are not used. */
+/** US English-only document analysis. */
 function isUsMarket(): boolean {
-  const m = (Deno.env.get("MARKET") || Deno.env.get("VITE_MARKET") || "us").toLowerCase();
-  return m === "us";
+  return true; // GovLetter is US-only
 }
 
 function getUsLanguagePrompt(todayStr: string): string {
@@ -647,58 +646,9 @@ IMPORTANT RULES:
 7. Not tax or legal advice—describe options and deadlines from the document text.`;
 }
 
-async function resolveAnalysisLanguage(text: string, openaiApiKey: string): Promise<string> {
-  if (isUsMarket()) return "en";
-  return detectLanguage(text, openaiApiKey);
-}
-
-/**
- * Detect document language using OpenAI (simple detection)
- */
-async function detectLanguage(text: string, openaiApiKey: string): Promise<string> {
-  if (isUsMarket()) return "en";
-  try {
-    // Use a small sample of text for language detection
-    const sample = text.slice(0, 500);
-    
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${openaiApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        temperature: 0,
-        messages: [
-          {
-            role: "system",
-            content: "Detect the language of the following text. Respond with ONLY the ISO 639-1 language code (e.g., 'hu' for Hungarian, 'en' for English, 'de' for German, 'ro' for Romanian, 'sk' for Slovak). If uncertain, default to 'hu'.",
-          },
-          {
-            role: "user",
-            content: sample,
-          },
-        ],
-        max_tokens: 10,
-      }),
-    });
-
-    if (!response.ok) {
-      console.warn("Language detection failed, defaulting to Hungarian");
-      return "hu";
-    }
-
-    const data = await response.json();
-    const detectedLang = data.choices?.[0]?.message?.content?.trim().toLowerCase() || "hu";
-    
-    // Validate language code (common European languages)
-    const validLanguages = ["hu", "en", "de", "ro", "sk", "cs", "pl", "hr", "sr", "sl"];
-    return validLanguages.includes(detectedLang) ? detectedLang : "hu";
-  } catch (error) {
-    console.warn("Language detection error, defaulting to Hungarian:", error);
-    return "hu";
-  }
+// GovLetter is US-only — always analyse in English.
+async function resolveAnalysisLanguage(_text: string, _openaiApiKey: string): Promise<string> {
+  return "en";
 }
 
 /**
@@ -749,7 +699,7 @@ async function searchKnowledgeBase(
       _query_embedding: vectorString,
       _category: category,
       _limit: limit * 2,
-      _market: isUsMarket() ? "us" : null,
+      _market: "us",
       _state_code: stateCode,
     });
 
@@ -1002,101 +952,9 @@ ${rows.join("\n")}`;
   }
 }
 
-function getLanguagePrompt(language: string, todayStr: string): string {
-  if (isUsMarket()) return getUsLanguagePrompt(todayStr);
-  const languagePrompts: Record<string, string> = {
-    hu: `You are an expert Hungarian administrative assistant. Analyze the provided document text and respond strictly with JSON containing:
-
-{
-  "simple_summary": "TEGEZŐ, barátias, közvetlen magyarázat magyar nyelven – mintha egy jó barátod magyarázná el, aki segíteni akar. SOHA ne magázz (ne használj Ön/Önnek szavakat), mindig tegezz (te/neked/nálad). Legyen emberi, támogató hangnem. FONTOS: Ha a dokumentum KONKRÉT, SZEMÉLYRE SZÓLÓ ügy (pl. felszólítás, értesítés, határozat neked címezve), akkor NE használj 'Képzeld el' vagy hasonló példa-bevezetőt – egyszerűen magyarázd el közvetlenül, mi a helyzeted és mit kell tenned. Példát CSAK akkor adj, ha a dokumentum általános tájékoztató jellegű és a példa segít megérteni az absztrakt fogalmakat.",
-  "legal_summary": "Professzionális jogi értelmezés magyar nyelven, TILOS benne példa vagy mindennapi nevek. Csak tiszta, szakmai jogi leírás a dokumentum jogi tartalmáról.",
-  "todo_simple": ["egyszerű lépés 1", "egyszerű lépés 2"],
-  "todo_legal": ["jogi lépés 1", "jogi lépés 2"],
-  "deadlines": ["YYYY-MM-DD"] vagy [] ha nincs határidő,
-  "deadline_descriptions": ["relatív vagy abszolút dátum leírás"] vagy [] - opcionális,
-  "severity": "info" | "action_needed" | "urgent",
-  "bank_account": "string vagy null",
-  "amount": "string vagy null",
-  "recipient_name": "string vagy null",
-  "detected_category": "adozas" | "egeszsegugy" | "oktatas" | "szocialis" | "kozlekedes" | "ingatlan" | "uzlet" | "egyeb" vagy null,
-  "detected_tags": ["tag1", "tag2"] vagy [] ha nincs tag,
-  "mentioned_laws": ["Art. 123. §", "Áfa tv. 55. §"] vagy [] - a dokumentumban EXPLICIT említett jogszabályok és paragrafusok,
-  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "irs_notice_balance_due" | "irs_notice_intent_to_levy" | "irs_notice_generic" | "unknown",
-  "issuer": "NAV" | "IRS" | "bíróság" | "önkormányzat" | "bank" | "közmű" | "egyéb" vagy null
-}
-
-FONTOS SZABÁLYOK:
-1. simple_summary: MINDIG TEGEZZ, soha ne magázz! Írj barátias, közvetlen stílusban, mintha egy jó haveroddal beszélnél. KRITIKUS: Ha a dokumentum KONKRÉT személyre szóló ügy (fizetési felszólítás, adóellenőrzés értesítő, határozat, stb.), akkor NE írj "Képzeld el" vagy "Például" bevezetőt – egyszerűen mondd el közvetlenül, mi történik és mit kell tennie. Példát CSAK általános tájékoztató dokumentumoknál adj, ahol segít megérteni az absztrakt fogalmakat. A magyarázat legyen emberi, támogató, kerüld a hivatalos megfogalmazásokat!
-2. legal_summary SOHA ne tartalmaz példát vagy mindennapi neveket, csak professzionális jogi értelmezés.
-3. deadlines: tömb formátumban YYYY-MM-DD formátumban. Ha a dokumentumban relatív dátum van (pl. "2 hét múlva", "következő hónap"), számold ki a pontos dátumot a mai dátumhoz képest (ma: ${todayStr}).
-4. detected_category: válassz egyet a következők közül: "adozas", "egeszsegugy", "oktatas", "szocialis", "kozlekedes", "ingatlan", "uzlet", "egyeb" vagy null.
-5. mentioned_laws: EXPLICIT jogszabály hivatkozások a dokumentumból (HU: pl. "Áfa tv.", "Vht."; USA: pl. "26 U.S.C. §6020", "IRC §6331", "Treas. Reg."). Ha nincs, [].
-6. doc_type: válaszd ki a dokumentum típusát: NAV esetén "nav_missing_info" (hiánypótlás), "nav_fine", "nav_payment_demand", "execution", "official_decision", "invoice". USA IRS levél esetén: "irs_notice_balance_due" (egyenleg/CP14-szerű), "irs_notice_intent_to_levy" (végrehajtási szándék, CP504/LT11), "irs_notice_generic" (egyéb IRS), egyébként "unknown".
-7. issuer: ki küldte? Magyarországon "NAV", "bíróság", stb.; USA IRS/Treasury esetén "IRS".
-8. FIZETÉSI ADATOK SZABÁLYA: A "bank_account", "amount" és "recipient_name" mezőket CSAK akkor töltsd ki, ha a dokumentum TÉNYLEGES FIZETÉSI KÖTELEZETTSÉGET tartalmaz (pl. számla, bírság, felszólítás fizetésre, tartozás). Ha a dokumentum csak TÁJÉKOZTATÁS vagy ÉRTESÍTÉS (pl. végrehajtási jog törlése, jogosultság igazolása, státusz értesítés), akkor ezek a mezők legyenek NULL. A "recipient_name" SOHA ne legyen kitöltve önmagában - csak akkor, ha van mellette "bank_account" VAGY "amount" is.`,
-    
-    en: `You are an expert administrative assistant. Analyze the provided document text and respond strictly with JSON containing:
-
-{
-  "simple_summary": "Simple but not oversimplified explanation in English. Include a short, relatable example with everyday names – always in PRESENT TENSE (not past). VARY the opening of the example: e.g. 'Here is an example:', 'Imagine that', 'For example:', 'An everyday example:', 'Picture this:' – do not always use the same phrase. Then describe the situation (e.g. Mary has a debt…, she can choose to…). Do not use past tense in the example (not: owed, paid, sent).",
-  "legal_summary": "Professional legal interpretation in English, NO examples or everyday names. Only clean, professional legal description of the document's legal content.",
-  "todo_simple": ["simple step 1", "simple step 2"],
-  "todo_legal": ["legal step 1", "legal step 2"],
-  "deadlines": ["YYYY-MM-DD"] or [] if no deadline,
-  "deadline_descriptions": ["relative or absolute date description"] or [] - optional,
-  "severity": "info" | "action_needed" | "urgent",
-  "bank_account": "string or null",
-  "amount": "string or null",
-  "recipient_name": "string or null",
-  "detected_category": "tax" | "healthcare" | "education" | "social" | "transport" | "property" | "business" | "other" or null,
-  "detected_tags": ["tag1", "tag2"] or [] if no tags,
-  "mentioned_laws": ["Art. 123. §", "VAT Act 55. §"] or [] - EXPLICIT law references found in the document,
-  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "irs_notice_balance_due" | "irs_notice_intent_to_levy" | "irs_notice_generic" | "unknown",
-  "issuer": "irs" | "tax_authority" | "court" | "municipality" | "bank" | "utility" | "other" or null
-}
-
-IMPORTANT RULES:
-1. simple_summary: Always write the example in PRESENT TENSE (has debt, must pay, can request – NOT: owed, paid, sent). Vary the example opening (Here is an example: / Imagine that / For example: / An everyday example: / Picture this:). Keep it clear but not oversimplified; short, relatable example with everyday names (Mary, Peter, etc.).
-2. legal_summary MUST NEVER include examples or everyday names, only professional legal interpretation.
-3. deadlines: array format in YYYY-MM-DD. If the document contains relative dates (e.g., "2 weeks from now", "next month"), calculate the exact date relative to today (today: ${todayStr}).
-4. detected_category: choose one from: "tax", "healthcare", "education", "social", "transport", "property", "business", "other" or null.
-5. mentioned_laws: explicit citations only (e.g. "26 U.S.C. §6331", "IRC §6651", "Treas. Reg. 1.6651-1", Hungarian acts if present). If none, [].
-6. doc_type: For Hungarian documents use nav_* / execution / official_decision / invoice as appropriate. For US IRS mail: "irs_notice_balance_due" (balance due / CP14-like), "irs_notice_intent_to_levy" (levy intent / CP504 / LT11), "irs_notice_generic" (other IRS), else "unknown".
-7. issuer: "irs" for Internal Revenue Service / US Treasury tax notices; "tax_authority" for other national tax agencies; otherwise court/municipality/bank/utility/other.
-8. PAYMENT DATA RULE: Only fill "bank_account", "amount" and "recipient_name" if the document contains an ACTUAL PAYMENT OBLIGATION (e.g., invoice, fine, payment demand, debt). If the document is only INFORMATIONAL or a NOTIFICATION (e.g., removal of enforcement rights, eligibility confirmation, status update), these fields should be NULL. "recipient_name" should NEVER be filled alone - only if there is also "bank_account" OR "amount".`,
-    
-    de: `Sie sind ein Experte für Verwaltungsangelegenheiten. Analysieren Sie den bereitgestellten Dokumententext und antworten Sie strikt mit JSON:
-
-{
-  "simple_summary": "Einfache, aber nicht zu vereinfachende Erklärung auf Deutsch. Enthalte ein kurzes, nachvollziehbares Beispiel mit alltäglichen Namen – immer im PRÄSENS (nicht in der Vergangenheit). VARIERE die Einleitung des Beispiels: z.B. «Hier ein Beispiel:», «Stell dir vor, dass», «Ein Beispiel:», «Zum Beispiel:», «Stell dir zum Beispiel vor:» – nicht immer dieselbe Formulierung. Danach die Situation (z.B. Maria hat eine Schuld…, sie kann wählen…). Kein Präteritum im Beispiel (nicht: hatte, zahlte, sandte).",
-  "legal_summary": "Professionelle rechtliche Interpretation auf Deutsch, KEINE Beispiele oder alltägliche Namen. Nur saubere, professionelle rechtliche Beschreibung des rechtlichen Inhalts des Dokuments.",
-  "todo_simple": ["einfacher Schritt 1", "einfacher Schritt 2"],
-  "todo_legal": ["rechtlicher Schritt 1", "rechtlicher Schritt 2"],
-  "deadlines": ["YYYY-MM-DD"] oder [] wenn kein Termin,
-  "deadline_descriptions": ["relative oder absolute Datumsbeschreibung"] oder [] - optional,
-  "severity": "info" | "action_needed" | "urgent",
-  "bank_account": "string oder null",
-  "amount": "string oder null",
-  "recipient_name": "string oder null",
-  "detected_category": "steuern" | "gesundheitswesen" | "bildung" | "soziales" | "verkehr" | "immobilien" | "geschäft" | "sonstiges" oder null,
-  "detected_tags": ["tag1", "tag2"] oder [] wenn keine Tags,
-  "mentioned_laws": ["Art. 123. §", "UStG 55. §"] oder [] - EXPLIZIT im Dokument erwähnte Gesetze,
-  "doc_type": "nav_missing_info" | "nav_fine" | "nav_payment_demand" | "execution" | "official_decision" | "invoice" | "irs_notice_balance_due" | "irs_notice_intent_to_levy" | "irs_notice_generic" | "unknown",
-  "issuer": "irs" | "finanzamt" | "gericht" | "gemeinde" | "bank" | "versorger" | "sonstiges" oder null
-}
-
-WICHTIGE REGELN:
-1. simple_summary: Das Beispiel immer im PRÄSENS formulieren (hat Schulden, muss zahlen, kann beantragen – NICHT: hatte, zahlte, sandte). Die Beispieleinleitung variieren (Hier ein Beispiel: / Stell dir vor, dass / Ein Beispiel: / Zum Beispiel: / Stell dir zum Beispiel vor:). Klar, aber nicht zu vereinfacht; kurzes, nachvollziehbares Beispiel mit alltäglichen Namen (Maria, Peter, etc.).
-2. legal_summary DARF NIEMALS Beispiele oder alltägliche Namen enthalten, nur professionelle rechtliche Interpretation.
-3. deadlines: Array-Format in YYYY-MM-DD. Wenn das Dokument relative Daten enthält (z.B. "in 2 Wochen", "nächsten Monat"), berechnen Sie das genaue Datum relativ zu heute (heute: ${todayStr}).
-4. detected_category: wählen Sie eine aus: "steuern", "gesundheitswesen", "bildung", "soziales", "verkehr", "immobilien", "geschäft", "sonstiges" oder null.
-5. mentioned_laws: wenn das Dokument EXPLIZIT auf Gesetze verweist (z.B. "Art. 123. §", "Gesetz CL von 2017", "UStG"), listen Sie sie hier auf. Wenn keine, leeres Array [].
-6. doc_type: Ungarn: nav_* wie bisher. USA IRS: "irs_notice_balance_due", "irs_notice_intent_to_levy", "irs_notice_generic", sonst "unknown".
-7. issuer: bei IRS "irs", sonst wie bisher.
-8. ZAHLUNGSDATEN-REGEL: Füllen Sie "bank_account", "amount" und "recipient_name" NUR aus, wenn das Dokument eine TATSÄCHLICHE ZAHLUNGSPFLICHT enthält (z.B. Rechnung, Strafe, Zahlungsaufforderung, Schulden). Wenn das Dokument nur INFORMATIV oder eine BENACHRICHTIGUNG ist (z.B. Aufhebung von Vollstreckungsrechten, Berechtigungsbestätigung, Statusmeldung), sollten diese Felder NULL sein. "recipient_name" sollte NIEMALS allein ausgefüllt werden - nur wenn auch "bank_account" ODER "amount" vorhanden ist.`,
-  };
-
-  return languagePrompts[language] || (isUsMarket() ? getUsLanguagePrompt(todayStr) : languagePrompts.hu);
+function getLanguagePrompt(_language: string, todayStr: string): string {
+  // GovLetter is US-only — always use the US English prompt.
+  return getUsLanguagePrompt(todayStr);
 }
 
 /**
@@ -1176,7 +1034,7 @@ async function analyzeWithOpenAI(
         },
         {
           role: "user",
-          content: `${isUsMarket() ? "Document text" : "Dokumentum szövege"}:\n\n${text.slice(0, 15000)}`,
+          content: `${"Document text"}:\n\n${text.slice(0, 15000)}`,
         },
       ],
     }),
@@ -1419,7 +1277,7 @@ Deno.serve(async (req) => {
         _doc_type: analysis.doc_type ?? null,
         _state_code: analysis.state_code ?? null,
         _agency: analysis.issuer ?? null,
-        _market: isUsMarket() ? "us" : "hu",
+        _market: "us",
       });
       if (playbookErr) {
         console.warn("get_matching_playbook:", playbookErr.message);

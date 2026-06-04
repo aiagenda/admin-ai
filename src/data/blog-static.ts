@@ -61,27 +61,6 @@ export const STATIC_US_LIST = [
     date: "April 15, 2026",
   },
 ] as BlogListItem[];
-export const STATIC_HU_LIST = [
-  {
-    title: "Mit jelent a NAV felszólítás és mit kell tenni?",
-    slug: "mit-jelent-a-nav-felszolitas",
-    excerpt: "Lépésről lépésre útmutató, ha NAV felszólító levelet kaptál.",
-    date: "2026. január 20.",
-  },
-  {
-    title: "Hogyan kell számlát könyvelőnek küldeni?",
-    slug: "hogyan-kell-szamlat-konyvelonek-kuldeni",
-    excerpt: "Gyakorlati workflow KKV-knak a számla OCR és export használatához.",
-    date: "2026. február 10.",
-  },
-  {
-    title: "Legjobb iratkezelő szoftver KKV-knak 2026-ban",
-    slug: "legjobb-iratkezelo-szoftver-kkv-2026",
-    excerpt: "Milyen szempontok alapján válassz dokumentumkezelő rendszert vállalkozásodnak.",
-    date: "2026. március 1.",
-  },
-] as BlogListItem[];
-
 export type BlogPostEntry = {
   title: string;
   description: string;
@@ -90,52 +69,6 @@ export type BlogPostEntry = {
   datePublished: string;
   dateModified: string;
   faqSchema?: { question: string; answer: string }[];
-};
-
-// ─── HU posts ─────────────────────────────────────────────────────────────────
-export const STATIC_HU_POSTS: Record<string, BlogPostEntry> = {
-  "mit-jelent-a-nav-felszolitas": {
-    title: "Mit jelent a NAV felszólítás és mit kell tenni?",
-    description: "Gyakorlati útmutató NAV felszólítás esetére: határidők, teendők, hogyan értelmezd gyorsan a hivatalos levelet.",
-    content: [
-      "Ha NAV felszólítást kapsz, a legfontosabb a határidő és a pontos kötelezettség azonosítása. A dokumentumok gyakran rövid, jogi nyelvű mondatokban írják le, mit kell tenni, emiatt könnyű félreérteni a lényeget.",
-      "Első lépésként ellenőrizd, milyen ügyre vonatkozik a levél: hiánypótlás, fizetési felszólítás vagy adategyeztetés. Ez meghatározza, hogy azonnali fizetési kötelezettséged van-e, vagy dokumentumot kell benyújtanod.",
-      "Második lépésként jegyezd fel a határidőt és a szükséges mellékleteket. Ha több dokumentumra hivatkozik a levél, érdemes egy listát készíteni arról, mi áll rendelkezésre és mi hiányzik.",
-      "Harmadik lépésként döntsd el, hogy önállóan intézed, vagy könyvelővel egyeztetsz. A GovLetter ebben segít: közérthető összefoglalót ad, kiemeli a teendőket és a kritikus dátumokat.",
-      "A cél nem csak az, hogy megértsd a levelet, hanem az is, hogy időben és pontosan reagálj. Ezzel csökkenthető a bírság vagy további eljárás kockázata.",
-    ],
-    keywords: "NAV felszólítás, NAV levél, adóhatósági felszólítás, határidő, teendők, hivatalos levél, GovLetter",
-    datePublished: "2026-01-20T08:00:00+01:00",
-    dateModified: "2026-05-01T10:00:00+01:00",
-  },
-  "hogyan-kell-szamlat-konyvelonek-kuldeni": {
-    title: "Hogyan kell számlát könyvelőnek küldeni? Lépésről lépésre",
-    description: "Számla OCR és export workflow KKV-knak: így készítsd elő a számlákat könyvelésre gyorsan és átláthatóan.",
-    content: [
-      "A könyvelőnek küldött számlák akkor hasznosak, ha egységes formátumban, hiánytalan adatokkal érkeznek.",
-      "Jó workflow: gyűjtsd egy helyre a számlákat, futtasd OCR-rel, ellenőrizd a kulcsmezőket (dátum, összeg, partner), majd exportáld táblázatba.",
-      "Érdemes havi rutinban gondolkodni: heti gyűjtés, havi zárás előtti export, és egy rövid ellenőrzőlista.",
-      "A GovLetter könyvelés modulja ezt a folyamatot támogatja: számla OCR, kategorizálás, export és visszakereshető archívum egy felületen.",
-      "A cél a kevesebb kézi adatbevitel és a jobb pontosság.",
-    ],
-    keywords: "számla könyvelőnek, számla OCR, könyvelés KKV, számlák export, GovLetter",
-    datePublished: "2026-02-10T08:00:00+01:00",
-    dateModified: "2026-05-01T10:00:00+01:00",
-  },
-  "legjobb-iratkezelo-szoftver-kkv-2026": {
-    title: "Legjobb iratkezelő szoftver KKV-knak 2026-ban",
-    description: "Milyen iratkezelő szoftvert válasszon egy KKV? Fő szempontok, összehasonlítási keretrendszer és gyakorlati checklist.",
-    content: [
-      "Az iratkezelő szoftver kiválasztásánál a KKV-k gyakran csak az árat nézik, pedig a valódi megtakarítást a workflow adja.",
-      "Fontos szempont a kereshetőség, verziókezelés, jogosultságok, export lehetőségek, és hogy van-e AI támogatás a dokumentum értelmezéséhez.",
-      "Ha hivatalos leveleket is kezelsz, akkor külön előny, ha a rendszer teendőlistát és határidő-fókuszt ad.",
-      "A GovLetter ebben a kategóriában azoknak jó választás, akik a dokumentum értelmezést és a számla OCR-t egy rendszerben szeretnék kezelni.",
-      "Javaslat: vezess be egy 30 napos pilotot, mérd a feldolgozási időt és a hibaarányt.",
-    ],
-    keywords: "iratkezelő szoftver KKV, digitális iratkezelés, dokumentum archívum, GovLetter",
-    datePublished: "2026-03-01T08:00:00+01:00",
-    dateModified: "2026-05-01T10:00:00+01:00",
-  },
 };
 
 // ─── US posts ─────────────────────────────────────────────────────────────────
@@ -287,9 +220,9 @@ export const STATIC_US_POSTS: Record<string, BlogPostEntry> = {
 
 
 
-export function staticListItems(us: boolean): BlogListItem[] {
-  const posts = us ? STATIC_US_POSTS : STATIC_HU_POSTS;
-  const meta = us ? STATIC_US_LIST : STATIC_HU_LIST;
+export function staticListItems(): BlogListItem[] {
+  const posts = STATIC_US_POSTS;
+  const meta = STATIC_US_LIST;
   const bySlug = new Map(meta.map((m) => [m.slug, m]));
   return Object.keys(posts).map((slug) => {
     const m = bySlug.get(slug);
@@ -300,12 +233,11 @@ export function staticListItems(us: boolean): BlogListItem[] {
       excerpt: m?.excerpt ?? p.description,
       badge: m?.badge,
       badgeVariant: m?.badgeVariant,
-      date: m?.date ?? new Date(p.datePublished).toLocaleDateString(us ? "en-US" : "hu-HU", { year: "numeric", month: "long", day: "numeric" }),
+      date: m?.date ?? new Date(p.datePublished).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
     };
   });
 }
 
-export function staticPost(us: boolean, slug: string): BlogPostEntry | undefined {
-  const posts = us ? STATIC_US_POSTS : STATIC_HU_POSTS;
-  return posts[slug];
+export function staticPost(slug: string): BlogPostEntry | undefined {
+  return STATIC_US_POSTS[slug];
 }

@@ -9,7 +9,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { isUsMarket } from "@/lib/market";
 
 interface SearchResult {
   type: "document" | "analysis" | "form";
@@ -84,7 +83,7 @@ export function AISearch() {
       // Filter results based on AI response - if AI says no results, don't show irrelevant ones
       const aiResponse = data.response?.toLowerCase() || "";
       const hasNoResults = 
-        aiResponse.includes("nem találtam") || aiResponse.includes("nincs") || aiResponse.includes("nincsenek") || aiResponse.includes("nincs találat") || aiResponse.includes("no results") || aiResponse.includes("could not find") || aiResponse.includes("did not find");
+        aiResponse.includes("no results") || aiResponse.includes("could not find") || aiResponse.includes("did not find");
 
       // If AI explicitly says no results, only show results if they're truly relevant
       if (hasNoResults && data.results && data.results.length > 0) {
@@ -147,7 +146,7 @@ export function AISearch() {
       case "document":
         return t(`${s}.typeDocument`, { defaultValue: "Document" });
       case "form":
-        return "Űrlap";
+        return "Form";
       default:
         return "Result";
     }
@@ -266,7 +265,7 @@ export function AISearch() {
                           )}
                           {result.metadata.deadline && (
                             <Badge variant="outline" className="text-xs">
-                              {t(`${s}.deadlineLabel`, { date: new Date(result.metadata.deadline).toLocaleDateString(isUsMarket() ? "en-US" : "hu-HU") })}
+                              {t(`${s}.deadlineLabel`, { date: new Date(result.metadata.deadline).toLocaleDateString("en-US") })}
                             </Badge>
                           )}
                         </div>

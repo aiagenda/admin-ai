@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format, differenceInDays } from "date-fns";
-import { hu } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
 interface DocumentWithAnalysis {
   id: string;
@@ -90,7 +90,7 @@ export default function Compare() {
         }
       } catch (error) {
         console.error("Error fetching documents:", error);
-        toast.error("Hiba a dokumentumok betöltése során");
+        toast.error("Error loading documents");
       } finally {
         setLoading(false);
       }
@@ -123,11 +123,11 @@ export default function Compare() {
   const getSeverityBadge = (severity?: string) => {
     switch (severity) {
       case "urgent":
-        return <Badge variant="destructive">Sürgős</Badge>;
+        return <Badge variant="destructive">Urgent</Badge>;
       case "action_needed":
-        return <Badge className="bg-warning text-warning-foreground">Teendő</Badge>;
+        return <Badge className="bg-warning text-warning-foreground">Action needed</Badge>;
       default:
-        return <Badge variant="secondary">Információ</Badge>;
+        return <Badge variant="secondary">Info</Badge>;
     }
   };
 
@@ -136,7 +136,7 @@ export default function Compare() {
       return (
         <div className="flex items-center gap-2 text-green-600">
           <CheckCircle2 className="h-4 w-4" />
-          <span className="text-sm">{label}: {val1 || "Nincs"}</span>
+          <span className="text-sm">{label}: {val1 || "None"}</span>
         </div>
       );
     }
@@ -144,14 +144,14 @@ export default function Compare() {
       <div className="space-y-1">
         <div className="flex items-center gap-2 text-red-600">
           <XCircle className="h-4 w-4" />
-          <span className="text-sm font-medium">{label} - Különbség:</span>
+          <span className="text-sm font-medium">{label} — Difference:</span>
         </div>
         <div className="pl-6 space-y-1">
           <div className="text-sm">
-            <span className="font-medium">Dokumentum 1:</span> {val1 || "Nincs"}
+            <span className="font-medium">Document 1:</span> {val1 || "None"}
           </div>
           <div className="text-sm">
-            <span className="font-medium">Dokumentum 2:</span> {val2 || "Nincs"}
+            <span className="font-medium">Document 2:</span> {val2 || "None"}
           </div>
         </div>
       </div>
@@ -174,7 +174,7 @@ export default function Compare() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Betöltés...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -188,11 +188,11 @@ export default function Compare() {
           <div>
             <Button variant="ghost" onClick={() => navigate("/archive")} className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Vissza az archívumhoz
+              Back to archive
             </Button>
-            <h1 className="text-3xl font-bold">Dokumentum összehasonlítás</h1>
+            <h1 className="text-3xl font-bold">Document comparison</h1>
             <p className="text-muted-foreground mt-2">
-              Válasszon ki két dokumentumot az összehasonlításhoz
+              Select two documents to compare
             </p>
           </div>
         </div>
@@ -200,15 +200,15 @@ export default function Compare() {
         {/* Document Selection */}
         <Card>
           <CardHeader>
-            <CardTitle>Dokumentumok kiválasztása</CardTitle>
+            <CardTitle>Select documents</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Első dokumentum</label>
+                <label className="text-sm font-medium mb-2 block">First document</label>
                 <Select value={doc1Id} onValueChange={handleDoc1Change}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Válasszon dokumentumot..." />
+                    <SelectValue placeholder="Select a document..." />
                   </SelectTrigger>
                   <SelectContent>
                     {documents.map((doc) => (
@@ -221,10 +221,10 @@ export default function Compare() {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">Második dokumentum</label>
+                <label className="text-sm font-medium mb-2 block">Second document</label>
                 <Select value={doc2Id} onValueChange={handleDoc2Change}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Válasszon dokumentumot..." />
+                    <SelectValue placeholder="Select a document..." />
                   </SelectTrigger>
                   <SelectContent>
                     {documents.map((doc) => (
@@ -252,11 +252,11 @@ export default function Compare() {
                     size="sm"
                     onClick={() => navigate(`/result/${doc1.analyses?.id ?? doc1.id}`)}
                   >
-                    Megtekintés
+                    View
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(doc1.upload_date), "yyyy. MMMM d. HH:mm", { locale: hu })}
+                  {format(new Date(doc1.upload_date), "MMMM d, yyyy h:mm a", { locale: enUS })}
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -264,37 +264,37 @@ export default function Compare() {
 
                 {doc1.analyses.deadline && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Határidő</p>
+                    <p className="text-sm font-medium mb-1">Deadline</p>
                     <p className="text-sm">
-                      {format(new Date(doc1.analyses.deadline), "yyyy. MMMM d.", { locale: hu })}
+                      {format(new Date(doc1.analyses.deadline), "MMMM d, yyyy", { locale: enUS })}
                     </p>
                   </div>
                 )}
 
                 {doc1.analyses.recipient_name && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Kedvezményezett</p>
+                    <p className="text-sm font-medium mb-1">Recipient</p>
                     <p className="text-sm font-mono">{doc1.analyses.recipient_name}</p>
                   </div>
                 )}
 
                 {doc1.analyses.bank_account && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Bankszámlaszám</p>
+                    <p className="text-sm font-medium mb-1">Bank account</p>
                     <p className="text-sm font-mono">{doc1.analyses.bank_account}</p>
                   </div>
                 )}
 
                 {doc1.analyses.amount && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Összeg</p>
+                    <p className="text-sm font-medium mb-1">Amount</p>
                     <p className="text-sm font-mono">{doc1.analyses.amount}</p>
                   </div>
                 )}
 
                 {doc1.analyses.simple_summary && (
                   <div>
-                    <p className="text-sm font-medium mb-2">Egyszerű magyarázat</p>
+                    <p className="text-sm font-medium mb-2">Plain-English summary</p>
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                       {doc1.analyses.simple_summary}
                     </p>
@@ -303,7 +303,7 @@ export default function Compare() {
 
                 {doc1.analyses.todo_simple && (
                   <div>
-                    <p className="text-sm font-medium mb-2">Mit kell tennie?</p>
+                    <p className="text-sm font-medium mb-2">What you need to do</p>
                     <ul className="text-sm space-y-1 list-disc list-inside">
                       {parseTodoList(doc1.analyses.todo_simple).map((todo, i) => (
                         <li key={i}>{todo}</li>
@@ -324,11 +324,11 @@ export default function Compare() {
                     size="sm"
                     onClick={() => navigate(`/result/${doc2.analyses?.id ?? doc2.id}`)}
                   >
-                    Megtekintés
+                    View
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(doc2.upload_date), "yyyy. MMMM d. HH:mm", { locale: hu })}
+                  {format(new Date(doc2.upload_date), "MMMM d, yyyy h:mm a", { locale: enUS })}
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -336,37 +336,37 @@ export default function Compare() {
 
                 {doc2.analyses.deadline && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Határidő</p>
+                    <p className="text-sm font-medium mb-1">Deadline</p>
                     <p className="text-sm">
-                      {format(new Date(doc2.analyses.deadline), "yyyy. MMMM d.", { locale: hu })}
+                      {format(new Date(doc2.analyses.deadline), "MMMM d, yyyy", { locale: enUS })}
                     </p>
                   </div>
                 )}
 
                 {doc2.analyses.recipient_name && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Kedvezményezett</p>
+                    <p className="text-sm font-medium mb-1">Recipient</p>
                     <p className="text-sm font-mono">{doc2.analyses.recipient_name}</p>
                   </div>
                 )}
 
                 {doc2.analyses.bank_account && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Bankszámlaszám</p>
+                    <p className="text-sm font-medium mb-1">Bank account</p>
                     <p className="text-sm font-mono">{doc2.analyses.bank_account}</p>
                   </div>
                 )}
 
                 {doc2.analyses.amount && (
                   <div>
-                    <p className="text-sm font-medium mb-1">Összeg</p>
+                    <p className="text-sm font-medium mb-1">Amount</p>
                     <p className="text-sm font-mono">{doc2.analyses.amount}</p>
                   </div>
                 )}
 
                 {doc2.analyses.simple_summary && (
                   <div>
-                    <p className="text-sm font-medium mb-2">Egyszerű magyarázat</p>
+                    <p className="text-sm font-medium mb-2">Plain-English summary</p>
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                       {doc2.analyses.simple_summary}
                     </p>
@@ -375,7 +375,7 @@ export default function Compare() {
 
                 {doc2.analyses.todo_simple && (
                   <div>
-                    <p className="text-sm font-medium mb-2">Mit kell tennie?</p>
+                    <p className="text-sm font-medium mb-2">What you need to do</p>
                     <ul className="text-sm space-y-1 list-disc list-inside">
                       {parseTodoList(doc2.analyses.todo_simple).map((todo, i) => (
                         <li key={i}>{todo}</li>
@@ -390,9 +390,9 @@ export default function Compare() {
           <Card>
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Nincs összehasonlítási adat</h3>
+              <h3 className="text-lg font-semibold mb-2">No comparison data</h3>
               <p className="text-muted-foreground">
-                A kiválasztott dokumentumok közül legalább egynek nincs elemzése
+                At least one of the selected documents has no analysis
               </p>
             </CardContent>
           </Card>
@@ -400,9 +400,9 @@ export default function Compare() {
           <Card>
             <CardContent className="py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Válasszon ki két dokumentumot</h3>
+              <h3 className="text-lg font-semibold mb-2">Select two documents</h3>
               <p className="text-muted-foreground">
-                Válassza ki a fenti legördülő menükből a dokumentumokat az összehasonlításhoz
+                Choose documents from the dropdowns above to compare
               </p>
             </CardContent>
           </Card>
@@ -414,46 +414,46 @@ export default function Compare() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-primary" />
-                Különbségek összefoglalása
+                Summary of differences
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {compareValues(
                 doc1.analyses.deadline,
                 doc2.analyses.deadline,
-                "Határidő"
+                "Deadline"
               )}
 
               {compareValues(
                 doc1.analyses.amount,
                 doc2.analyses.amount,
-                "Összeg"
+                "Amount"
               )}
 
               {compareValues(
                 doc1.analyses.bank_account,
                 doc2.analyses.bank_account,
-                "Bankszámlaszám"
+                "Bank account"
               )}
 
               {compareValues(
                 doc1.analyses.recipient_name,
                 doc2.analyses.recipient_name,
-                "Kedvezményezett"
+                "Recipient"
               )}
 
               {doc1.analyses.severity !== doc2.analyses.severity && (
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-red-600">
                     <XCircle className="h-4 w-4" />
-                    <span className="text-sm font-medium">Sürgősség - Különbség:</span>
+                    <span className="text-sm font-medium">Severity — Difference:</span>
                   </div>
                   <div className="pl-6 space-y-1">
                     <div className="text-sm">
-                      <span className="font-medium">Dokumentum 1:</span> {getSeverityBadge(doc1.analyses.severity)}
+                      <span className="font-medium">Document 1:</span> {getSeverityBadge(doc1.analyses.severity)}
                     </div>
                     <div className="text-sm">
-                      <span className="font-medium">Dokumentum 2:</span> {getSeverityBadge(doc2.analyses.severity)}
+                      <span className="font-medium">Document 2:</span> {getSeverityBadge(doc2.analyses.severity)}
                     </div>
                   </div>
                 </div>
@@ -462,7 +462,7 @@ export default function Compare() {
               {doc1.analyses.severity === doc2.analyses.severity && (
                 <div className="flex items-center gap-2 text-green-600">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span className="text-sm">Sürgősség: Azonos ({doc1.analyses.severity})</span>
+                  <span className="text-sm">Severity: Same ({doc1.analyses.severity})</span>
                 </div>
               )}
             </CardContent>

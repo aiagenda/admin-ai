@@ -5,8 +5,6 @@ import { Check, Sparkles, FileText, Zap, CalendarRange, Receipt, Shield } from "
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageSEO } from "@/components/PageSEO";
-import { isUsMarket } from "@/lib/market";
-
 // ─── US / USD plans ───────────────────────────────────────────────────────────
 
 const docPlansUS = [
@@ -84,110 +82,26 @@ const subPlansUS = [
   },
 ];
 
-// ─── HU / Forint plans ────────────────────────────────────────────────────────
-
-const docPlansHU = [
-  {
-    name: "Basic",
-    price: "1 490 Ft",
-    per: "dokumentum",
-    description: "Gyors, részletes elemzés",
-    cta: "Vásárlás",
-    planKey: "basic_doc" as const,
-    features: [
-      "Normál minőségű értelmezés",
-      "Nav / hivatali levél támogatás",
-      "E-mail értesítés",
-    ],
-  },
-  {
-    name: "Pro",
-    price: "3 990 Ft",
-    per: "dokumentum",
-    description: "Mélyebb elemzés, válaszminta, PDF",
-    cta: "Vásárlás",
-    planKey: "pro_doc" as const,
-    features: [
-      "Mélyebb elemzés",
-      "Javasolt válaszminta",
-      "PDF export a riportból (ahol elérhető)",
-    ],
-    highlight: true,
-  },
-];
-
-const subPlansHU = [
-  {
-    name: "Havi 10",
-    price: "4 990 Ft",
-    per: "hó",
-    description: "Rendszeres használatra",
-    cta: "Előfizetés",
-    planKey: "monthly" as const,
-    features: [
-      "10 dokumentum / hó",
-      "Dokumentum kredit nélküli, kvótás hozzáférés",
-      "Bármikor lemondható",
-    ],
-  },
-  {
-    name: "Business 50",
-    price: "14 990 Ft",
-    per: "hó",
-    description: "Irodáknak, kis cégeknek",
-    cta: "Előfizetés",
-    planKey: "business" as const,
-    features: [
-      "50 dokumentum / hó",
-      "Magasabb kvóta",
-      "Prioritás a feldolgozásnál (cél)",
-    ],
-  },
-  {
-    name: "Professzionális (Könyvelés+)",
-    price: "9 990 Ft+",
-    per: "hó",
-    description: "Könyvelési modul, OCR, export",
-    cta: "Előfizetés",
-    planKey: "enterprise" as const,
-    features: [
-      "Könyvelés modul",
-      "Számla / OCR feldolgozás",
-      "Excel a könyvelőnek",
-      "Dokumentum: nagy vagy korlátlan (részletek a checkoutnál)",
-    ],
-  },
-];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Pricing() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const us = isUsMarket();
 
-  const docPlans = us ? docPlansUS : docPlansHU;
-  const subPlans = us ? subPlansUS : subPlansHU;
+  const docPlans = docPlansUS;
+  const subPlans = subPlansUS;
 
-  const freeLabel      = us ? "Free trial"           : "Ingyenes";
-  const freeDesc       = us ? "One free document — lightweight analysis to try the workflow" : "Rövid / vízjeles, könnyített elemzés, hogy kipróbáld a folyamatot";
-  const freeCta        = us ? "Get started"          : "Kezdés";
-  const freePrice      = us ? "$0"                   : "0 Ft";
-  const docSectionHdr  = us ? "Per-document (one-time)" : "Egyszeri – dokumentum ár (Stripe)";
-  const subSectionHdr  = us ? "Monthly plans"        : "Havi csomagok";
-  const subSectionDesc = us
-    ? "Upload letters regularly? A monthly plan is cheaper per document."
-    : "Ha rendszeresen jönnek levelek vagy sok a dokumentum, olcsóbb a havi limit.";
-  const heroTitle      = us
-    ? <>Don&apos;t let a scary letter <span className="text-primary">go unanswered</span></>
-    : <>Ne ijedj meg a <span className="text-primary">hivatalos levelektől</span></>;
-  const heroDesc       = us
-    ? "Upload the letter and we'll tell you exactly what it means, what to do, and when. Try it free — pay only when you need it."
-    : "Töltsd fel a levelet, és elmondjuk, mit kell tenned. Először ingyenesen 1 könnyített próbát kapsz, utána fizess csak amikor kell.";
-  const badgeText      = us
-    ? "Refund policy in Terms of Service"
-    : "Pénzvisszafizetési elvek az ÁSZF-ben";
-  const popularLabel   = us ? "Most popular" : "Ajánlott";
+  const freeLabel      = "Free trial";
+  const freeDesc       = "One free document — lightweight analysis to try the workflow";
+  const freeCta        = "Get started";
+  const freePrice      = "$0";
+  const docSectionHdr  = "Per-document (one-time)";
+  const subSectionHdr  = "Monthly plans";
+  const subSectionDesc = "Upload letters regularly? A monthly plan is cheaper per document.";
+  const heroTitle      = <>Don&apos;t let a scary letter <span className="text-primary">go unanswered</span></>;
+  const heroDesc       = "Upload the letter and we'll tell you exactly what it means, what to do, and when. Try it free — pay only when you need it.";
+  const badgeText      = "Refund policy in Terms of Service";
+  const popularLabel   = "Most popular";
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -209,7 +123,7 @@ export default function Pricing() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-6 w-6 text-primary" />
-                  <CardTitle>{us ? "1 free document" : "1 próba dokumentum"}</CardTitle>
+                  <CardTitle>1 free document</CardTitle>
                 </div>
                 <CardDescription>{freeDesc}</CardDescription>
                 <p className="text-3xl font-bold pt-2">{freePrice}</p>
@@ -329,14 +243,12 @@ export default function Pricing() {
         </div>
 
         {/* Disclaimer */}
-        {us && (
-          <p className="text-xs text-muted-foreground text-center mt-10 max-w-2xl mx-auto">
-            <Shield className="inline h-3 w-3 mr-1" />
-            GovLetter is a document-explanation tool, not a tax advisor or law firm. Always verify
-            deadlines and amounts against your original notice and consult a qualified professional
-            before taking action.
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground text-center mt-10 max-w-2xl mx-auto">
+          <Shield className="inline h-3 w-3 mr-1" />
+          GovLetter is a document-explanation tool, not a tax advisor or law firm. Always verify
+          deadlines and amounts against your original notice and consult a qualified professional
+          before taking action.
+        </p>
       </div>
     </div>
   );

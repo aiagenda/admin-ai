@@ -17,7 +17,6 @@ import { Link } from "react-router-dom";
 import { PageSEO } from "@/components/PageSEO";
 import { HomeLanding } from "@/components/HomeLanding";
 import { useTranslation } from "react-i18next";
-import { isUsMarket } from "@/lib/market";
 import { getSiteOrigin } from "@/lib/site";
 
 // Time-based greeting
@@ -200,7 +199,6 @@ export default function Home() {
 
   const visibleCardOrder = useMemo(() => {
     const order = getHomeCardOrder();
-    if (isUsMarket()) return order.filter((id) => id !== "invoices");
     return order.filter((id) => id !== "invoices" || hasInvoiceAccess);
   }, [hasInvoiceAccess]);
 
@@ -217,7 +215,7 @@ export default function Home() {
 
   const homeStructuredData = useMemo(() => {
     const origin = getSiteOrigin();
-    const lang = isUsMarket() || i18n.language?.startsWith("en") ? "en-US" : "hu-HU";
+    const lang = "en-US";
     return {
       "@context": "https://schema.org",
       "@graph": [
@@ -416,7 +414,7 @@ export default function Home() {
 
           {/* Invoice/Bookkeeping Summary Widget - Only for enterprise/admin */}
           <div className="flex flex-col" style={{ order: cardOrderMap["invoices"] ?? 3 }} data-tour="invoices">
-          {hasInvoiceAccess && !isUsMarket() && (
+          {hasInvoiceAccess && !(
             <div 
               className="relative overflow-hidden rounded-xl cursor-pointer group transition-all hover:scale-[1.01] hover:shadow-xl"
               onClick={() => navigate("/invoices")}

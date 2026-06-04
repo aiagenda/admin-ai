@@ -105,15 +105,15 @@ export default function InvoiceUpload() {
       /\.(heic|heif)$/i.test(file.name);
     
     if (isHEIC) {
-      return "HEIC formátum nem támogatott";
+      return "HEIC format is not supported";
     }
-    
+
     if (!isPDF && !isImage) {
-      return "Csak PDF vagy kép tölthető fel";
+      return "Only PDF or image files can be uploaded";
     }
 
     if (file.size > 20 * 1024 * 1024) {
-      return "Maximum 20MB méret";
+      return "Maximum size is 20MB";
     }
 
     return null;
@@ -158,7 +158,7 @@ export default function InvoiceUpload() {
 
     if (newFiles.length > 0) {
       setFiles(prev => [...prev, ...newFiles]);
-      toast.success(`${newFiles.length} fájl hozzáadva`);
+      toast.success(`${newFiles.length} file(s) added`);
     }
   };
 
@@ -248,7 +248,7 @@ export default function InvoiceUpload() {
       const result = await response.json();
 
       if (!response.ok || !result?.success) {
-        throw new Error(result?.error || "Feldolgozási hiba");
+        throw new Error(result?.error || "Processing error");
       }
 
       // Success!
@@ -266,13 +266,13 @@ export default function InvoiceUpload() {
 
   const handleSubmit = async () => {
     if (!user || !session?.access_token) {
-      toast.error("Jelentkezz be");
+      toast.error("Please sign in");
       return;
     }
 
     const pendingFiles = files.filter(f => f.status === "pending");
     if (pendingFiles.length === 0) {
-      toast.error("Nincs feltöltendő fájl");
+      toast.error("No files to upload");
       return;
     }
 
@@ -289,9 +289,9 @@ export default function InvoiceUpload() {
           .single()) as { data: { plan_type: string } | null };
         
         if (subData?.plan_type !== 'enterprise') {
-          toast.error("A Könyvelés modul csak Professzionális előfizetéssel érhető el", {
+          toast.error("The Bookkeeping module is only available with a Professional subscription", {
             action: {
-              label: "Előfizetés",
+              label: "Subscribe",
               onClick: () => navigate("/pricing"),
             },
           });
@@ -315,10 +315,10 @@ export default function InvoiceUpload() {
     const errors = files.filter(f => f.status === "error").length;
 
     if (completed > 0) {
-      toast.success(`${completed} számla sikeresen feldolgozva!`);
+      toast.success(`${completed} invoice(s) processed successfully!`);
     }
     if (errors > 0) {
-      toast.error(`${errors} számla feldolgozása sikertelen`);
+      toast.error(`${errors} invoice(s) failed to process`);
     }
   };
 
@@ -345,15 +345,15 @@ export default function InvoiceUpload() {
   const getStatusText = (status: FileStatus) => {
     switch (status) {
       case "pending":
-        return "Várakozik";
+        return "Waiting";
       case "uploading":
-        return "Feltöltés...";
+        return "Uploading...";
       case "processing":
-        return "Feldolgozás...";
+        return "Processing...";
       case "completed":
-        return "Kész";
+        return "Done";
       case "error":
-        return "Hiba";
+        return "Error";
     }
   };
 
@@ -367,17 +367,17 @@ export default function InvoiceUpload() {
           onClick={() => navigate("/invoices")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Vissza a számlákhoz
+          Back to invoices
         </Button>
 
         <Card>
           <CardHeader className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Receipt className="h-6 w-6 text-primary" />
-              <CardTitle className="text-2xl">Számlák feltöltése</CardTitle>
+              <CardTitle className="text-2xl">Upload invoices</CardTitle>
             </div>
             <CardDescription>
-              Töltsd fel számláidat - akár többet is egyszerre. Az AI automatikusan felismeri és kategorizálja őket.
+              Upload your invoices — even several at once. The AI automatically recognizes and categorizes them.
             </CardDescription>
           </CardHeader>
 
@@ -398,15 +398,15 @@ export default function InvoiceUpload() {
             >
               <UploadIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-lg font-medium mb-2">
-                Húzd ide a számlákat vagy kattints
+                Drag invoices here or click
               </p>
               <p className="text-sm text-muted-foreground mb-4">
-                PDF, JPG, PNG • Maximum 20MB / fájl • Több fájl is kiválasztható
+                PDF, JPG, PNG • Maximum 20MB / file • Multiple files supported
               </p>
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" size="sm" disabled={isUploading}>
                   <UploadIcon className="h-4 w-4 mr-2" />
-                  Fájlok kiválasztása
+                  Select files
                 </Button>
               </div>
               <input
@@ -428,12 +428,12 @@ export default function InvoiceUpload() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-medium">
-                    Kiválasztott fájlok ({files.length})
+                    Selected files ({files.length})
                   </h3>
                   {pendingCount > 0 && !isUploading && (
                     <Button variant="ghost" size="sm" onClick={clearAllFiles}>
                       <X className="h-4 w-4 mr-1" />
-                      Mind törlése
+                      Clear all
                     </Button>
                   )}
                 </div>
@@ -443,7 +443,7 @@ export default function InvoiceUpload() {
                   <div className="space-y-2">
                     <Progress value={progress} className="h-2" />
                     <p className="text-sm text-muted-foreground text-center">
-                      {completedCount + errorCount} / {files.length} feldolgozva
+                      {completedCount + errorCount} / {files.length} processed
                     </p>
                   </div>
                 )}
@@ -522,12 +522,12 @@ export default function InvoiceUpload() {
                   {isUploading ? (
                     <>
                       <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      Feldolgozás... ({processingCount} aktív)
+                      Processing... ({processingCount} active)
                     </>
                   ) : (
                     <>
                       <UploadIcon className="h-5 w-5 mr-2" />
-                      {pendingCount} számla feldolgozása
+                      Process {pendingCount} invoice(s)
                     </>
                   )}
                 </Button>
@@ -538,33 +538,33 @@ export default function InvoiceUpload() {
                     size="lg"
                     onClick={() => navigate("/invoices")}
                   >
-                    Megtekintés
+                    View
                   </Button>
                 )}
               </div>
             )}
             <p className="text-xs text-center text-muted-foreground">
-              A feldolgozas inditasaval elfogadod az {" "}
+              By starting the processing you agree to the {" "}
               <Link className="underline text-primary" to="/legal/privacy">
-                adatkezelesi tajekoztatot
+                Privacy Policy
               </Link>
-              {" "}es az {" "}
+              {" "}and the {" "}
               <Link className="underline text-primary" to="/legal/terms">
-                ASZF-et
+                Terms of Service
               </Link>
               .
             </p>
 
             {/* Info */}
             <div className="bg-muted/50 rounded-lg p-4">
-              <h4 className="font-medium mb-2">Mit ismer fel az AI?</h4>
+              <h4 className="font-medium mb-2">What does the AI detect?</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Számlaszám, dátum, fizetési határidő</li>
-                <li>• Kibocsátó neve, címe, adószáma</li>
-                <li>• Nettó, ÁFA és bruttó összeg</li>
-                <li>• Tétel megnevezése</li>
-                <li>• Automatikus költség kategória</li>
-                <li>• Kézzel írt számlák is!</li>
+                <li>• Invoice number, date, payment due date</li>
+                <li>• Issuer name, address, tax ID</li>
+                <li>• Subtotal, tax, and total amount</li>
+                <li>• Line item description</li>
+                <li>• Automatic expense category</li>
+                <li>• Even handwritten invoices!</li>
               </ul>
             </div>
             <div className="rounded-lg border bg-muted/30 p-4 space-y-3">

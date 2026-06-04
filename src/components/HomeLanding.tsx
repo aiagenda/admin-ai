@@ -1,41 +1,28 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Sparkles, Clock, Shield, Receipt, ScanLine, FileSpreadsheet } from "lucide-react";
+import { FileText, Sparkles, Clock, Shield, ScanLine, FileSpreadsheet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { isUsMarket } from "@/lib/market";
 
 export function HomeLanding() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation("common");
-  const us = isUsMarket();
   const p = "homePage.landing";
 
-  const solutions = us
-    ? [
-        { to: "/irs-notices", title: t(`${p}.solIrsTitle`), desc: t(`${p}.solIrsDesc`) },
-        { to: "/state-tax-letters", title: t(`${p}.solStateTitle`), desc: t(`${p}.solStateDesc`) },
-        { to: "/ssa-letters", title: t(`${p}.solSsaTitle`), desc: t(`${p}.solSsaDesc`) },
-        { to: "/help", title: t(`${p}.solFaqTitle`), desc: t(`${p}.solFaqDesc`) },
-      ]
-    : [
-        { to: "/nav-hatarozat-ertelmezes", title: t(`${p}.solIrsTitle`), desc: t(`${p}.solIrsDesc`) },
-        { to: "/szamla-ocr", title: t(`${p}.solStateTitle`), desc: t(`${p}.solStateDesc`) },
-        { to: "/dokumentum-archivum", title: t(`${p}.solSsaTitle`), desc: t(`${p}.solSsaDesc`) },
-        { to: "/gyik", title: t(`${p}.solFaqTitle`), desc: t(`${p}.solFaqDesc`) },
-      ];
+  const solutions = [
+    { to: "/irs-notices", title: t(`${p}.solIrsTitle`), desc: t(`${p}.solIrsDesc`) },
+    { to: "/state-tax-letters", title: t(`${p}.solStateTitle`), desc: t(`${p}.solStateDesc`) },
+    { to: "/ssa-letters", title: t(`${p}.solSsaTitle`), desc: t(`${p}.solSsaDesc`) },
+    { to: "/help", title: t(`${p}.solFaqTitle`), desc: t(`${p}.solFaqDesc`) },
+  ];
 
-  const comparisons = us
-    ? [{ to: "/govletter-vs-chatgpt", title: t(`${p}.cmpChatgptTitle`), desc: t(`${p}.cmpChatgptDesc`) }]
-    : [
-        { to: "/govletter-vs-chatgpt", title: t(`${p}.cmpChatgptTitle`), desc: t(`${p}.cmpChatgptDesc`) },
-        { to: "/govletter-vs-billingo", title: t(`${p}.cmpBillingoTitle`), desc: t(`${p}.cmpBillingoDesc`) },
-        { to: "/govletter-vs-szamlazz", title: t(`${p}.cmpSzamlazzTitle`), desc: t(`${p}.cmpSzamlazzDesc`) },
-      ];
+  const comparisons = [
+    { to: "/govletter-vs-chatgpt", title: t(`${p}.cmpChatgptTitle`), desc: t(`${p}.cmpChatgptDesc`) },
+  ];
 
-  const step4Icon = us ? FileSpreadsheet : Receipt;
+  const step4Icon = FileSpreadsheet;
 
   return (
     <>
@@ -49,18 +36,8 @@ export function HomeLanding() {
             <p className="text-md sm:text-lg text-foreground font-medium max-w-2xl mx-auto">
               {t(`${p}.tagline1`)}
               <br />
-              {us ? (
-                <>
-                  {t(`${p}.tagline2`)}{" "}
-                  <span className="font-semibold text-primary">{t(`${p}.tagline2You`)}</span>.
-                </>
-              ) : (
-                <>
-                  {t(`${p}.tagline2`)}{" "}
-                  <span className="font-semibold text-primary">{t(`${p}.tagline2You`)}</span>,{" "}
-                  <span className="font-semibold">{t("homePage.landing.tagline2YouWrap")}</span>
-                </>
-              )}
+              {t(`${p}.tagline2`)}{" "}
+              <span className="font-semibold text-primary">{t(`${p}.tagline2You`)}</span>.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-4">
               <Button

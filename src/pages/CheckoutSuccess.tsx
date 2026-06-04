@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle2, Loader2, ArrowRight, Upload, Receipt, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Confetti from "react-confetti";
-import { isUsMarket } from "@/lib/market";
 import posthog from "posthog-js";
 
 export default function CheckoutSuccess() {
@@ -14,7 +13,6 @@ export default function CheckoutSuccess() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const [showConfetti, setShowConfetti] = useState(true);
-  const us = isUsMarket();
 
   useEffect(() => {
     const timer = setTimeout(() => setShowConfetti(false), 5000);
@@ -25,10 +23,10 @@ export default function CheckoutSuccess() {
     if (user) {
       posthog.capture("subscription activated", {
         stripe_session_id: sessionId,
-        market: us ? "us" : "hu",
+        market: "us",
       });
     }
-  }, [user, sessionId, us]);
+  }, [user, sessionId]);
 
   if (!user) {
     navigate("/auth");
@@ -54,27 +52,23 @@ export default function CheckoutSuccess() {
               <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
             </div>
             <CardTitle className="text-2xl sm:text-3xl text-green-700 dark:text-green-400">
-              {us ? "You're all set!" : "Sikeres előfizetés!"}
+              You're all set!
             </CardTitle>
             <CardDescription className="text-base">
-              {us
-                ? "Thanks for choosing GovLetter. Your plan is now active."
-                : "Köszönjük, hogy a GovLettert választottad!"}
+              Thanks for choosing GovLetter. Your plan is now active.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-6">
             <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg border border-green-200 dark:border-green-900">
               <p className="text-green-800 dark:text-green-300 text-center text-sm">
-                {us
-                  ? "Your subscription is active. All features are now unlocked."
-                  : "Az előfizetésed most aktív! Minden prémium funkció elérhető számodra."}
+                Your subscription is active. All features are now unlocked.
               </p>
             </div>
 
             <div className="space-y-3">
               <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                {us ? "What to do next" : "Következő lépések"}
+                What to do next
               </h3>
 
               <div
@@ -86,12 +80,10 @@ export default function CheckoutSuccess() {
                 </div>
                 <div>
                   <p className="font-medium text-sm">
-                    {us ? "Upload your first document" : "Töltsd fel az első dokumentumod"}
+                    Upload your first document
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {us
-                      ? "PDF or photo — analysis in under 60 seconds"
-                      : "PDF vagy fotó – 60 másodperc alatt elemzés"}
+                    PDF or photo — analysis in under 60 seconds
                   </p>
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto mt-1 shrink-0" />
@@ -106,37 +98,26 @@ export default function CheckoutSuccess() {
                 </div>
                 <div>
                   <p className="font-medium text-sm">
-                    {us ? "View your document archive" : "Dokumentumarchívum megtekintése"}
+                    View your document archive
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {us
-                      ? "All your uploaded letters and analyses"
-                      : "Minden feltöltött levél és elemzés"}
+                    All your uploaded letters and analyses
                   </p>
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto mt-1 shrink-0" />
               </div>
             </div>
 
-            {us ? (
-              <p className="text-xs text-center text-muted-foreground">
-                Questions? Email us at{" "}
-                <a href="mailto:support@govletter.com" className="text-primary hover:underline">
-                  support@govletter.com
-                </a>
-              </p>
-            ) : (
-              <p className="text-xs text-center text-muted-foreground">
-                Kérdésed van? Írj nekünk:{" "}
-                <a href="mailto:support@govletter.com" className="text-primary hover:underline">
-                  support@govletter.com
-                </a>
-              </p>
-            )}
+            <p className="text-xs text-center text-muted-foreground">
+              Questions? Email us at{" "}
+              <a href="mailto:support@govletter.com" className="text-primary hover:underline">
+                support@govletter.com
+              </a>
+            </p>
 
             {sessionId && (
               <p className="text-xs text-center text-muted-foreground/60">
-                {us ? "Order reference:" : "Rendelési azonosító:"} {sessionId.slice(0, 20)}…
+                Order reference: {sessionId.slice(0, 20)}…
               </p>
             )}
           </CardContent>

@@ -17,16 +17,15 @@ type DbBlogRow = {
   faq_schema: { question: string; answer: string }[] | null;
 };
 
-function marketFilter(us: boolean) {
-  const m = us ? "us" : "hu";
-  return `market.eq.${m},market.eq.both`;
+function marketFilter() {
+  return `market.eq.us,market.eq.both`;
 }
 
-function rowToListItem(row: DbBlogRow, us: boolean): BlogListItem {
+function rowToListItem(row: DbBlogRow): BlogListItem {
   const date =
     row.date_label?.trim() ||
     new Date(row.published_at || row.created_at).toLocaleDateString(
-      us ? "en-US" : "hu-HU",
+      "en-US",
       { year: "numeric", month: "long", day: "numeric" },
     );
   const variant = row.badge_variant;
@@ -58,23 +57,22 @@ function rowToPost(row: DbBlogRow): BlogPostEntry {
   };
 }
 
-export async function fetchPublishedBlogList(us: boolean): Promise<BlogListItem[]> {
+export async function fetchPublishedBlogList(): Promise<BlogListItem[]> {
   const { data, error } = await supabase
     .from("blog_posts")
     .select(
       "title, slug, description, content, keywords, market, published_at, created_at, updated_at, date_label, badge_text, badge_variant, faq_schema",
     )
     .eq("is_published", true)
-    .or(marketFilter(us))
+    .or(marketFilter())
     .order("published_at", { ascending: false, nullsFirst: false });
 
   if (error || !data) return [];
-  return (data as DbBlogRow[]).map((row) => rowToListItem(row, us));
+  return (data as DbBlogRow[]).map((row) => rowToListItem(row));
 }
 
 export async function fetchPublishedBlogPost(
   slug: string,
-  us: boolean,
 ): Promise<BlogPostEntry | null> {
   const { data, error } = await supabase
     .from("blog_posts")
@@ -83,7 +81,7 @@ export async function fetchPublishedBlogPost(
     )
     .eq("is_published", true)
     .eq("slug", slug)
-    .or(marketFilter(us))
+    .or(marketFilter())
     .maybeSingle();
 
   if (error || !data) return null;

@@ -4,29 +4,27 @@ import { PageSEO } from "@/components/PageSEO";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-import { isUsMarket } from "@/lib/market";
 import { staticListItems, type BlogListItem } from "@/data/blog-static";
 import { fetchPublishedBlogList, mergeBlogLists } from "@/lib/blog-api";
 
 export default function BlogIndexPage() {
-  const us = isUsMarket();
-  const [posts, setPosts] = useState<BlogListItem[]>(() => staticListItems(us));
+  const [posts, setPosts] = useState<BlogListItem[]>(() => staticListItems());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       setLoading(true);
-      const cms = await fetchPublishedBlogList(us);
+      const cms = await fetchPublishedBlogList();
       if (!cancelled) {
-        setPosts(mergeBlogLists(cms, staticListItems(us)));
+        setPosts(mergeBlogLists(cms, staticListItems()));
         setLoading(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [us]);
+  }, []);
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -34,15 +32,13 @@ export default function BlogIndexPage() {
       <div className="container mx-auto max-w-4xl space-y-6">
         <h1 className="text-4xl font-bold">GovLetter Blog</h1>
         <p className="text-muted-foreground">
-          {us
-            ? "Plain-English guides to IRS notices, state tax letters, Social Security mail, and official government correspondence."
-            : "Gyakorlati útmutatók hivatalos dokumentumok és számlák kezeléséhez."}
+          Plain-English guides to IRS notices, state tax letters, Social Security mail, and official government correspondence.
         </p>
 
         {loading && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            {us ? "Loading articles…" : "Cikkek betöltése…"}
+            Loading articles…
           </div>
         )}
 
@@ -70,7 +66,7 @@ export default function BlogIndexPage() {
                   to={`/blog/${post.slug}`}
                   className="inline-block mt-3 text-sm text-primary hover:underline"
                 >
-                  {us ? "Read article →" : "Cikk olvasása →"}
+                  Read article →
                 </Link>
               </CardContent>
             </Card>

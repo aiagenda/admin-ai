@@ -205,7 +205,7 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Dokumentum</label>
+                  <label className="text-sm font-medium mb-2 block">Document</label>
                   <Select
                     value={selectedDocumentId}
                     onValueChange={setSelectedDocumentId}

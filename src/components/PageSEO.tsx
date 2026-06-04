@@ -1,6 +1,5 @@
 import { SEOHead } from "@/components/SEOHead";
 import { useTranslation } from "react-i18next";
-import { isUsMarket } from "@/lib/market";
 
 type PageSEOProps = {
   pageKey: string;
@@ -30,7 +29,7 @@ export function PageSEO({
   const { t } = useTranslation("translation");
   const { t: navT } = useTranslation("nav");
   const { i18n } = useTranslation();
-  const ogLocale = isUsMarket() || i18n.language?.startsWith("en") ? "en_US" : "hu_HU";
+  const ogLocale = "en_US";
 
   const title = t(`seo.${pageKey}.title`);
   const description = t(`seo.${pageKey}.description`);

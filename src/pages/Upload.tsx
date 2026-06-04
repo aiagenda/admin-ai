@@ -8,7 +8,6 @@ import { UsageLimit } from "@/components/UsageLimit";
 import { LegalQuickLinks } from "@/components/LegalQuickLinks";
 import { PageSEO } from "@/components/PageSEO";
 import { useTranslation } from "react-i18next";
-import { isUsMarket } from "@/lib/market";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -111,7 +110,6 @@ async function optimizeImage(file: File): Promise<File> {
 
 export default function Upload() {
   const { t } = useTranslation("common");
-  const us = isUsMarket();
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -158,7 +156,7 @@ export default function Upload() {
       return;
     }
 
-    // Safari / iOS esetén előfordulhat hiányzó MIME type, ezért az extension is számít.
+    // Safari / iOS may have a missing MIME type, so the extension matters too.
     const validFiles = nonEmptyFiles.filter((f) => {
       const lowerName = f.name.toLowerCase();
       const isPDF = f.type === "application/pdf" || lowerName.endsWith(".pdf");
@@ -266,7 +264,7 @@ export default function Upload() {
       } else if (quotaData && quotaData.length > 0 && !quotaData[0].can_upload) {
         const quota = quotaData[0];
         toast.error(
-          `Elérte a havi kvóta limitjét (${quota.current_usage}/${quota.limit_amount}). Kérjük, frissítse előfizetését.`,
+          `You've reached your monthly quota limit (${quota.current_usage}/${quota.limit_amount}). Please upgrade your subscription.`,
           {
             action: {
               label: t("uploadPage.subscribeLabel"),
@@ -318,7 +316,7 @@ export default function Upload() {
         document_id: doc.id,
         file_type: contentType,
         file_size_bytes: file.size,
-        market: isUsMarket() ? "us" : "hu",
+        market: "us",
       });
 
       // 2.5. Increment usage counter (only if function exists)

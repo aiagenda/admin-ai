@@ -14,9 +14,9 @@ const NotFound = () => {
       <PageSEO pageKey="notFound" path={location.pathname} noindex />
       <div className="text-center px-4">
         <h1 className="mb-4 text-4xl font-bold">404</h1>
-        <p className="mb-4 text-xl text-gray-600">Nincs ilyen oldal</p>
+        <p className="mb-4 text-xl text-gray-600">Page not found</p>
         <a href="/" className="text-blue-500 underline hover:text-blue-700">
-          Vissza a főoldalra
+          Back to home
         </a>
       </div>
     </div>

@@ -267,7 +267,7 @@ export default function InvoiceArchive() {
     return stats;
   }, [periodInvoices]);
 
-  // Check access (enterprise OR admin). Tesztelés: VITE_INVOICE_ACCESS_FOR_ALL !== 'false' → mindenki látja
+  // Check access (enterprise OR admin). Testing: VITE_INVOICE_ACCESS_FOR_ALL !== 'false' -> everyone can see it
   const invoiceAccessForAll = import.meta.env.VITE_INVOICE_ACCESS_FOR_ALL !== 'false';
   useEffect(() => {
     async function checkAccess() {
