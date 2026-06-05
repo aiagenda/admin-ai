@@ -23,6 +23,34 @@ interface DocumentWithAnalysis {
 }
 
 
+function toUSDate(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const yyyy = d.getUTCFullYear();
+  return `${mm}/${dd}/${yyyy}`;
+}
+
+function rowsToCsv(rows: string[][]): string {
+  const csvContent = rows
+    .map((row) =>
+      row
+        .map((cell) => {
+          const cellStr = String(cell ?? "");
+          if (cellStr.includes(",") || cellStr.includes("\n") || cellStr.includes('"')) {
+            return `"${cellStr.replace(/"/g, '""')}"`;
+          }
+          return cellStr;
+        })
+        .join(","),
+    )
+    .join("\n");
+  // BOM for Excel compatibility
+  return "﻿" + csvContent;
+}
+
 function uint8ToBase64(bytes: Uint8Array): string {
   const chunkSize = 0x8000;
   let binary = "";
@@ -139,14 +167,6 @@ Deno.serve(async (req) => {
     for (const user of usersToProcess) {
       try {
         // Get user profile for export format
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("accountant_export_format")
-          .eq("user_id", user.user_id)
-          .single();
-
-        const exportFormat = profile?.accountant_export_format || "csv";
-
         // Get documents from current month
         const startDate = new Date(currentYear, currentMonth - 1, 1);
         const endDate = new Date(currentYear, currentMonth, 0, 23, 59, 59);
@@ -177,41 +197,82 @@ Deno.serve(async (req) => {
 
         if (docsError) throw docsError;
 
-        if (!documents || documents.length === 0) {
-          console.log(`No documents found for user ${user.user_id} in ${currentMonth}/${currentYear}`);
+        // Get bookkeeping invoices (OCR-recognized) from current month
+        const { data: invoices, error: invoicesError } = await supabase
+          .from("invoices")
+          .select(
+            `
+            id,
+            filename,
+            upload_date,
+            invoice_number,
+            invoice_date,
+            due_date,
+            vendor_name,
+            vendor_tax_id,
+            net_amount,
+            vat_rate,
+            vat_amount,
+            gross_amount,
+            currency,
+            item_description,
+            payment_method,
+            expense_category,
+            has_handwritten_content
+          `,
+          )
+          .eq("user_id", user.user_id)
+          .eq("status", "completed")
+          .gte("upload_date", startDate.toISOString())
+          .lte("upload_date", endDate.toISOString())
+          .order("invoice_date", { ascending: false });
+
+        if (invoicesError) throw invoicesError;
+
+        const docList = documents || [];
+        const invoiceList = invoices || [];
+
+        if (docList.length === 0 && invoiceList.length === 0) {
+          console.log(`No documents or invoices found for user ${user.user_id} in ${currentMonth}/${currentYear}`);
           results.push({
             user_id: user.user_id,
             email: user.email,
             status: "skipped",
-            reason: "No documents found",
+            reason: "No documents or invoices found",
           });
           continue;
         }
 
-        // Generate CSV report (Excel-compatible with BOM)
+        const mimeType = "text/csv;charset=utf-8";
+        const monthSuffix = `${currentYear}_${String(currentMonth).padStart(2, "0")}`;
+        const monthLabel = new Date(currentYear, currentMonth - 1, 1).toLocaleString("en-US", {
+          month: "long",
+          year: "numeric",
+        });
+        const attachments: Array<{ filename: string; content: string; type: string }> = [];
+
+        // 1) Documents report (government letters / notices)
         const csvRows: string[][] = [];
 
         // Header row
         csvRows.push([
-          "Dátum",
-          "Határidő",
-          "Típus",
-          "Összeg",
-          "Bankszámlaszám",
-          "Kedvezményezett",
-          "Fájlnév",
-          "Leírás",
-          "Súlyosság",
+          "Date",
+          "Deadline",
+          "Type",
+          "Amount",
+          "Bank account",
+          "Recipient",
+          "Filename",
+          "Description",
+          "Severity",
         ]);
 
         // Data rows
-        documents.forEach((doc: any) => {
+        docList.forEach((doc: any) => {
           const analysis = doc.analyses;
-          const uploadDate = new Date(doc.upload_date).toISOString().split("T")[0];
-          const deadline = analysis?.deadline
-            ? new Date(analysis.deadline).toISOString().split("T")[0]
-            : "";
-          const category = doc.category || "Egyéb";
+          const uploadDate = toUSDate(doc.upload_date);
+          const deadline = toUSDate(analysis?.deadline);
+          const category = doc.category || "Other";
           const amount = analysis?.amount || "";
           const bankAccount = analysis?.bank_account || "";
           const recipient = analysis?.recipient_name || "";
@@ -235,31 +296,61 @@ Deno.serve(async (req) => {
           ]);
         });
 
-        // Convert to CSV string with BOM for Excel compatibility
-        const csvContent = csvRows
-          .map((row) =>
-            row
-              .map((cell) => {
-                const cellStr = String(cell || "");
-                if (cellStr.includes(",") || cellStr.includes("\n") || cellStr.includes('"')) {
-                  return `"${cellStr.replace(/"/g, '""')}"`;
-                }
-                return cellStr;
-              })
-              .join(","),
-          )
-          .join("\n");
+        if (docList.length > 0) {
+          attachments.push({
+            filename: `documents_${monthSuffix}.csv`,
+            content: uint8ToBase64(new TextEncoder().encode(rowsToCsv(csvRows))),
+            type: mimeType,
+          });
+        }
 
-        const BOM = "\uFEFF";
-        const csvWithBOM = BOM + csvContent;
-        const reportBuffer = new TextEncoder().encode(csvWithBOM);
-        const fileName = exportFormat === "excel"
-          ? `konyvelo_jelentes_${currentYear}_${String(currentMonth).padStart(2, "0")}.csv`
-          : `konyvelo_jelentes_${currentYear}_${String(currentMonth).padStart(2, "0")}.csv`;
-        const mimeType = "text/csv;charset=utf-8";
+        // 2) Bookkeeping invoices report (OCR-recognized, incl. handwritten)
+        if (invoiceList.length > 0) {
+          const invRows: string[][] = [];
+          invRows.push([
+            "Invoice date",
+            "Due date",
+            "Invoice number",
+            "Vendor",
+            "Tax ID (EIN)",
+            "Subtotal",
+            "Sales tax rate",
+            "Sales tax amount",
+            "Total",
+            "Currency",
+            "Expense category",
+            "Payment method",
+            "Description",
+            "Handwritten",
+            "Filename",
+          ]);
 
-        // Convert buffer to base64 for email attachment
-        const base64Report = uint8ToBase64(reportBuffer);
+          invoiceList.forEach((inv: any) => {
+            invRows.push([
+              toUSDate(inv.invoice_date || inv.upload_date),
+              toUSDate(inv.due_date),
+              inv.invoice_number || "",
+              inv.vendor_name || "",
+              inv.vendor_tax_id || "",
+              inv.net_amount != null ? String(inv.net_amount) : "",
+              inv.vat_rate || "",
+              inv.vat_amount != null ? String(inv.vat_amount) : "",
+              inv.gross_amount != null ? String(inv.gross_amount) : "",
+              inv.currency || "USD",
+              inv.expense_category || "",
+              inv.payment_method || "",
+              inv.item_description || "",
+              inv.has_handwritten_content ? "yes" : "",
+              inv.filename || "",
+            ]);
+          });
+
+          attachments.push({
+            filename: `invoices_${monthSuffix}.csv`,
+            content: uint8ToBase64(new TextEncoder().encode(rowsToCsv(invRows))),
+            type: mimeType,
+          });
+        }
 
         // Send email via Resend API
         const emailResponse = await fetch("https://api.resend.com/emails", {
@@ -272,23 +363,17 @@ Deno.serve(async (req) => {
             from: "GovLetter <noreply@govletter.com>", // TODO: Update with your verified domain
             to: user.email,
             subject: isTest
-              ? `[TESZT] Könyvelő jelentés - ${currentYear}. ${currentMonth}. hónap`
-              : `Könyvelő jelentés - ${currentYear}. ${currentMonth}. hónap`,
+              ? `[TEST] Bookkeeping report - ${monthLabel}`
+              : `Bookkeeping report - ${monthLabel}`,
             html: `
-              <h2>Kedves Könyvelő!</h2>
-              <p>Mellékletben küldjük a ${currentYear}. ${currentMonth}. hónap dokumentumainak jelentését.</p>
-              <p><strong>Összesen ${documents.length} dokumentum</strong> található a jelentésben.</p>
-              <p>Ha bármilyen kérdése van, kérjük, lépjen kapcsolatba a felhasználóval.</p>
+              <h2>Hello,</h2>
+              <p>Attached is the bookkeeping report for ${monthLabel}.</p>
+              <p>The report contains <strong>${docList.length} document(s)</strong> and <strong>${invoiceList.length} invoice(s)</strong>.</p>
+              <p>If you have any questions, please reach out to the client.</p>
               <hr>
-              <p style="color: #666; font-size: 12px;">Ez egy automatikus email az GovLetter rendszertől.</p>
+              <p style="color: #666; font-size: 12px;">This is an automated email from GovLetter.</p>
             `,
-            attachments: [
-              {
-                filename: fileName,
-                content: base64Report,
-                type: mimeType,
-              },
-            ],
+            attachments,
           }),
         });
 
@@ -304,10 +389,11 @@ Deno.serve(async (req) => {
           email: user.email,
           status: "sent",
           email_id: emailData.id,
-          documents_count: documents.length,
+          documents_count: docList.length,
+          invoices_count: invoiceList.length,
         });
 
-        console.log(`✅ Report sent to ${user.email} (${documents.length} documents)`);
+        console.log(`✅ Report sent to ${user.email} (${docList.length} documents, ${invoiceList.length} invoices)`);
       } catch (userError: any) {
         console.error(`Error processing user ${user.user_id}:`, userError);
         results.push({

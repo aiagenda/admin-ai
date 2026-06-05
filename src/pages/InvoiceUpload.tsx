@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Upload as UploadIcon, Loader2, X, Receipt, ArrowLeft, CheckCircle2, AlertCircle, FileText } from "lucide-react";
+import { Upload as UploadIcon, Loader2, X, Receipt, ArrowLeft, CheckCircle2, AlertCircle, FileText, Camera } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -403,10 +403,41 @@ export default function InvoiceUpload() {
               <p className="text-sm text-muted-foreground mb-4">
                 PDF, JPG, PNG • Maximum 20MB / file • Multiple files supported
               </p>
-              <div className="flex gap-2 justify-center">
-                <Button variant="outline" size="sm" disabled={isUploading}>
+              <p className="text-sm text-muted-foreground mb-4">
+                Have a handwritten or paper invoice? Just snap a photo — the AI reads it automatically.
+              </p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isUploading}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                >
                   <UploadIcon className="h-4 w-4 mr-2" />
                   Select files
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={isUploading}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (fileInputRef.current) {
+                      fileInputRef.current.setAttribute("capture", "environment");
+                      fileInputRef.current.click();
+                      setTimeout(() => {
+                        fileInputRef.current?.removeAttribute("capture");
+                      }, 100);
+                    }
+                  }}
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  Take photo
                 </Button>
               </div>
               <input
