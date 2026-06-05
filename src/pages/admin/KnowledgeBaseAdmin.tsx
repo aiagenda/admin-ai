@@ -70,7 +70,7 @@ export default function KnowledgeBaseAdmin() {
       setDocuments(data || []);
     } catch (error) {
       console.error("Error loading documents:", error);
-      toast.error("Hiba a dokumentumok betöltése során");
+      toast.error("Failed to load documents");
     } finally {
       setLoading(false);
     }
@@ -99,7 +99,7 @@ export default function KnowledgeBaseAdmin() {
 
   async function handleSave() {
     if (!title || !content || !category) {
-      toast.error("Kérjük, töltse ki az összes kötelező mezőt");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -120,7 +120,7 @@ export default function KnowledgeBaseAdmin() {
           .eq("id", editingDoc.id);
 
         if (error) throw error;
-        toast.success("Dokumentum frissítve");
+        toast.success("Document updated");
       } else {
         // Create new document
         const { error } = await supabase.from("knowledge_documents").insert({
@@ -133,7 +133,7 @@ export default function KnowledgeBaseAdmin() {
         });
 
         if (error) throw error;
-        toast.success("Dokumentum létrehozva");
+        toast.success("Document created");
       }
 
       resetForm();
@@ -141,12 +141,12 @@ export default function KnowledgeBaseAdmin() {
       await loadDocuments();
     } catch (error) {
       console.error("Error saving document:", error);
-      toast.error("Hiba a mentés során: " + ((error as Error)?.message || "Ismeretlen hiba"));
+      toast.error("Failed to save: " + ((error as Error)?.message || "Unknown error"));
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Biztosan törölni szeretnéd ezt a dokumentumot?")) return;
+    if (!confirm("Are you sure you want to delete this document?")) return;
 
     try {
       const { error } = await supabase
@@ -155,11 +155,11 @@ export default function KnowledgeBaseAdmin() {
         .eq("id", id);
 
       if (error) throw error;
-      toast.success("Dokumentum törölve");
+      toast.success("Document deleted");
       await loadDocuments();
     } catch (error) {
       console.error("Error deleting document:", error);
-      toast.error("Hiba a törlés során");
+      toast.error("Failed to delete document");
     }
   }
 
@@ -173,10 +173,10 @@ export default function KnowledgeBaseAdmin() {
 
       // Note: In production, you'd call a dedicated Edge Function for this
       // For now, we'll just show a message
-      toast.info("Embedding generálás funkció hamarosan elérhető. Használd a generate-embeddings.ts scriptet.");
+      toast.info("Embedding generation coming soon. Use the generate-embeddings.ts script.");
     } catch (error) {
       console.error("Error generating embeddings:", error);
-      toast.error("Hiba az embedding generálása során");
+      toast.error("Failed to generate embeddings");
     } finally {
       setGeneratingEmbeddings(null);
     }
@@ -206,58 +206,58 @@ export default function KnowledgeBaseAdmin() {
           <DialogTrigger asChild>
             <Button onClick={() => resetForm()}>
               <Plus className="mr-2 h-4 w-4" />
-              Új dokumentum
+              New document
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingDoc ? "Dokumentum szerkesztése" : "Új dokumentum"}
+                {editingDoc ? "Edit document" : "New document"}
               </DialogTitle>
               <DialogDescription>
-                Adja meg a dokumentum adatait. Ez a tartalom az AI elemzéshez használatos.
+                Fill in the document details. This content is used by the AI for analysis.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="title">Cím *</Label>
+                <Label htmlFor="title">Title *</Label>
                 <Input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Dokumentum címe"
+                  placeholder="Document title"
                 />
               </div>
               <div>
-                <Label htmlFor="category">Kategória *</Label>
+                <Label htmlFor="category">Category *</Label>
                 <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Válasszon kategóriát" />
+                    <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="adozas">Adózás</SelectItem>
-                    <SelectItem value="egeszsegugy">Egészségügy</SelectItem>
-                    <SelectItem value="oktatas">Oktatás</SelectItem>
-                    <SelectItem value="szocialis">Szociális</SelectItem>
-                    <SelectItem value="kozlekedes">Közlekedés</SelectItem>
-                    <SelectItem value="ingatlan">Ingatlan</SelectItem>
-                    <SelectItem value="uzlet">Üzlet</SelectItem>
-                    <SelectItem value="egyeb">Egyéb</SelectItem>
+                    <SelectItem value="adozas">Tax</SelectItem>
+                    <SelectItem value="egeszsegugy">Healthcare</SelectItem>
+                    <SelectItem value="oktatas">Education</SelectItem>
+                    <SelectItem value="szocialis">Social services</SelectItem>
+                    <SelectItem value="kozlekedes">Transportation</SelectItem>
+                    <SelectItem value="ingatlan">Real estate</SelectItem>
+                    <SelectItem value="uzlet">Business</SelectItem>
+                    <SelectItem value="egyeb">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="content">Tartalom *</Label>
+                <Label htmlFor="content">Content *</Label>
                 <Textarea
                   id="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Dokumentum teljes szövege..."
+                  placeholder="Full document text..."
                   rows={10}
                 />
               </div>
               <div>
-                <Label htmlFor="sourceType">Forrás típus</Label>
+                <Label htmlFor="sourceType">Source type</Label>
                 <Select value={sourceType} onValueChange={setSourceType}>
                   <SelectTrigger>
                     <SelectValue />
@@ -272,7 +272,7 @@ export default function KnowledgeBaseAdmin() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="sourceUrl">Forrás URL</Label>
+                <Label htmlFor="sourceUrl">Source URL</Label>
                 <Input
                   id="sourceUrl"
                   value={sourceUrl}
@@ -281,7 +281,7 @@ export default function KnowledgeBaseAdmin() {
                 />
               </div>
               <div>
-                <Label htmlFor="sourceInstitution">Intézmény</Label>
+                <Label htmlFor="sourceInstitution">Institution</Label>
                 <Input
                   id="sourceInstitution"
                   value={sourceInstitution}
@@ -292,9 +292,9 @@ export default function KnowledgeBaseAdmin() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Mégse
+                Cancel
               </Button>
-              <Button onClick={handleSave}>Mentés</Button>
+              <Button onClick={handleSave}>Save</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -303,26 +303,26 @@ export default function KnowledgeBaseAdmin() {
       {/* Documents list */}
       <Card>
         <CardHeader>
-          <CardTitle>Dokumentumok ({documents.length})</CardTitle>
+          <CardTitle>Documents ({documents.length})</CardTitle>
           <CardDescription>
-            A knowledge base dokumentumok, amelyeket az AI használ a pontos instrukciók generálásához
+            Knowledge base documents used by the AI to generate accurate instructions.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {documents.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Még nincs dokumentum. Hozz létre egy újat a fenti gombbal.
+              No documents yet. Create one using the button above.
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Cím</TableHead>
-                  <TableHead>Kategória</TableHead>
-                  <TableHead>Forrás</TableHead>
-                  <TableHead>Intézmény</TableHead>
-                  <TableHead>Létrehozva</TableHead>
-                  <TableHead className="text-right">Műveletek</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Institution</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -337,7 +337,7 @@ export default function KnowledgeBaseAdmin() {
                     </TableCell>
                     <TableCell>{doc.source_institution || "-"}</TableCell>
                     <TableCell>
-                      {new Date(doc.created_at).toLocaleDateString("hu-HU")}
+                      {new Date(doc.created_at).toLocaleDateString("en-US")}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">

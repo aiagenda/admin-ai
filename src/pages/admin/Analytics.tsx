@@ -211,14 +211,14 @@ export default function Analytics() {
 
   const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
-      adozas: "Adóügyek",
-      egeszsegugy: "Egészségügy",
-      oktatas: "Oktatás",
-      szocialis: "Szociális",
-      kozlekedes: "Közlekedés",
-      ingatlan: "Ingatlan",
-      uzlet: "Üzlet",
-      egyeb: "Egyéb",
+      adozas: "Tax matters",
+      egeszsegugy: "Healthcare",
+      oktatas: "Education",
+      szocialis: "Social services",
+      kozlekedes: "Transportation",
+      ingatlan: "Real estate",
+      uzlet: "Business",
+      egyeb: "Other",
     };
     return labels[category] || category;
   };
@@ -228,7 +228,7 @@ export default function Analytics() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Analitika betöltése...</p>
+          <p className="text-muted-foreground">Loading analytics...</p>
         </div>
       </div>
     );
@@ -237,7 +237,7 @@ export default function Analytics() {
   if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Nem sikerült betölteni az adatokat</p>
+        <p className="text-muted-foreground">Failed to load analytics data</p>
       </div>
     );
   }
@@ -328,7 +328,7 @@ export default function Analytics() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Dokumentumok
+                Documents
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -375,7 +375,7 @@ export default function Analytics() {
                 <div>
                   <p className="text-2xl font-bold">{conversionRate}%</p>
                   <p className="text-xs text-muted-foreground">
-                    Feltöltés → Elemzés
+                    Upload → Analysis
                   </p>
                 </div>
               </div>
@@ -449,7 +449,7 @@ export default function Analytics() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Egyszerű magyarázat</span>
+                  <span className="text-sm">Simple explanation</span>
                   <Badge>{data.tabUsage.simple}</Badge>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
@@ -464,7 +464,7 @@ export default function Analytics() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Részletes magyarázat</span>
+                  <span className="text-sm">Detailed explanation</span>
                   <Badge>{data.tabUsage.detailed}</Badge>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
@@ -484,11 +484,11 @@ export default function Analytics() {
         <div className="grid md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Dokumentum Kategóriák</CardTitle>
+              <CardTitle>Document Categories</CardTitle>
             </CardHeader>
             <CardContent>
               {Object.keys(data.categoryDistribution).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nincs kategorizált dokumentum</p>
+                <p className="text-sm text-muted-foreground">No categorized documents</p>
               ) : (
                 <div className="space-y-3">
                   {Object.entries(data.categoryDistribution)
@@ -521,7 +521,7 @@ export default function Analytics() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Feltöltések</span>
+                  <span className="text-sm font-medium">Uploads</span>
                   <Badge>{data.conversionFunnel.uploads}</Badge>
                 </div>
                 <div className="w-full bg-muted rounded-full h-3">
@@ -609,7 +609,7 @@ export default function Analytics() {
               <div className="flex items-center justify-center gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-primary rounded" />
-                  <span>Feltöltések</span>
+                  <span>Uploads</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-600 rounded" />

@@ -126,7 +126,7 @@ async function searchDocuments(
               type: "document" as const,
               id: doc.id,
               title: doc.filename,
-              description: `Kategória: ${doc.category || "N/A"}`,
+              description: `Category: ${doc.category || "N/A"}`,
               url: `/result/${doc.analysis_id || doc.id}`,
               metadata: {
                 category: doc.category,
@@ -278,7 +278,7 @@ async function searchDocuments(
               type: "document" as const,
               id: doc.id,
               title: doc.filename,
-              description: `Kategória: ${doc.category || "N/A"}`,
+              description: `Category: ${doc.category || "N/A"}`,
               url: `/result/${doc.analyses?.[0]?.id || doc.id}`,
               metadata: {
                 category: doc.category,
@@ -359,13 +359,13 @@ CRITICAL RULES:
 6. Keep the response concise and focused on answering the question
 
 Example:
-- User asks: "Van olyan levél aminek novemberben járt le a határideje?"
-- If no matching deadlines found: "Nem találtam olyan dokumentumot, amelynek a határideje 2025 novemberében járt volna le."
-- Do NOT say: "Nem találtam ilyen határidőt, de vannak novemberben feltöltött dokumentumok" - this is irrelevant!`,
+- User asks: "Are there any letters with a deadline in November?"
+- If no matching deadlines found: "I didn't find any documents with a deadline in November 2025."
+- Do NOT say: "I didn't find such a deadline, but there are documents uploaded in November" - this is irrelevant!`,
           },
           {
             role: "user",
-            content: `Felhasználó kérdése: "${originalQuery}"\n\nKeresési eredmények (csak a relevánsak):\n${resultsSummary || "Nincs találat"}\n\nVálaszolj KÖZVETLENÜL a kérdésre magyar nyelven. Ha nincs releváns találat, mondd el egyértelműen, hogy nincs ilyen dokumentum. Ne említs irreleváns információkat.`,
+            content: `User question: "${originalQuery}"\n\nSearch results (relevant only):\n${resultsSummary || "No results"}\n\nAnswer the question DIRECTLY in English. If there are no relevant results, clearly state that no such document was found. Do not mention irrelevant information.`,
           },
         ],
         max_tokens: 300,
@@ -377,12 +377,12 @@ Example:
     }
 
     const data = await response.json();
-    return data.choices?.[0]?.message?.content || "Keresés befejezve.";
+    return data.choices?.[0]?.message?.content || "Search complete.";
   } catch (error) {
     console.error("Response generation error:", error);
     return results.length > 0
-      ? `Találtam ${results.length} eredményt.`
-      : "Nem találtam eredményt a keresésre.";
+      ? `Found ${results.length} result(s).`
+      : "No results found for your search.";
   }
 }
 

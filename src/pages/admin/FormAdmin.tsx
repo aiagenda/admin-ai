@@ -119,8 +119,8 @@ export default function FormAdmin() {
 
     if (error) {
       toast({
-        title: "Hiba történt",
-        description: "A formok betöltése sikertelen: " + error.message,
+        title: "Error",
+        description: "Failed to load forms: " + error.message,
         variant: "destructive",
       });
     } else {
@@ -161,7 +161,7 @@ export default function FormAdmin() {
 
   async function handleUpload() {
     if (files.length === 0) {
-      toast({ title: "Nincs fájl", description: "Válassz ki legalább egy fájlt!" });
+      toast({ title: "No file selected", description: "Please select at least one file." });
       return;
     }
 
@@ -251,7 +251,7 @@ export default function FormAdmin() {
 
       } catch (err) {
         toast({
-          title: "Hiba",
+          title: "Upload error",
           description: `${file.name}: ${(err as Error)?.message}`,
           variant: "destructive",
         });
@@ -263,8 +263,8 @@ export default function FormAdmin() {
     setFiles([]);
 
     toast({
-      title: "Feltöltés kész",
-      description: `Sikeres: ${successCount}, Kihagyva: ${skipCount}, Hiba: ${errorCount}`,
+      title: "Upload complete",
+      description: `Success: ${successCount}, Skipped: ${skipCount}, Errors: ${errorCount}`,
     });
 
     await loadForms();
@@ -289,7 +289,7 @@ export default function FormAdmin() {
 
     if (error) {
       toast({
-        title: "Törlési hiba",
+        title: "Delete error",
         description: error.message,
         variant: "destructive",
       });
@@ -348,14 +348,14 @@ export default function FormAdmin() {
 
     if (error) {
       toast({
-        title: "Hiba",
-        description: "A mentés sikertelen: " + error.message,
+        title: "Error",
+        description: "Failed to save: " + error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Sikeres mentés",
-        description: "Az űrlap adatai frissítve lettek.",
+        title: "Saved",
+        description: "Form data updated successfully.",
       });
       setEditDialogOpen(false);
       setEditingForm(null);
@@ -442,7 +442,7 @@ export default function FormAdmin() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <Label>Intézmény</Label>
+                    <Label>Institution</Label>
                     <Select
                       value={fileWithMeta.institution}
                       onValueChange={(v) => updateFileMeta(idx, "institution", v)}
@@ -480,7 +480,7 @@ export default function FormAdmin() {
           className="w-full"
         >
           {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Feltöltés ({files.length} fájl)
+          Upload ({files.length} file{files.length !== 1 ? "s" : ""})
         </Button>
       </div>
 
@@ -496,7 +496,7 @@ export default function FormAdmin() {
                 onClick={() => setDeleteDialogOpen(true)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Törlés ({selectedIds.length})
+                Delete ({selectedIds.length})
               </Button>
             )}
           </div>
@@ -509,7 +509,7 @@ export default function FormAdmin() {
             </div>
           ) : forms.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              Még nincs feltöltött form
+              No forms uploaded yet
             </div>
           ) : (
             <Table>
@@ -521,11 +521,11 @@ export default function FormAdmin() {
                       onCheckedChange={toggleSelectAll}
                     />
                   </TableHead>
-                  <TableHead>Kulcs</TableHead>
-                  <TableHead>Név</TableHead>
-                  <TableHead>Intézmény</TableHead>
-                  <TableHead>Létrehozva</TableHead>
-                  <TableHead className="text-right">Műveletek</TableHead>
+                  <TableHead>Key</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Institution</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -553,7 +553,7 @@ export default function FormAdmin() {
                     </TableCell>
                     <TableCell>
                       <span className="text-sm text-muted-foreground">
-                        {new Date(form.created_at).toLocaleDateString("hu-HU")}
+                        {new Date(form.created_at).toLocaleDateString("en-US")}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
@@ -617,7 +617,7 @@ export default function FormAdmin() {
               <Label htmlFor="edit-form-type">Űrlap típus</Label>
               <Select value={editFormType} onValueChange={setEditFormType}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Válasszon típust" />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="form">Űrlap</SelectItem>
@@ -628,25 +628,25 @@ export default function FormAdmin() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="edit-category">Kategória</Label>
+              <Label htmlFor="edit-category">Category</Label>
               <Select value={editCategory} onValueChange={setEditCategory}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Válasszon kategóriát" />
+                  <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="adozas">Adózás</SelectItem>
-                  <SelectItem value="egeszsegugy">Egészségügy</SelectItem>
-                  <SelectItem value="oktatas">Oktatás</SelectItem>
-                  <SelectItem value="szocialis">Szociális</SelectItem>
-                  <SelectItem value="kozlekedes">Közlekedés</SelectItem>
-                  <SelectItem value="ingatlan">Ingatlan</SelectItem>
-                  <SelectItem value="uzlet">Üzlet</SelectItem>
-                  <SelectItem value="egyeb">Egyéb</SelectItem>
+                  <SelectItem value="adozas">Tax</SelectItem>
+                  <SelectItem value="egeszsegugy">Healthcare</SelectItem>
+                  <SelectItem value="oktatas">Education</SelectItem>
+                  <SelectItem value="szocialis">Social services</SelectItem>
+                  <SelectItem value="kozlekedes">Transportation</SelectItem>
+                  <SelectItem value="ingatlan">Real estate</SelectItem>
+                  <SelectItem value="uzlet">Business</SelectItem>
+                  <SelectItem value="egyeb">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="edit-tags">Címkék (vesszővel elválasztva)</Label>
+              <Label htmlFor="edit-tags">Tags (comma separated)</Label>
               <Input
                 id="edit-tags"
                 value={editTags}
@@ -731,9 +731,9 @@ export default function FormAdmin() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Mégse
+              Cancel
             </Button>
-            <Button onClick={handleSaveEdit}>Mentés</Button>
+            <Button onClick={handleSaveEdit}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -742,15 +742,15 @@ export default function FormAdmin() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Biztosan törölni szeretnéd?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              {selectedIds.length} form kerül törlésre. Ez a művelet nem vonható vissza.
+              {selectedIds.length} form{selectedIds.length !== 1 ? "s" : ""} will be permanently deleted. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Mégse</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkDelete}>
-              Törlés
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

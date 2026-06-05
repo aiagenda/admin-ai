@@ -1199,7 +1199,7 @@ END:VCALENDAR`;
             </Button>
             <Button
               type="button"
-              onClick={() => navigate("/archive#export-konyvelo")}
+              onClick={() => navigate("/archive#export-accountant")}
               variant="outline"
               size="sm"
               className="min-h-[44px] touch-manipulation w-full sm:w-auto"

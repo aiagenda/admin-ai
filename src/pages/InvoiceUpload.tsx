@@ -600,7 +600,7 @@ export default function InvoiceUpload() {
             </div>
             <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
               <p className="text-sm">
-                Biztonsag: titkositott atvitel, szerepkoralapu hozzaferes, audit naplozas.
+                Security: encrypted transfer, role-based access control, audit logging.
               </p>
               <LegalQuickLinks />
             </div>

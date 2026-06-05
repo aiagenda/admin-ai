@@ -60,9 +60,9 @@ export default function Archive() {
   useEffect(() => {
     if (loading) return;
     if (typeof window === "undefined") return;
-    if (window.location.hash !== "#export-konyvelo") return;
+    if (window.location.hash !== "#export-accountant") return;
     const t = window.setTimeout(() => {
-      document.getElementById("export-konyvelo")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.getElementById("export-accountant")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 150);
     return () => window.clearTimeout(t);
   }, [loading, documents.length]);
@@ -545,7 +545,7 @@ export default function Archive() {
             )}
             {documents.length > 0 && (
               <>
-                <div id="export-konyvelo" className="scroll-mt-24">
+                <div id="export-accountant" className="scroll-mt-24">
                   <ExportForAccountant documents={documents} />
                 </div>
                 {selectedDocs.length > 0 && (

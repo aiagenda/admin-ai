@@ -106,7 +106,7 @@ export default function AIStudio() {
         setQuality((q || null) as QualitySummary | null);
       }
     } catch (error) {
-      toast.error(`AI Studio betöltési hiba: ${(error as Error)?.message || "ismeretlen hiba"}`);
+      toast.error(`AI Studio load error: ${(error as Error)?.message || "unknown error"}`);
     } finally {
       setLoading(false);
     }
@@ -114,7 +114,7 @@ export default function AIStudio() {
 
   async function createPromptVersion() {
     if (!promptName.trim() || !systemPrompt.trim()) {
-      toast.error("A prompt név és system prompt kötelező.");
+      toast.error("Prompt name and system prompt are required.");
       return;
     }
 
@@ -139,10 +139,10 @@ export default function AIStudio() {
       setSystemPrompt("");
       setSchemaPrompt("");
       setPromptNotes("");
-      toast.success(`Új prompt verzió létrehozva (v${nextVersion}).`);
+      toast.success(`New prompt version created (v${nextVersion}).`);
       await loadAll();
     } catch (error) {
-      toast.error(`Prompt mentési hiba: ${(error as Error)?.message || "ismeretlen hiba"}`);
+      toast.error(`Failed to save prompt: ${(error as Error)?.message || "unknown error"}`);
     } finally {
       setSaving(false);
     }
@@ -177,7 +177,7 @@ export default function AIStudio() {
 
   async function createFieldDefinition() {
     if (!fieldKey.trim() || !fieldDisplayName.trim()) {
-      toast.error("A field key és display name kötelező.");
+      toast.error("Field key and display name are required.");
       return;
     }
 
@@ -202,10 +202,10 @@ export default function AIStudio() {
       setFieldDisplayName("");
       setFieldPromptSnippet("");
       setFieldDataType("text");
-      toast.success("Field definíció mentve.");
+      toast.success("Field definition saved.");
       await loadAll();
     } catch (error) {
-      toast.error(`Field mentési hiba: ${(error as Error)?.message || "ismeretlen hiba"}`);
+      toast.error(`Failed to save field: ${(error as Error)?.message || "unknown error"}`);
     } finally {
       setSaving(false);
     }
@@ -264,7 +264,7 @@ export default function AIStudio() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Sikeres / Hibás</CardTitle>
+            <CardTitle className="text-sm">Success / Failed</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-bold">
             {(quality?.success_runs ?? 0)} / {(quality?.failed_runs ?? 0)}
@@ -282,12 +282,12 @@ export default function AIStudio() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Kontextus</CardTitle>
-          <CardDescription>Dokumentumtípus és nyelv, amelyhez a promptokat kezeled.</CardDescription>
+          <CardTitle>Context</CardTitle>
+          <CardDescription>Document type and language for which you manage prompts.</CardDescription>
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 gap-4">
           <div>
-            <Label>Dokumentum típus</Label>
+            <Label>Document type</Label>
             <Input value={docType} onChange={(e) => setDocType(e.target.value || DEFAULT_DOC_TYPE)} />
           </div>
           <div>
@@ -341,17 +341,17 @@ export default function AIStudio() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Verzió</TableHead>
-                    <TableHead>Név</TableHead>
-                    <TableHead>Állapot</TableHead>
-                    <TableHead>Létrehozva</TableHead>
-                    <TableHead className="text-right">Művelet</TableHead>
+                    <TableHead>Version</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredPrompts.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground">Nincs még prompt verzió.</TableCell>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">No prompt versions yet.</TableCell>
                     </TableRow>
                   ) : (
                     filteredPrompts.map((p) => (
@@ -359,9 +359,9 @@ export default function AIStudio() {
                         <TableCell>v{p.version}</TableCell>
                         <TableCell>{p.name}</TableCell>
                         <TableCell>
-                          {p.is_active ? <Badge>Aktív</Badge> : <Badge variant="outline">Inaktív</Badge>}
+                          {p.is_active ? <Badge>Active</Badge> : <Badge variant="outline">Inactive</Badge>}
                         </TableCell>
-                        <TableCell>{new Date(p.created_at).toLocaleString("hu-HU")}</TableCell>
+                        <TableCell>{new Date(p.created_at).toLocaleString("en-US")}</TableCell>
                         <TableCell className="text-right">
                           <Button
                             size="sm"
@@ -369,7 +369,7 @@ export default function AIStudio() {
                             disabled={p.is_active || saving}
                             onClick={() => void activatePrompt(p)}
                           >
-                            Aktiválás
+                            Activate
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -389,14 +389,14 @@ export default function AIStudio() {
             <CardContent className="grid md:grid-cols-2 gap-4">
               <div>
                 <Label>Field key</Label>
-                <Input value={fieldKey} onChange={(e) => setFieldKey(e.target.value)} placeholder="pl. payment_reference" />
+                <Input value={fieldKey} onChange={(e) => setFieldKey(e.target.value)} placeholder="e.g. payment_reference" />
               </div>
               <div>
-                <Label>Megjelenítési név</Label>
-                <Input value={fieldDisplayName} onChange={(e) => setFieldDisplayName(e.target.value)} placeholder="pl. Fizetési hivatkozás" />
+                <Label>Display name</Label>
+                <Input value={fieldDisplayName} onChange={(e) => setFieldDisplayName(e.target.value)} placeholder="e.g. Payment reference" />
               </div>
               <div>
-                <Label>Adattípus</Label>
+                <Label>Data type</Label>
                 <Select value={fieldDataType} onValueChange={(v) => setFieldDataType(v as FieldDefinition["data_type"])}>
                   <SelectTrigger>
                     <SelectValue />
@@ -412,10 +412,10 @@ export default function AIStudio() {
               </div>
               <div className="md:col-span-2">
                 <Label>Prompt hint</Label>
-                <Textarea rows={2} value={fieldPromptSnippet} onChange={(e) => setFieldPromptSnippet(e.target.value)} placeholder="Milyen mintát keressen az AI ehhez a mezőhöz." />
+                <Textarea rows={2} value={fieldPromptSnippet} onChange={(e) => setFieldPromptSnippet(e.target.value)} placeholder="What pattern should the AI look for in this field." />
               </div>
               <div className="md:col-span-2">
-                <Button onClick={() => void createFieldDefinition()} disabled={saving}>Field mentése</Button>
+                <Button onClick={() => void createFieldDefinition()} disabled={saving}>Save field</Button>
               </div>
             </CardContent>
           </Card>

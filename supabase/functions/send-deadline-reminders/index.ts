@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
 
             // Format deadline date
             const deadlineDate = new Date(analysis.deadline);
-            const deadlineFormatted = deadlineDate.toLocaleDateString("hu-HU", {
+            const deadlineFormatted = deadlineDate.toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -167,9 +167,9 @@ Deno.serve(async (req) => {
 
             // Determine severity text
             const severityText: Record<string, string> = {
-              urgent: "Sürgős",
-              action_needed: "Teendő",
-              info: "Információ",
+              urgent: "Urgent",
+              action_needed: "Action needed",
+              info: "Info",
             };
 
             let emailSent = false;
@@ -179,35 +179,35 @@ Deno.serve(async (req) => {
             // Send email if enabled
             if (shouldSendEmail) {
               try {
-                const emailSubject = `⏰ Határidő emlékeztető - ${deadlineFormatted}`;
+                const emailSubject = `⏰ Deadline reminder - ${deadlineFormatted}`;
                 const emailHtml = `
-                  <h2>Kedves ${user.email}!</h2>
-                  <p>Emlékeztetünk, hogy <strong>${deadlineFormatted}</strong> határidővel rendelkező dokumentuma van.</p>
-                  
+                  <h2>Hello, ${user.email}!</h2>
+                  <p>This is a reminder that you have a document with a deadline on <strong>${deadlineFormatted}</strong>.</p>
+
                   <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 20px 0;">
-                    <p style="margin: 0 0 8px 0;"><strong>Dokumentum:</strong> ${document.filename}</p>
-                    <p style="margin: 0 0 8px 0;"><strong>Sürgősség:</strong> ${severityText[analysis.severity] || analysis.severity}</p>
-                    <p style="margin: 0;"><strong>Határidő:</strong> ${deadlineFormatted}</p>
+                    <p style="margin: 0 0 8px 0;"><strong>Document:</strong> ${document.filename}</p>
+                    <p style="margin: 0 0 8px 0;"><strong>Urgency:</strong> ${severityText[analysis.severity] || analysis.severity}</p>
+                    <p style="margin: 0;"><strong>Deadline:</strong> ${deadlineFormatted}</p>
                   </div>
 
                   ${analysis.simple_summary ? `
                     <div style="margin: 20px 0;">
-                      <h3>Összefoglaló:</h3>
+                      <h3>Summary:</h3>
                       <p>${analysis.simple_summary.substring(0, 200)}${analysis.simple_summary.length > 200 ? "..." : ""}</p>
                     </div>
                   ` : ""}
 
                   <p style="margin-top: 20px;">
-                    <a href="${Deno.env.get("APP_URL") || "https://govletter.com"}/result/${analysis.id}" 
+                    <a href="${Deno.env.get("APP_URL") || "https://govletter.com"}/result/${analysis.id}"
                        style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-                      Dokumentum megtekintése
+                      View document
                     </a>
                   </p>
 
                   <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
                   <p style="color: #666; font-size: 12px;">
-                    Ez egy automatikus emlékeztető az GovLetter rendszertől.<br>
-                    Az értesítési beállításokat a <a href="${Deno.env.get("APP_URL") || "https://govletter.com"}/settings">Beállítások</a> oldalon módosíthatja.
+                    This is an automated reminder from GovLetter.<br>
+                    You can manage your notification settings on the <a href="${Deno.env.get("APP_URL") || "https://govletter.com"}/settings">Settings</a> page.
                   </p>
                 `;
 
@@ -242,8 +242,8 @@ Deno.serve(async (req) => {
             if (shouldSendPush && pushSubscriptions.length > 0 && vapidPublicKey && vapidPrivateKey) {
               try {
                 const notificationPayload = JSON.stringify({
-                  title: `⏰ Határidő emlékeztető - ${deadlineFormatted}`,
-                  body: `${document.filename} határidője: ${deadlineFormatted}`,
+                  title: `⏰ Deadline reminder - ${deadlineFormatted}`,
+                  body: `${document.filename} deadline: ${deadlineFormatted}`,
                   icon: `${Deno.env.get("APP_URL") || "https://govletter.com"}/favicon.ico`,
                   tag: `deadline-${analysis.id}`,
                   urgent: analysis.severity === 'urgent',
@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
                     analysis_id: analysis.id
                   },
                   actions: [
-                    { action: 'open', title: 'Megnyitás' }
+                    { action: 'open', title: 'Open' }
                   ]
                 });
 
