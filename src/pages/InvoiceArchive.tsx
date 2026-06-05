@@ -628,8 +628,8 @@ export default function InvoiceArchive() {
   };
 
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="container mx-auto max-w-6xl space-y-6 overflow-x-auto min-w-0">
+    <div className="min-h-screen py-8">
+      <div className="container mx-auto max-w-6xl space-y-6 min-w-0">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -713,47 +713,47 @@ export default function InvoiceArchive() {
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">Receipts</p>
-                      <p className="text-2xl font-bold">{dashboardStats.completedCount}</p>
+                      <p className="text-xl sm:text-2xl font-bold tabular-nums">{dashboardStats.completedCount}</p>
                       {dashboardStats.processingCount > 0 && (
                         <p className="text-xs text-amber-600">+{dashboardStats.processingCount} processing</p>
                       )}
                     </div>
-                    <FileText className="h-8 w-8 text-muted-foreground" />
+                    <FileText className="hidden sm:block sm:h-8 sm:w-8 text-muted-foreground shrink-0" />
                   </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">Subtotal</p>
-                      <p className="text-2xl font-bold">{fmtUSD(dashboardStats.totalNet)}</p>
+                      <p className="text-lg sm:text-2xl font-bold tabular-nums">{fmtUSD(dashboardStats.totalNet)}</p>
                     </div>
-                    <TrendingDown className="h-8 w-8 text-orange-500" />
+                    <TrendingDown className="hidden sm:block sm:h-8 sm:w-8 text-orange-500 shrink-0" />
                   </div>
                 </CardContent>
               </Card>
               <Card className="bg-primary/5 border-primary/20">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">Sales Tax</p>
-                      <p className="text-2xl font-bold text-primary">{fmtUSD(dashboardStats.totalVat)}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-primary tabular-nums">{fmtUSD(dashboardStats.totalVat)}</p>
                     </div>
-                    <PieChart className="h-8 w-8 text-primary" />
+                    <PieChart className="hidden sm:block sm:h-8 sm:w-8 text-primary shrink-0" />
                   </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">Total</p>
-                      <p className="text-2xl font-bold">{fmtUSD(dashboardStats.totalGross)}</p>
+                      <p className="text-lg sm:text-2xl font-bold tabular-nums">{fmtUSD(dashboardStats.totalGross)}</p>
                     </div>
-                    <TrendingUp className="h-8 w-8 text-green-500" />
+                    <TrendingUp className="hidden sm:block sm:h-8 sm:w-8 text-green-500 shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -993,23 +993,23 @@ export default function InvoiceArchive() {
 
             {/* Summary */}
             {filteredInvoices.length > 0 && (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <Card>
-                  <CardContent className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground">Subtotal</p>
-                    <p className="text-xl font-bold">{fmtUSD(totals.net)}</p>
+                  <CardContent className="p-2.5 sm:p-4 text-center">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Subtotal</p>
+                    <p className="text-base sm:text-xl font-bold tabular-nums">{fmtUSD(totals.net)}</p>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardContent className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground">Sales Tax</p>
-                    <p className="text-xl font-bold">{fmtUSD(totals.vat)}</p>
+                  <CardContent className="p-2.5 sm:p-4 text-center">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Sales Tax</p>
+                    <p className="text-base sm:text-xl font-bold tabular-nums">{fmtUSD(totals.vat)}</p>
                   </CardContent>
                 </Card>
                 <Card>
-                  <CardContent className="p-4 text-center">
-                    <p className="text-sm text-muted-foreground">Total</p>
-                    <p className="text-xl font-bold text-primary">{fmtUSD(totals.gross)}</p>
+                  <CardContent className="p-2.5 sm:p-4 text-center">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
+                    <p className="text-base sm:text-xl font-bold text-primary tabular-nums">{fmtUSD(totals.gross)}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -1039,17 +1039,17 @@ export default function InvoiceArchive() {
                     onClick={() => navigate(`/invoices/${invoice.id}`)}
                   >
                     <CardContent className="p-4">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-start gap-3 sm:gap-4">
                         <div className="hidden sm:block">
                           <Receipt className="h-10 w-10 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-medium truncate">
+                            <h3 className="font-medium truncate max-w-full">
                               {invoice.vendor_name || invoice.filename}
                             </h3>
                             {invoice.expense_category && (
-                              <Badge variant="secondary">
+                              <Badge variant="secondary" className="max-w-full truncate">
                                 {categoryLabels[invoice.expense_category] || invoice.expense_category}
                               </Badge>
                             )}
@@ -1066,11 +1066,11 @@ export default function InvoiceArchive() {
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-1">
                             {invoice.invoice_number && (
-                              <span>#{invoice.invoice_number}</span>
+                              <span className="truncate max-w-[120px]">#{invoice.invoice_number}</span>
                             )}
-                            <span className="flex items-center gap-1">
+                            <span className="flex items-center gap-1 shrink-0">
                               <Calendar className="h-3 w-3" />
                               {invoice.invoice_date
                                 ? format(new Date(invoice.invoice_date), "MMM d, yyyy")
@@ -1082,7 +1082,7 @@ export default function InvoiceArchive() {
                             )}
                           </div>
                         </div>
-                        <div className="text-right flex items-center gap-3">
+                        <div className="text-right flex items-center gap-2 sm:gap-3 shrink-0">
                           {(invoice.status === "error" || invoice.status === "processing") && (
                             <Button
                               variant="outline"

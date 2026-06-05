@@ -455,8 +455,7 @@ export default function Home() {
                       {tc("homePage.monthlyVat")}
                     </p>
                     <p className="text-2xl font-bold text-white" style={{ color: "#fff" }}>
-                      {invoiceStats.monthlyVat/*money*/}
-                      
+                      {formatMoney(invoiceStats.monthlyVat)}
                     </p>
                   </div>
 
@@ -478,16 +477,14 @@ export default function Home() {
                     <div className="text-center sm:text-left p-3">
                       <p className="text-xs text-purple-200/60 mb-0.5">{tc("homePage.netLabel", { defaultValue: "Net" })}</p>
                       <p className="text-lg font-semibold text-white" style={{ color: "#fff" }}>
-                        {invoiceStats.monthlyNet/*money*/}
-                        <span className="text-sm font-normal text-white/90 ml-1">Ft</span>
+                        {formatMoney(invoiceStats.monthlyNet)}
                       </p>
                     </div>
 
                     <div className="text-center sm:text-left p-3">
                       <p className="text-xs text-purple-200/60 mb-0.5">{tc("homePage.grossLabel", { defaultValue: "Gross" })}</p>
                       <p className="text-lg font-semibold text-white" style={{ color: "#fff" }}>
-                        {invoiceStats.monthlyGross/*money*/}
-                        <span className="text-sm font-normal text-white/90 ml-1">Ft</span>
+                        {formatMoney(invoiceStats.monthlyGross)}
                       </p>
                     </div>
                   </div>
