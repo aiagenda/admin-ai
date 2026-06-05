@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { hu } from "date-fns/locale";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { resolveAnalysisId } from "@/lib/resolveAnalysisId";
 
 interface DocumentVersion {
   id: string;
@@ -77,9 +78,13 @@ export function DocumentVersionHistory({ documentId, currentVersion = 1 }: Docum
     fetchVersions();
   }, [documentId]);
 
-  const handleViewVersion = (version: DocumentVersion) => {
-    // Navigate to the document's analysis if it exists
-    navigate(`/result/${version.document_id}`);
+  const handleViewVersion = async (version: DocumentVersion) => {
+    const analysisId = await resolveAnalysisId(version.document_id);
+    if (analysisId) {
+      navigate(`/result/${analysisId}`);
+      return;
+    }
+    toast.error("No analysis found for this version");
   };
 
   const handleDownloadVersion = async (version: DocumentVersion) => {

@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { hu } from "date-fns/locale";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { resolveAnalysisId } from "@/lib/resolveAnalysisId";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface RelatedDocument {
@@ -144,8 +145,13 @@ export function RelatedDocuments({ documentId }: RelatedDocumentsProps) {
     }
   };
 
-  const handleViewDocument = (relatedDocId: string) => {
-    navigate(`/result/${relatedDocId}`);
+  const handleViewDocument = async (relatedDocId: string) => {
+    const analysisId = await resolveAnalysisId(relatedDocId);
+    if (analysisId) {
+      navigate(`/result/${analysisId}`);
+      return;
+    }
+    toast.error("No analysis found for this document");
   };
 
   const getCategoryLabel = (category: string | null) => {

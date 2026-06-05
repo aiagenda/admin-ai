@@ -15,6 +15,7 @@ import { getActionPaths } from "@/lib/actionPaths";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import posthog from "posthog-js";
+import { resolveAnalysisId } from "@/lib/resolveAnalysisId";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -113,6 +114,10 @@ export default function Result() {
 
         const analysisData = data as Analysis;
         setAnalysis(analysisData);
+        const resolvedAnalysisId = analysisData.id;
+        if (resolvedAnalysisId && id !== resolvedAnalysisId) {
+          navigate(`/result/${resolvedAnalysisId}`, { replace: true });
+        }
         let docCategory: string | null = (analysisData as Analysis).detected_category ?? null;
 
         // Fetch document metadata (category and tags)
@@ -194,9 +199,9 @@ export default function Result() {
           const { data: feedbackData } = await (supabase
             .from("analysis_feedback")
             .select("feedback_type")
-            .eq("analysis_id", id)
+            .eq("analysis_id", resolvedAnalysisId)
             .eq("user_id", user.id)
-            .single()) as { data: { feedback_type: string } | null };
+            .maybeSingle()) as { data: { feedback_type: string } | null };
 
           if (feedbackData) {
             setFeedbackGiven(true);
@@ -207,7 +212,7 @@ export default function Result() {
           const { data: progressData } = await (supabase
             .from("todo_progress")
             .select("todo_index, completed")
-            .eq("analysis_id", id)
+            .eq("analysis_id", resolvedAnalysisId)
             .eq("user_id", user.id)) as { data: { todo_index: number; completed: boolean }[] | null };
 
           if (progressData) {
@@ -232,7 +237,8 @@ export default function Result() {
 
   // Track tab views for analytics
   useEffect(() => {
-    if (!id || !analysis?.legal_summary) return;
+    const analysisId = analysis?.id;
+    if (!analysisId || !analysis?.legal_summary) return;
 
     const trackTabView = async () => {
       try {
@@ -240,7 +246,7 @@ export default function Result() {
         const tabType = activeTab === "simple" ? "simple" : "detailed";
 
         await (supabase.from("tab_view_analytics").insert({
-          analysis_id: id,
+          analysis_id: analysisId,
           user_id: user?.id || null,
           tab_type: tabType,
         }));
@@ -252,7 +258,7 @@ export default function Result() {
 
     // Track initial view
     trackTabView();
-  }, [id, activeTab, analysis?.legal_summary]);
+  }, [analysis?.id, activeTab, analysis?.legal_summary]);
 
   const getSeverityConfig = (severity: string) => {
     switch (severity) {
@@ -278,7 +284,8 @@ export default function Result() {
   };
   // Handle feedback submission
   const handleFeedback = async (type: "helpful" | "not_helpful" | "confusing") => {
-    if (!analysis || !id) return;
+    const analysisId = analysis?.id;
+    if (!analysis || !analysisId) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -298,9 +305,9 @@ export default function Result() {
       const { data: existingFeedback } = await (supabase
         .from("analysis_feedback")
         .select("id")
-        .eq("analysis_id", id)
+        .eq("analysis_id", analysisId)
         .eq("user_id", user.id)
-        .single()) as { data: { id: string } | null };
+        .maybeSingle()) as { data: { id: string } | null };
 
       if (existingFeedback) {
         // Update existing feedback
@@ -317,7 +324,7 @@ export default function Result() {
       } else {
         // Insert new feedback
         const { error } = await (supabase.from("analysis_feedback").insert({
-          analysis_id: id,
+          analysis_id: analysisId,
           user_id: user.id,
           feedback_type: type,
           summary_type: activeTab,
@@ -329,7 +336,7 @@ export default function Result() {
 
       setFeedbackGiven(true);
       setFeedbackType(type);
-      posthog.capture("analysis feedback submitted", { analysis_id: id, feedback_type: type, summary_type: activeTab });
+      posthog.capture("analysis feedback submitted", { analysis_id: analysisId, feedback_type: type, summary_type: activeTab });
       toast.success("Thanks for your feedback!");
     } catch (error) {
       posthog.captureException(error);
@@ -340,7 +347,8 @@ export default function Result() {
 
   // Toggle todo completion
   const toggleTodo = async (index: number) => {
-    if (!id) return;
+    const analysisId = analysis?.id;
+    if (!analysisId) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -352,7 +360,7 @@ export default function Result() {
       const newCompleted = !todoProgress[index];
       
       const { error } = await (supabase.from("todo_progress").upsert({
-        analysis_id: id,
+        analysis_id: analysisId,
         user_id: user.id,
         todo_index: index,
         completed: newCompleted,
@@ -642,7 +650,8 @@ export default function Result() {
 
   // Submit feedback with comment
   const submitFeedbackWithComment = async () => {
-    if (!analysis || !id || !feedbackType) return;
+    const analysisId = analysis?.id;
+    if (!analysis || !analysisId || !feedbackType) return;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -655,9 +664,9 @@ export default function Result() {
       const { data: existingFeedback } = await (supabase
         .from("analysis_feedback")
         .select("id")
-        .eq("analysis_id", id)
+        .eq("analysis_id", analysisId)
         .eq("user_id", user.id)
-        .single()) as { data: { id: string } | null };
+        .maybeSingle()) as { data: { id: string } | null };
 
       if (existingFeedback) {
         // Update existing feedback
@@ -674,7 +683,7 @@ export default function Result() {
       } else {
         // Insert new feedback
         const { error } = await (supabase.from("analysis_feedback").insert({
-          analysis_id: id,
+          analysis_id: analysisId,
           user_id: user.id,
           feedback_type: feedbackType,
           summary_type: activeTab,
@@ -686,7 +695,7 @@ export default function Result() {
 
       setFeedbackGiven(true);
       posthog.capture("analysis feedback submitted", {
-        analysis_id: id,
+        analysis_id: analysisId,
         feedback_type: feedbackType,
         summary_type: activeTab,
         has_comment: Boolean(comment),
@@ -1073,7 +1082,7 @@ END:VCALENDAR`;
                       document.body.removeChild(link);
                       URL.revokeObjectURL(url);
                       posthog.capture("deadline calendar exported", {
-                        analysis_id: id,
+                        analysis_id: analysis.id,
                         deadline: analysis.deadline,
                       });
                       toast.success("Calendar event downloaded!");
