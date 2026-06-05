@@ -21,8 +21,24 @@ import {
   TrendingDown,
   PieChart,
   BarChart3,
-  AlertCircle
+  AlertCircle,
+  Trash2,
+  X,
+  CalendarRange
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarPicker } from "@/components/ui/calendar";
+import type { DateRange } from "react-day-picker";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -106,6 +122,14 @@ const scheduleCLine: Record<string, string> = {
 const fmtUSD = (n: number | null | undefined): string =>
   (n ?? 0).toLocaleString("en-US", { style: "currency", currency: "USD" });
 
+// Parse a "yyyy-MM-dd" string as a LOCAL date (avoids UTC off-by-one shifts)
+const parseLocalDate = (s: string): Date | undefined => {
+  if (!s) return undefined;
+  const [y, m, d] = s.split("-").map(Number);
+  if (!y || !m || !d) return undefined;
+  return new Date(y, m - 1, d);
+};
+
 export default function InvoiceArchive() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,6 +142,8 @@ export default function InvoiceArchive() {
   const { user, session } = useAuth();
   const navigate = useNavigate();
   const [reprocessingId, setReprocessingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Invoice | null>(null);
   const [exportingExcel, setExportingExcel] = useState(false);
   
   // Revenue VAT (manual entry from billing software)
@@ -175,6 +201,35 @@ export default function InvoiceArchive() {
       toast.error(error instanceof Error ? error.message : "Error during reprocessing");
     } finally {
       setReprocessingId(null);
+    }
+  };
+
+  const deleteInvoice = async (invoice: Invoice) => {
+    setDeletingId(invoice.id);
+    try {
+      // Remove the stored file first (best-effort — don't block deletion on this)
+      if (invoice.file_url) {
+        const { error: storageError } = await supabase.storage
+          .from("documents")
+          .remove([invoice.file_url]);
+        if (storageError) {
+          console.warn("Could not remove stored file:", storageError.message);
+        }
+      }
+
+      // Delete the database record
+      const { error } = await supabase.from("invoices").delete().eq("id", invoice.id);
+      if (error) throw error;
+
+      // Update local state without a refetch
+      setInvoices((prev) => prev.filter((inv) => inv.id !== invoice.id));
+      toast.success("Receipt deleted");
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error(error instanceof Error ? error.message : "Could not delete receipt");
+    } finally {
+      setDeletingId(null);
+      setDeleteTarget(null);
     }
   };
 
@@ -352,11 +407,16 @@ export default function InvoiceArchive() {
       return false;
     }
 
-    // Date range filter
+    // Date range filter (end date inclusive, local time)
     if (dateRange.start || dateRange.end) {
       const invDate = inv.invoice_date ? new Date(inv.invoice_date) : new Date(inv.upload_date);
-      if (dateRange.start && invDate < new Date(dateRange.start)) return false;
-      if (dateRange.end && invDate > new Date(dateRange.end)) return false;
+      const start = parseLocalDate(dateRange.start);
+      const end = parseLocalDate(dateRange.end);
+      if (start && invDate < start) return false;
+      if (end) {
+        const endOfDay = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999);
+        if (invDate > endOfDay) return false;
+      }
     }
 
     return true;
@@ -843,7 +903,7 @@ export default function InvoiceArchive() {
             {/* Filters */}
             <Card>
               <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -856,8 +916,8 @@ export default function InvoiceArchive() {
                     </div>
                   </div>
                   <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                      <Filter className="h-4 w-4 mr-2" />
+                    <SelectTrigger className="w-full lg:w-[180px]">
+                      <Filter className="h-4 w-4 mr-2 shrink-0" />
                       <SelectValue placeholder="Category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -867,22 +927,66 @@ export default function InvoiceArchive() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <div className="flex gap-2">
-                    <Input
-                      type="date"
-                      value={dateRange.start}
-                      onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                      className="w-[140px]"
-                      placeholder="Start date"
-                    />
-                    <Input
-                      type="date"
-                      value={dateRange.end}
-                      onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                      className="w-[140px]"
-                      placeholder="End date"
-                    />
-                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={`w-full lg:w-[260px] justify-start font-normal ${!dateRange.start && !dateRange.end ? "text-muted-foreground" : ""}`}
+                      >
+                        <CalendarRange className="h-4 w-4 mr-2 shrink-0" />
+                        {dateRange.start
+                          ? dateRange.end
+                            ? `${format(parseLocalDate(dateRange.start)!, "MM/dd/yyyy")} – ${format(parseLocalDate(dateRange.end)!, "MM/dd/yyyy")}`
+                            : `${format(parseLocalDate(dateRange.start)!, "MM/dd/yyyy")} – …`
+                          : "Date range"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <CalendarPicker
+                        mode="range"
+                        numberOfMonths={2}
+                        defaultMonth={parseLocalDate(dateRange.start)}
+                        selected={
+                          (dateRange.start || dateRange.end
+                            ? { from: parseLocalDate(dateRange.start), to: parseLocalDate(dateRange.end) }
+                            : undefined) as DateRange | undefined
+                        }
+                        onSelect={(range: DateRange | undefined) =>
+                          setDateRange({
+                            start: range?.from ? format(range.from, "yyyy-MM-dd") : "",
+                            end: range?.to ? format(range.to, "yyyy-MM-dd") : "",
+                          })
+                        }
+                      />
+                      {(dateRange.start || dateRange.end) && (
+                        <div className="border-t p-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full text-muted-foreground"
+                            onClick={() => setDateRange({ start: "", end: "" })}
+                          >
+                            Clear dates
+                          </Button>
+                        </div>
+                      )}
+                    </PopoverContent>
+                  </Popover>
+                  {(searchQuery || categoryFilter !== "all" || dateRange.start || dateRange.end) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setCategoryFilter("all");
+                        setDateRange({ start: "", end: "" });
+                      }}
+                      className="shrink-0 text-muted-foreground"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Clear
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1010,6 +1114,24 @@ export default function InvoiceArchive() {
                               </p>
                             )}
                           </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Delete receipt"
+                            title="Delete receipt"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteTarget(invoice);
+                            }}
+                            disabled={deletingId === invoice.id}
+                            className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          >
+                            {deletingId === invoice.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -1020,6 +1142,29 @@ export default function InvoiceArchive() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this receipt?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget?.vendor_name || deleteTarget?.filename
+                ? `"${deleteTarget?.vendor_name || deleteTarget?.filename}" will be permanently removed, including its uploaded file. This cannot be undone.`
+                : "This receipt and its uploaded file will be permanently removed. This cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!deletingId}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && deleteInvoice(deleteTarget)}
+              disabled={!!deletingId}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingId ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

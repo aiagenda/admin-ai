@@ -379,182 +379,240 @@ export default function Result() {
     }
   };
 
-  // Export analysis as PDF - html2canvas + jsPDF with proper multi-page handling
+  // Export analysis as a clean, native PDF (selectable text + vector, real pagination)
   const exportAsPDF = async () => {
-    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-      import("jspdf"),
-      import("html2canvas"),
-    ]);
     if (!analysis) return;
+    const { default: jsPDF } = await import("jspdf");
 
     try {
       toast.info("Generating PDF…");
-      
-      // Create a hidden container for PDF content
-      const pdfContainer = document.createElement("div");
-      pdfContainer.style.position = "absolute";
-      pdfContainer.style.left = "-9999px";
-      pdfContainer.style.width = "210mm"; // A4 width
-      pdfContainer.style.padding = "20mm";
-      pdfContainer.style.backgroundColor = "#ffffff";
-      pdfContainer.style.fontFamily = "system-ui, -apple-system, sans-serif";
-      pdfContainer.style.color = "#1e293b";
-      pdfContainer.style.lineHeight = "1.6";
-      
-      // Build HTML content
-      const severityLabels: Record<string, string> = {
-        urgent: tr("resultPage.severityUrgent"),
-        action_needed: tr("resultPage.severityAction"),
-        info: tr("resultPage.severityInfo"),
-      };
-      const severityColors: Record<string, string> = {
-        urgent: "#dc2626",
-        action_needed: "#eab308",
-        info: "#3b82f6"
-      };
-      
-      const severityLabel = severityLabels[analysis.severity] || tr("resultPage.severityInfo");
-      const severityColor = severityColors[analysis.severity] || "#3b82f6";
-      const todoList = parseTodoList(analysis.todo_simple, analysis.what_to_do);
-      const progressPercentage = todoSimple.length > 0
-        ? Math.round((Object.values(todoProgress).filter(Boolean).length / todoSimple.length) * 100)
-        : 0;
-      
-      // Helper to escape HTML
-      const escapeHtml = (text: string | null | undefined) => {
-        if (!text) return '';
-        const div = document.createElement("div");
-        div.textContent = text;
-        return div.innerHTML;
-      };
-      
-      pdfContainer.innerHTML = `
-        <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 30px 20px; margin: -20mm -20mm 30px -20mm; color: white;">
-          <h1 style="margin: 0; font-size: 32px; font-weight: bold;">GovLetter</h1>
-          <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Document Analysis</p>
-        </div>
-        
-        <div style="margin-bottom: 25px;">
-          <span style="background-color: ${severityColor}; color: white; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block;">
-            ${severityLabel}
-          </span>
-        </div>
-        
-        ${analysis.simple_summary ? `
-          <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
-            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #1e293b;">{tr("resultPage.simpleTab")}</h2>
-            <p style="margin: 0; font-size: 13px; color: #334155; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(analysis.simple_summary)}</p>
-          </div>
-        ` : ''}
-        
-        ${analysis.legal_summary ? `
-          <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
-            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #1e293b;">{tr("resultPage.legalTab")}</h2>
-            <p style="margin: 0; font-size: 13px; color: #334155; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(analysis.legal_summary)}</p>
-          </div>
-        ` : ''}
-        
-        ${todoList.length > 0 ? `
-          <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-              <h2 style="margin: 0; font-size: 18px; font-weight: bold; color: #1e293b;">What to do?</h2>
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 100px; height: 8px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;">
-                  <div style="width: ${progressPercentage}%; height: 100%; background-color: #3b82f6;"></div>
-                </div>
-                <span style="font-size: 11px; color: #64748b;">${progressPercentage}%</span>
-              </div>
-            </div>
-            ${todoList.map((step, i) => {
-              const isCompleted = todoProgress[i] || false;
-              return `
-                <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; padding: 12px; background-color: ${isCompleted ? '#f8fafc' : '#ffffff'}; border: 1px solid #e2e8f0; border-radius: 6px;">
-                  <div style="width: 18px; height: 18px; border: 2px solid #64748b; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
-                    ${isCompleted ? '<span style="color: #3b82f6; font-size: 14px; font-weight: bold;">✓</span>' : ''}
-                  </div>
-                  <p style="margin: 0; font-size: 13px; color: ${isCompleted ? '#94a3b8' : '#334155'}; line-height: 1.6; ${isCompleted ? 'text-decoration: line-through;' : ''} flex: 1;">
-                    ${escapeHtml(step)}
-                  </p>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        ` : ''}
-        
-        ${analysis.deadline ? `
-          <div style="margin-bottom: 30px; padding: 15px; background-color: #f9fafb; border-radius: 6px; border-left: 4px solid #3b82f6;">
-            <p style="margin: 0 0 5px 0; font-size: 12px; font-weight: bold; color: #1e293b;">Deadline</p>
-            <p style="margin: 0; font-size: 14px; color: #334155;">${format(new Date(analysis.deadline), "yyyy. MMMM d.", { locale: enUS })}</p>
-          </div>
-        ` : ''}
-        
-        ${(analysis.bank_account || analysis.amount) ? `
-          <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
-            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #1e293b;">Payment Details</h2>
-            ${analysis.recipient_name ? `
-              <div style="margin-bottom: 12px;">
-                <p style="margin: 0 0 4px 0; font-size: 11px; color: #64748b; font-weight: 500;">Payee</p>
-                <p style="margin: 0; font-size: 13px; color: #334155; font-weight: 600; font-family: monospace;">${escapeHtml(analysis.recipient_name)}</p>
-              </div>
-            ` : ''}
-            ${analysis.bank_account ? `
-              <div style="margin-bottom: 12px;">
-                <p style="margin: 0 0 4px 0; font-size: 11px; color: #64748b; font-weight: 500;">Account / Reference</p>
-                <p style="margin: 0; font-size: 13px; color: #334155; font-weight: 600; font-family: monospace;">${escapeHtml(analysis.bank_account)}</p>
-              </div>
-            ` : ''}
-            ${analysis.amount ? `
-              <div style="margin-bottom: 12px;">
-                <p style="margin: 0 0 4px 0; font-size: 11px; color: #64748b; font-weight: 500;">Amount</p>
-                <p style="margin: 0; font-size: 13px; color: #334155; font-weight: 600; font-family: monospace;">${escapeHtml(analysis.amount)}</p>
-              </div>
-            ` : ''}
-          </div>
-        ` : ''}
-        
-        <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #e2e8f0; text-align: center;">
-          <p style="margin: 0; font-size: 10px; color: #94a3b8;">
-            GovLetter - ${window.location.origin} | Generated: ${format(new Date(), "yyyy. MMMM d. HH:mm", { locale: enUS })}
-          </p>
-        </div>
-      `;
-      
-      document.body.appendChild(pdfContainer);
-      
-      // Wait for fonts and images to load
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Force reflow
-      void pdfContainer.offsetHeight;
-      
-      // Capture as high-quality image
-      const canvas = await html2canvas(pdfContainer, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        allowTaint: false,
-      });
-      
-      // Remove container
-      document.body.removeChild(pdfContainer);
-      
-      // Create PDF - original simple version
+
       const doc = new jsPDF("p", "mm", "a4");
-      const imgData = canvas.toDataURL("image/png", 1.0);
-      
-      // Calculate dimensions - maintain aspect ratio
-      const pdfWidth = 210; // A4 width in mm
-      const pdfHeight = 297; // A4 height in mm
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height / canvas.width) * imgWidth;
-      
-      // Simple approach: add full image, jsPDF handles overflow automatically
-      doc.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
-      
-      // Save PDF
+      const pageW = 210;
+      const pageH = 297;
+      const margin = 18;
+      const contentW = pageW - margin * 2;
+      const bottomLimit = pageH - 20; // keep clear of footer
+      const lineH = 5.2;
+
+      const c = {
+        brand: [37, 99, 235] as [number, number, number],
+        urgent: [220, 38, 38] as [number, number, number],
+        action: [217, 119, 6] as [number, number, number],
+        info: [59, 130, 246] as [number, number, number],
+        heading: [30, 41, 59] as [number, number, number],
+        body: [51, 65, 85] as [number, number, number],
+        muted: [100, 116, 139] as [number, number, number],
+        border: [226, 232, 240] as [number, number, number],
+        boxBg: [248, 250, 252] as [number, number, number],
+      };
+
+      const severityMeta: Record<string, { label: string; color: [number, number, number] }> = {
+        urgent: { label: tr("resultPage.severityUrgent"), color: c.urgent },
+        action_needed: { label: tr("resultPage.severityAction"), color: c.action },
+        info: { label: tr("resultPage.severityInfo"), color: c.info },
+      };
+      const sev = severityMeta[analysis.severity] || severityMeta.info;
+
+      let y = 0;
+
+      // Header band
+      doc.setFillColor(c.brand[0], c.brand[1], c.brand[2]);
+      doc.rect(0, 0, pageW, 30, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("GovLetter", margin, 15);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text("Document Analysis", margin, 23);
+      y = 42;
+
+      const newPage = () => {
+        doc.addPage();
+        y = margin + 4;
+      };
+      const ensure = (needed: number) => {
+        if (y + needed > bottomLimit) newPage();
+      };
+
+      // Meta line (issuer • doc type)
+      const metaParts: string[] = [];
+      if (analysis.issuer) metaParts.push(analysis.issuer);
+      if (analysis.doc_type) metaParts.push(analysis.doc_type);
+      if (metaParts.length) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
+        doc.text(metaParts.join("   •   "), margin, y);
+        y += 7;
+      }
+
+      // Severity badge
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      const badgeLabel = sev.label.toUpperCase();
+      const badgeW = doc.getTextWidth(badgeLabel) + 6;
+      const badgeH = 6.5;
+      doc.setFillColor(sev.color[0], sev.color[1], sev.color[2]);
+      doc.roundedRect(margin, y, badgeW, badgeH, 1.2, 1.2, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.text(badgeLabel, margin + 3, y + 4.5);
+      y += badgeH + 9;
+
+      // Section helpers
+      const sectionHeading = (title: string) => {
+        ensure(15);
+        doc.setFillColor(c.brand[0], c.brand[1], c.brand[2]);
+        doc.rect(margin, y - 3.6, 1.4, 5, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(c.heading[0], c.heading[1], c.heading[2]);
+        doc.text(title, margin + 4, y);
+        y += 5;
+        doc.setDrawColor(c.border[0], c.border[1], c.border[2]);
+        doc.setLineWidth(0.2);
+        doc.line(margin, y, pageW - margin, y);
+        y += 5;
+      };
+      const paragraph = (text: string) => {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10.5);
+        doc.setTextColor(c.body[0], c.body[1], c.body[2]);
+        const lines = doc.splitTextToSize(text, contentW) as string[];
+        for (const line of lines) {
+          ensure(lineH);
+          doc.text(line, margin, y);
+          y += lineH;
+        }
+        y += 4;
+      };
+
+      // Plain English summary
+      if (analysis.simple_summary) {
+        sectionHeading(tr("resultPage.simpleTab"));
+        paragraph(analysis.simple_summary);
+      }
+
+      // Legal detail
+      if (analysis.legal_summary) {
+        sectionHeading(tr("resultPage.legalTab"));
+        paragraph(analysis.legal_summary);
+      }
+
+      // To-do list
+      if (todoSimple.length > 0) {
+        const done = Object.values(todoProgress).filter(Boolean).length;
+        const pct = Math.round((done / todoSimple.length) * 100);
+        sectionHeading(`What to do?   (${pct}% complete)`);
+        todoSimple.forEach((step, i) => {
+          const isDone = todoProgress[i] || false;
+          const textX = margin + 7;
+          const lines = doc.splitTextToSize(step, contentW - 7) as string[];
+          ensure(Math.max(lineH, lines.length * lineH) + 2);
+          const boxY = y - 3.6;
+          doc.setDrawColor(c.muted[0], c.muted[1], c.muted[2]);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(margin, boxY, 4, 4, 0.6, 0.6, "S");
+          if (isDone) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(c.brand[0], c.brand[1], c.brand[2]);
+            doc.text("X", margin + 0.9, boxY + 3.15);
+          }
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(10.5);
+          const tc = isDone ? c.muted : c.body;
+          doc.setTextColor(tc[0], tc[1], tc[2]);
+          lines.forEach((line, li) => {
+            if (li > 0) ensure(lineH);
+            doc.text(line, textX, y);
+            y += lineH;
+          });
+          y += 2.5;
+        });
+        y += 2;
+      }
+
+      // Deadline callout
+      if (analysis.deadline) {
+        ensure(20);
+        const boxH = 16;
+        doc.setFillColor(c.boxBg[0], c.boxBg[1], c.boxBg[2]);
+        doc.rect(margin, y, contentW, boxH, "F");
+        doc.setFillColor(c.brand[0], c.brand[1], c.brand[2]);
+        doc.rect(margin, y, 1.6, boxH, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
+        doc.text("DEADLINE", margin + 6, y + 6);
+        doc.setFontSize(13);
+        doc.setTextColor(c.heading[0], c.heading[1], c.heading[2]);
+        doc.text(format(new Date(analysis.deadline), "MMMM d, yyyy", { locale: enUS }), margin + 6, y + 12);
+        y += boxH + 9;
+      }
+
+      // Payment details
+      if (analysis.recipient_name || analysis.bank_account || analysis.amount) {
+        sectionHeading("Payment details");
+        const detailRow = (label: string, value: string) => {
+          ensure(lineH + 5);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
+          doc.text(label.toUpperCase(), margin, y);
+          y += 4.4;
+          doc.setFont("courier", "bold");
+          doc.setFontSize(11);
+          doc.setTextColor(c.heading[0], c.heading[1], c.heading[2]);
+          const vlines = doc.splitTextToSize(value, contentW) as string[];
+          vlines.forEach((line) => {
+            ensure(lineH);
+            doc.text(line, margin, y);
+            y += lineH;
+          });
+          y += 3;
+        };
+        if (analysis.recipient_name) detailRow("Payee", analysis.recipient_name);
+        if (analysis.bank_account) detailRow("Account / Reference", analysis.bank_account);
+        if (analysis.amount) detailRow("Amount", analysis.amount);
+        y += 2;
+      }
+
+      // Disclaimer
+      ensure(18);
+      y += 2;
+      doc.setDrawColor(c.border[0], c.border[1], c.border[2]);
+      doc.setLineWidth(0.2);
+      doc.line(margin, y, pageW - margin, y);
+      y += 5;
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8.5);
+      doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
+      const disclaimer =
+        "GovLetter is a document-explanation tool, not a tax advisor or law firm. Always verify deadlines and amounts against your original notice and consult a qualified professional before taking action.";
+      (doc.splitTextToSize(disclaimer, contentW) as string[]).forEach((line) => {
+        ensure(4.4);
+        doc.text(line, margin, y);
+        y += 4.4;
+      });
+
+      // Footers: page X of Y + generated timestamp on every page
+      const totalPages = doc.getNumberOfPages();
+      const genStr = `Generated ${format(new Date(), "MMMM d, yyyy 'at' h:mm a", { locale: enUS })}`;
+      for (let p = 1; p <= totalPages; p++) {
+        doc.setPage(p);
+        doc.setDrawColor(c.border[0], c.border[1], c.border[2]);
+        doc.setLineWidth(0.2);
+        doc.line(margin, pageH - 14, pageW - margin, pageH - 14);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
+        doc.text(genStr, margin, pageH - 9);
+        doc.text(`Page ${p} of ${totalPages}`, pageW - margin, pageH - 9, { align: "right" });
+      }
+
       const fileName = `govletter-analysis-${id?.substring(0, 8) || "unknown"}-${format(new Date(), "yyyy-MM-dd")}.pdf`;
-      console.log("Saving PDF:", fileName, "Image dimensions:", imgWidth, "x", imgHeight);
       doc.save(fileName);
       posthog.capture("analysis exported as pdf", { analysis_id: id });
       toast.success("PDF downloaded!");
@@ -562,14 +620,6 @@ export default function Result() {
       posthog.captureException(error instanceof Error ? error : new Error(String(error)));
       console.error("PDF export error:", error);
       toast.error("Failed to generate PDF");
-      
-      // Clean up container if error - find by style attribute
-      const containers = document.querySelectorAll('[style*="left: -9999px"]');
-      containers.forEach(container => {
-        if (container.parentNode) {
-          container.parentNode.removeChild(container);
-        }
-      });
     }
   };
 
