@@ -246,7 +246,16 @@ export default function Home() {
           <div className="flex items-center gap-3" data-tour="welcome">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-2">
-                {getGreeting(tc).text}, {user.email?.split("@")[0]}! 
+                {getGreeting(tc).text}
+                {(() => {
+                  const name = (
+                    (user.user_metadata?.full_name as string | undefined) ||
+                    (user.user_metadata?.name as string | undefined) ||
+                    ""
+                  ).trim();
+                  return name ? `, ${name.split(" ")[0]}` : "";
+                })()}
+                !
                 <span className="text-2xl">{getGreeting(tc).emoji}</span>
               </h1>
               <p className="text-muted-foreground mt-1">{tc("homePage.dashboardOverview")}</p>

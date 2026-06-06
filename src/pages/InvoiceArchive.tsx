@@ -682,9 +682,11 @@ export default function InvoiceArchive() {
                   <SelectItem value="year">This year</SelectItem>
                 </SelectContent>
               </Select>
-              <span className="text-muted-foreground font-medium">
-                {getPeriodLabel(periodFilter)}
-              </span>
+              {periodFilter !== "all" && (
+                <span className="text-muted-foreground font-medium">
+                  {getPeriodLabel(periodFilter)}
+                </span>
+              )}
             </div>
 
             {/* Processing/Error Warning */}
