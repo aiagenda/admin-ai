@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Calendar, AlertCircle, Info, AlertTriangle, Copy, Download, ExternalLink, ThumbsUp, ThumbsDown, MessageSquare, CalendarDays, Share2, FileText as FileTextIcon, FileDown, FileSpreadsheet } from "lucide-react";
@@ -814,10 +815,21 @@ export default function Result() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading…</p>
+      <div className="min-h-screen py-8 px-4">
+        <div className="container mx-auto max-w-4xl space-y-6">
+          <Skeleton className="h-9 w-32" />
+          <div className="space-y-3">
+            <Skeleton className="h-7 w-3/4" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+          <Skeleton className="h-24 rounded-lg" />
+          <Skeleton className="h-10 w-full max-w-sm" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+          <Skeleton className="h-32 rounded-lg" />
         </div>
       </div>
     );
