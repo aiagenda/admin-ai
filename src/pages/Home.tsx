@@ -241,9 +241,9 @@ export default function Home() {
       <PageSEO pageKey="home" path="/" structuredData={homeStructuredData} />
       {user ? (
         /* Dashboard for logged-in users */
-        <div className="container mx-auto max-w-6xl py-12 px-4 flex flex-col gap-6">
+        <div className="container mx-auto max-w-6xl py-12 px-4 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           {/* Personalized Greeting */}
-          <div className="flex items-center gap-3" data-tour="welcome">
+          <div className="flex items-center gap-3 lg:col-span-2" data-tour="welcome">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-2">
                 {getGreeting(tc).text}
@@ -263,7 +263,7 @@ export default function Home() {
           </div>
 
           {!welcomeDismissed && (
-            <div className="rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="rounded-lg border bg-muted/50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 lg:col-span-2">
               <p className="text-sm text-muted-foreground">
                 {tc("homePage.welcomeHint")}{" "}
                 <Link to="/help" className="text-primary font-medium underline underline-offset-2 hover:no-underline">{tc("homePage.helpLink")}</Link>.
@@ -286,7 +286,7 @@ export default function Home() {
           )}
 
           {/* Stats Cards - Modernized */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["stats"] ?? 0 }} data-tour="stats">
+          <div className="flex flex-col lg:col-span-2" style={{ order: cardOrderMap["stats"] ?? 0 }} data-tour="stats">
           <div className="grid md:grid-cols-3 gap-4">
             {/* Documents Card - Blue accent */}
             <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 shadow-sm hover:shadow-md transition-shadow">
@@ -422,7 +422,7 @@ export default function Home() {
           </div>
 
           {/* Invoice/Bookkeeping Summary Widget - Only for enterprise/admin */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["invoices"] ?? 3 }} data-tour="invoices">
+          <div className="flex flex-col lg:col-span-2" style={{ order: cardOrderMap["invoices"] ?? 3 }} data-tour="invoices">
           {hasInvoiceAccess && !(
             <div 
               className="relative overflow-hidden rounded-xl cursor-pointer group transition-all hover:scale-[1.01] hover:shadow-xl"
@@ -504,17 +504,17 @@ export default function Home() {
           </div>
 
           {/* Upcoming Deadlines Widget */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["deadlines"] ?? 4 }} data-tour="deadlines">
+          <div className="flex flex-col lg:col-span-2" style={{ order: cardOrderMap["deadlines"] ?? 4 }} data-tour="deadlines">
           <DeadlineReminder />
           </div>
 
           {/* Usage Limit Widget */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["usage"] ?? 5 }} data-tour="usage">
+          <div className="flex flex-col lg:col-span-2" style={{ order: cardOrderMap["usage"] ?? 5 }} data-tour="usage">
           <UsageLimit />
           </div>
 
           {/* AI Search Widget - Modernized */}
-          <div className="flex flex-col" style={{ order: cardOrderMap["search"] ?? 6 }} data-tour="search">
+          <div className="flex flex-col lg:col-span-2" style={{ order: cardOrderMap["search"] ?? 6 }} data-tour="search">
           <div className="relative overflow-hidden rounded-xl border bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
             {/* Decorative gradient border effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-50 blur-xl" />
