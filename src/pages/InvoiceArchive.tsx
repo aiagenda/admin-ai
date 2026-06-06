@@ -668,6 +668,26 @@ export default function InvoiceArchive() {
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-6">
+            {invoices.length === 0 ? (
+              <Card className="text-center py-16">
+                <CardContent className="space-y-4">
+                  <div className="h-16 w-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <Receipt className="h-8 w-8 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold">Start your bookkeeping</h3>
+                    <p className="text-muted-foreground mt-1 max-w-md mx-auto">
+                      Upload a receipt or invoice — even a photo of a handwritten one — and the AI reads the vendor, amount, sales tax and expense category automatically.
+                    </p>
+                  </div>
+                  <Button size="lg" onClick={() => navigate("/invoices/upload")}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add your first receipt
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+            <>
             {/* Period Selector */}
             <div className="flex items-center gap-4">
               <Select value={periodFilter} onValueChange={setPeriodFilter}>
@@ -898,6 +918,8 @@ export default function InvoiceArchive() {
                 </div>
               </CardContent>
             </Card>
+            </>
+            )}
           </TabsContent>
 
           {/* List Tab */}

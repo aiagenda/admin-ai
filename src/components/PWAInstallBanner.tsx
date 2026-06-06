@@ -4,6 +4,8 @@ import { X, Smartphone, Download } from "lucide-react";
 
 const DISMISS_KEY = "pwa-install-dismissed";
 const DISMISS_DAYS = 7;
+const VISITS_KEY = "pwa-visits";
+const MIN_VISITS = 3; // don't pester first-time users; show once they're engaged
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -33,6 +35,11 @@ export function PWAInstallBanner() {
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
       (typeof window !== "undefined" && window.innerWidth < 768);
     if (!mobile) return;
+
+    // Only prompt once the user is engaged (>= MIN_VISITS app loads).
+    const visits = Number(localStorage.getItem(VISITS_KEY) || "0") + 1;
+    localStorage.setItem(VISITS_KEY, String(visits));
+    if (visits < MIN_VISITS) return;
 
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(ios);

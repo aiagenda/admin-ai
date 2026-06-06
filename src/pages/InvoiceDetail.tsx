@@ -408,16 +408,32 @@ export default function InvoiceDetail() {
             {/* Main Info */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center justify-between gap-2 flex-wrap">
                   <span className="flex items-center gap-2">
                     <Receipt className="h-5 w-5" />
                     Receipt details
                   </span>
                   {invoice.status === "completed" && (
-                    <Badge variant="secondary" className="gap-1">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Processed
-                    </Badge>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {invoice.has_handwritten_content && (
+                        <Badge variant="outline" className="gap-1 text-amber-700 border-amber-300 bg-amber-50 dark:text-amber-300 dark:border-amber-800 dark:bg-amber-950">
+                          <Pencil className="h-3 w-3" />
+                          Handwritten
+                        </Badge>
+                      )}
+                      {invoice.ai_confidence != null && (
+                        <Badge
+                          variant="outline"
+                          className={`gap-1 ${invoice.ai_confidence < 0.8 ? "text-amber-700 border-amber-300 bg-amber-50 dark:text-amber-300 dark:border-amber-800 dark:bg-amber-950" : "text-muted-foreground"}`}
+                        >
+                          AI {Math.round(invoice.ai_confidence * 100)}%
+                        </Badge>
+                      )}
+                      <Badge variant="secondary" className="gap-1">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Processed
+                      </Badge>
+                    </div>
                   )}
                 </CardTitle>
               </CardHeader>
@@ -505,21 +521,15 @@ export default function InvoiceDetail() {
               </CardContent>
             </Card>
 
-            {/* AI Info */}
-            {invoice.ai_confidence && (
-              <Card>
+            {/* Verify note for low-confidence or handwritten extractions */}
+            {(invoice.has_handwritten_content || (invoice.ai_confidence != null && invoice.ai_confidence < 0.8)) && (
+              <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
                 <CardContent className="p-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">AI confidence</span>
-                    <span className="font-medium">
-                      {Math.round(invoice.ai_confidence * 100)}%
-                    </span>
-                  </div>
-                  {invoice.has_handwritten_content && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      ⚠️ Handwritten content detected - please verify the data
-                    </p>
-                  )}
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    {invoice.has_handwritten_content
+                      ? "Handwritten content was detected. Please double-check the amounts and dates against the original."
+                      : "The AI was less certain about this receipt. Please verify the amounts and dates against the original."}
+                  </p>
                 </CardContent>
               </Card>
             )}
