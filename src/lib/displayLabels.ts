@@ -13,9 +13,25 @@ export function formatPlaybookName(name: string): string {
   return after || before;
 }
 
+// Document categories are stored with legacy Hungarian-derived keys.
+const CATEGORY_LABELS: Record<string, string> = {
+  adozas: "Tax",
+  egeszsegugy: "Healthcare",
+  oktatas: "Education",
+  szocialis: "Social services",
+  kozlekedes: "Transportation",
+  ingatlan: "Real estate",
+  uzlet: "Business",
+  egyeb: "Other",
+};
+
 export function formatCategoryLabel(category: string | null | undefined): string {
   if (!category) return "";
-  return category.replace(/_/g, " ");
+  const key = category.toLowerCase();
+  if (CATEGORY_LABELS[key]) return CATEGORY_LABELS[key];
+  // Fallback: humanize unknown keys ("legal_professional" -> "Legal professional")
+  const words = category.replace(/_/g, " ").trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 export function formatTagLabel(tag: string): string {

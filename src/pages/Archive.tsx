@@ -712,7 +712,7 @@ export default function Archive() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {/* select all */}
             <Card className="bg-muted/50 p-3 flex items-center gap-3 cursor-pointer" onClick={selectAll}>
               {selectedDocs.length === filteredAndSortedDocuments.length && filteredAndSortedDocuments.length > 0 ? (
