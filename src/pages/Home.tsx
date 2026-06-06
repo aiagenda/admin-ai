@@ -423,8 +423,8 @@ export default function Home() {
 
           {/* Invoice/Bookkeeping Summary Widget - Only for enterprise/admin */}
           <div className="flex flex-col lg:col-span-2" style={{ order: cardOrderMap["invoices"] ?? 3 }} data-tour="invoices">
-          {hasInvoiceAccess && !(
-            <div 
+          {hasInvoiceAccess && (
+            <div
               className="relative overflow-hidden rounded-xl cursor-pointer group transition-all hover:scale-[1.01] hover:shadow-xl"
               onClick={() => navigate("/invoices")}
             >
