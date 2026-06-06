@@ -405,14 +405,39 @@ export default function Result() {
 
       const c = {
         brand: [37, 99, 235] as [number, number, number],
+        brandDark: [29, 78, 216] as [number, number, number],
+        brandTint: [239, 246, 255] as [number, number, number],
         urgent: [220, 38, 38] as [number, number, number],
+        urgentTint: [254, 242, 242] as [number, number, number],
         action: [217, 119, 6] as [number, number, number],
+        actionTint: [255, 247, 237] as [number, number, number],
         info: [59, 130, 246] as [number, number, number],
-        heading: [30, 41, 59] as [number, number, number],
+        infoTint: [239, 246, 255] as [number, number, number],
+        heading: [15, 23, 42] as [number, number, number],
         body: [51, 65, 85] as [number, number, number],
         muted: [100, 116, 139] as [number, number, number],
         border: [226, 232, 240] as [number, number, number],
         boxBg: [248, 250, 252] as [number, number, number],
+        white: [255, 255, 255] as [number, number, number],
+      };
+
+      const sevTint: Record<string, [number, number, number]> = {
+        urgent: c.urgentTint,
+        action_needed: c.actionTint,
+        info: c.infoTint,
+      };
+
+      // Days-until-deadline helper -> human phrase
+      const deadlinePhrase = (dateStr: string): string => {
+        const d = new Date(dateStr);
+        const today = new Date();
+        d.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        const days = Math.round((d.getTime() - today.getTime()) / 86400000);
+        if (days < 0) return `Overdue by ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"}`;
+        if (days === 0) return "Due today";
+        if (days === 1) return "Due tomorrow";
+        return `In ${days} days`;
       };
 
       const severityMeta: Record<string, { label: string; color: [number, number, number] }> = {
@@ -424,17 +449,37 @@ export default function Result() {
 
       let y = 0;
 
-      // Header band
+      // ---------- Header band ----------
+      const headerH = 32;
       doc.setFillColor(c.brand[0], c.brand[1], c.brand[2]);
-      doc.rect(0, 0, pageW, 30, "F");
+      doc.rect(0, 0, pageW, headerH, "F");
+      doc.setFillColor(c.brandDark[0], c.brandDark[1], c.brandDark[2]);
+      doc.rect(0, headerH - 1.2, pageW, 1.2, "F");
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(22);
-      doc.text("GovLetter", margin, 15);
+      doc.setFontSize(21);
+      doc.text("GovLetter", margin, 14);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.text("Document Analysis", margin, 23);
-      y = 42;
+      doc.setFontSize(8);
+      doc.setTextColor(191, 219, 254);
+      doc.text("DOCUMENT ANALYSIS", margin, 21, { charSpace: 0.8 });
+
+      // Status pill, right side of header
+      {
+        const label = sev.label.toUpperCase();
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        const pw = doc.getTextWidth(label) + 8;
+        const ph = 7.5;
+        const px = pageW - margin - pw;
+        const py = 10;
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(px, py, pw, ph, 3.75, 3.75, "F");
+        doc.setTextColor(sev.color[0], sev.color[1], sev.color[2]);
+        doc.text(label, px + 4, py + 5);
+      }
+
+      y = headerH + 12;
 
       const newPage = () => {
         doc.addPage();
@@ -444,44 +489,83 @@ export default function Result() {
         if (y + needed > bottomLimit) newPage();
       };
 
-      // Meta line (issuer • doc type)
-      const metaParts: string[] = [];
-      if (analysis.issuer) metaParts.push(analysis.issuer);
-      if (analysis.doc_type) metaParts.push(analysis.doc_type);
-      if (metaParts.length) {
+      // ---------- Title block (doc type + issuer) ----------
+      const docTitle = analysis.doc_type || "Document Analysis";
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(17);
+      doc.setTextColor(c.heading[0], c.heading[1], c.heading[2]);
+      (doc.splitTextToSize(docTitle, contentW) as string[]).forEach((line) => {
+        doc.text(line, margin, y);
+        y += 7.5;
+      });
+      if (analysis.issuer) {
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
+        doc.setFontSize(10.5);
         doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
-        doc.text(metaParts.join("   •   "), margin, y);
-        y += 7;
+        doc.text(analysis.issuer, margin, y);
+        y += 6;
+      }
+      y += 3;
+
+      // ---------- "At a glance" key-facts card ----------
+      const facts: { label: string; value: string; sub?: string; color?: [number, number, number] }[] = [];
+      if (analysis.amount) facts.push({ label: "Amount", value: analysis.amount });
+      if (analysis.deadline)
+        facts.push({
+          label: "Deadline",
+          value: format(new Date(analysis.deadline), "MMM d, yyyy", { locale: enUS }),
+          sub: deadlinePhrase(analysis.deadline),
+        });
+      facts.push({ label: "Status", value: sev.label, color: sev.color });
+      {
+        const cardH = 22;
+        ensure(cardH + 6);
+        doc.setFillColor(c.boxBg[0], c.boxBg[1], c.boxBg[2]);
+        doc.setDrawColor(c.border[0], c.border[1], c.border[2]);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(margin, y, contentW, cardH, 2, 2, "FD");
+        const colW = contentW / facts.length;
+        facts.forEach((f, i) => {
+          const cx = margin + colW * i;
+          if (i > 0) {
+            doc.setDrawColor(c.border[0], c.border[1], c.border[2]);
+            doc.setLineWidth(0.2);
+            doc.line(cx, y + 4, cx, y + cardH - 4);
+          }
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7.5);
+          doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
+          doc.text(f.label.toUpperCase(), cx + 6, y + 8, { charSpace: 0.5 });
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(13);
+          const vc = f.color || c.heading;
+          doc.setTextColor(vc[0], vc[1], vc[2]);
+          const v = (doc.splitTextToSize(f.value, colW - 10) as string[])[0] || "";
+          doc.text(v, cx + 6, y + 16);
+          if (f.sub) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
+            doc.text(f.sub, cx + 6, y + 20);
+          }
+        });
+        y += cardH + 9;
       }
 
-      // Severity badge
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      const badgeLabel = sev.label.toUpperCase();
-      const badgeW = doc.getTextWidth(badgeLabel) + 6;
-      const badgeH = 6.5;
-      doc.setFillColor(sev.color[0], sev.color[1], sev.color[2]);
-      doc.roundedRect(margin, y, badgeW, badgeH, 1.2, 1.2, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.text(badgeLabel, margin + 3, y + 4.5);
-      y += badgeH + 9;
-
-      // Section helpers
+      // ---------- Section helpers ----------
       const sectionHeading = (title: string) => {
         ensure(15);
         doc.setFillColor(c.brand[0], c.brand[1], c.brand[2]);
-        doc.rect(margin, y - 3.6, 1.4, 5, "F");
+        doc.roundedRect(margin, y - 3.8, 1.6, 5.2, 0.6, 0.6, "F");
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(13);
+        doc.setFontSize(12.5);
         doc.setTextColor(c.heading[0], c.heading[1], c.heading[2]);
-        doc.text(title, margin + 4, y);
-        y += 5;
+        doc.text(title, margin + 5, y);
+        y += 4.5;
         doc.setDrawColor(c.border[0], c.border[1], c.border[2]);
         doc.setLineWidth(0.2);
         doc.line(margin, y, pageW - margin, y);
-        y += 5;
+        y += 5.5;
       };
       const paragraph = (text: string) => {
         doc.setFont("helvetica", "normal");
@@ -496,37 +580,56 @@ export default function Result() {
         y += 4;
       };
 
-      // Plain English summary
+      // Plain English
       if (analysis.simple_summary) {
         sectionHeading(tr("resultPage.simpleTab"));
         paragraph(analysis.simple_summary);
       }
-
       // Legal detail
       if (analysis.legal_summary) {
         sectionHeading(tr("resultPage.legalTab"));
         paragraph(analysis.legal_summary);
       }
 
-      // To-do list
+      // To-do with progress bar
       if (todoSimple.length > 0) {
         const done = Object.values(todoProgress).filter(Boolean).length;
         const pct = Math.round((done / todoSimple.length) * 100);
-        sectionHeading(`What to do?   (${pct}% complete)`);
+        sectionHeading("What to do");
+        ensure(12);
+        const barW = contentW;
+        const barH = 2.4;
+        const barY = y - 1;
+        doc.setFillColor(c.border[0], c.border[1], c.border[2]);
+        doc.roundedRect(margin, barY, barW, barH, 1.2, 1.2, "F");
+        if (pct > 0) {
+          doc.setFillColor(c.brand[0], c.brand[1], c.brand[2]);
+          doc.roundedRect(margin, barY, Math.max(barH, (barW * pct) / 100), barH, 1.2, 1.2, "F");
+        }
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
+        doc.text(`${done} of ${todoSimple.length} done · ${pct}%`, margin, barY + barH + 5);
+        y = barY + barH + 11;
         todoSimple.forEach((step, i) => {
           const isDone = todoProgress[i] || false;
           const textX = margin + 7;
           const lines = doc.splitTextToSize(step, contentW - 7) as string[];
           ensure(Math.max(lineH, lines.length * lineH) + 2);
           const boxY = y - 3.6;
-          doc.setDrawColor(c.muted[0], c.muted[1], c.muted[2]);
           doc.setLineWidth(0.3);
-          doc.roundedRect(margin, boxY, 4, 4, 0.6, 0.6, "S");
           if (isDone) {
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(9);
-            doc.setTextColor(c.brand[0], c.brand[1], c.brand[2]);
-            doc.text("X", margin + 0.9, boxY + 3.15);
+            doc.setFillColor(c.brand[0], c.brand[1], c.brand[2]);
+            doc.setDrawColor(c.brand[0], c.brand[1], c.brand[2]);
+            doc.roundedRect(margin, boxY, 4, 4, 0.8, 0.8, "FD");
+            // white check mark
+            doc.setDrawColor(255, 255, 255);
+            doc.setLineWidth(0.5);
+            doc.line(margin + 0.9, boxY + 2.1, margin + 1.7, boxY + 2.9);
+            doc.line(margin + 1.7, boxY + 2.9, margin + 3.2, boxY + 1.1);
+          } else {
+            doc.setDrawColor(c.muted[0], c.muted[1], c.muted[2]);
+            doc.roundedRect(margin, boxY, 4, 4, 0.8, 0.8, "S");
           }
           doc.setFont("helvetica", "normal");
           doc.setFontSize(10.5);
@@ -537,49 +640,30 @@ export default function Result() {
             doc.text(line, textX, y);
             y += lineH;
           });
-          y += 2.5;
+          y += 3;
         });
-        y += 2;
-      }
-
-      // Deadline callout
-      if (analysis.deadline) {
-        ensure(20);
-        const boxH = 16;
-        doc.setFillColor(c.boxBg[0], c.boxBg[1], c.boxBg[2]);
-        doc.rect(margin, y, contentW, boxH, "F");
-        doc.setFillColor(c.brand[0], c.brand[1], c.brand[2]);
-        doc.rect(margin, y, 1.6, boxH, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
-        doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
-        doc.text("DEADLINE", margin + 6, y + 6);
-        doc.setFontSize(13);
-        doc.setTextColor(c.heading[0], c.heading[1], c.heading[2]);
-        doc.text(format(new Date(analysis.deadline), "MMMM d, yyyy", { locale: enUS }), margin + 6, y + 12);
-        y += boxH + 9;
+        y += 3;
       }
 
       // Payment details
       if (analysis.recipient_name || analysis.bank_account || analysis.amount) {
         sectionHeading("Payment details");
         const detailRow = (label: string, value: string) => {
-          ensure(lineH + 5);
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(8.5);
+          ensure(lineH + 6);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
           doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
-          doc.text(label.toUpperCase(), margin, y);
-          y += 4.4;
+          doc.text(label.toUpperCase(), margin, y, { charSpace: 0.4 });
+          y += 4.6;
           doc.setFont("courier", "bold");
           doc.setFontSize(11);
           doc.setTextColor(c.heading[0], c.heading[1], c.heading[2]);
-          const vlines = doc.splitTextToSize(value, contentW) as string[];
-          vlines.forEach((line) => {
+          (doc.splitTextToSize(value, contentW) as string[]).forEach((line) => {
             ensure(lineH);
             doc.text(line, margin, y);
             y += lineH;
           });
-          y += 3;
+          y += 3.5;
         };
         if (analysis.recipient_name) detailRow("Payee", analysis.recipient_name);
         if (analysis.bank_account) detailRow("Account / Reference", analysis.bank_account);
@@ -587,13 +671,27 @@ export default function Result() {
         y += 2;
       }
 
+      // References (mentioned laws)
+      if (analysis.mentioned_laws && analysis.mentioned_laws.length > 0) {
+        sectionHeading("References");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.setTextColor(c.body[0], c.body[1], c.body[2]);
+        (doc.splitTextToSize(analysis.mentioned_laws.join("   •   "), contentW) as string[]).forEach((line) => {
+          ensure(lineH);
+          doc.text(line, margin, y);
+          y += lineH;
+        });
+        y += 4;
+      }
+
       // Disclaimer
-      ensure(18);
-      y += 2;
+      ensure(14);
+      y += 1;
       doc.setDrawColor(c.border[0], c.border[1], c.border[2]);
       doc.setLineWidth(0.2);
       doc.line(margin, y, pageW - margin, y);
-      y += 5;
+      y += 4;
       doc.setFont("helvetica", "italic");
       doc.setFontSize(8.5);
       doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
@@ -605,7 +703,7 @@ export default function Result() {
         y += 4.4;
       });
 
-      // Footers: page X of Y + generated timestamp on every page
+      // ---------- Footers ----------
       const totalPages = doc.getNumberOfPages();
       const genStr = `Generated ${format(new Date(), "MMMM d, yyyy 'at' h:mm a", { locale: enUS })}`;
       for (let p = 1; p <= totalPages; p++) {
@@ -613,10 +711,14 @@ export default function Result() {
         doc.setDrawColor(c.border[0], c.border[1], c.border[2]);
         doc.setLineWidth(0.2);
         doc.line(margin, pageH - 14, pageW - margin, pageH - 14);
-        doc.setFont("helvetica", "normal");
+        doc.setFont("helvetica", "bold");
         doc.setFontSize(8);
+        doc.setTextColor(c.brand[0], c.brand[1], c.brand[2]);
+        doc.text("GovLetter", margin, pageH - 9);
+        const brandW = doc.getTextWidth("GovLetter");
+        doc.setFont("helvetica", "normal");
         doc.setTextColor(c.muted[0], c.muted[1], c.muted[2]);
-        doc.text(genStr, margin, pageH - 9);
+        doc.text(genStr, margin + brandW + 4, pageH - 9);
         doc.text(`Page ${p} of ${totalPages}`, pageW - margin, pageH - 9, { align: "right" });
       }
 
