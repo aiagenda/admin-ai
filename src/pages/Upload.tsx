@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload as UploadIcon, Loader2, X, FileText, Camera } from "lucide-react";
+import { Upload as UploadIcon, Loader2, X, FileText, Camera, ShieldCheck } from "lucide-react";
 import { HelpTooltip } from "@/components/HelpTooltip";
 import { UsageLimit } from "@/components/UsageLimit";
 import { LegalQuickLinks } from "@/components/LegalQuickLinks";
@@ -646,6 +646,10 @@ export default function Upload() {
                   <span className="truncate">{t("uploadPage.quickPhoto")}</span>
                 </Button>
               </div>
+              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                Encrypted upload · private to your account · we never sell your data
+              </p>
               </>
               )}
 
