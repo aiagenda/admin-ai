@@ -285,6 +285,25 @@ export default function Home() {
             </div>
           )}
 
+          {/* First-run call to action — only before the first upload */}
+          {stats.totalDocuments === 0 && (
+            <div className="lg:col-span-2 rounded-xl border bg-gradient-to-br from-primary/5 to-primary/10 p-6 sm:p-8 text-center space-y-4">
+              <div className="h-16 w-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
+                <Upload className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">Upload your first letter</h2>
+                <p className="text-muted-foreground mt-1 max-w-md mx-auto">
+                  Snap a photo or upload a PDF of any IRS, state, or agency letter. In about a minute you'll see what it means, what to do, and by when.
+                </p>
+              </div>
+              <Button size="lg" onClick={() => navigate("/upload")}>
+                <Upload className="h-4 w-4 mr-2" />
+                Upload a letter
+              </Button>
+            </div>
+          )}
+
           {/* Stats Cards - Modernized */}
           <div className="flex flex-col lg:col-span-2" style={{ order: cardOrderMap["stats"] ?? 0 }} data-tour="stats">
           <div className="grid md:grid-cols-3 gap-4">
