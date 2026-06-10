@@ -18,9 +18,25 @@ HTML file into the **Message body** (source/HTML view), then **Save**.
 | Reset password            | `reset-password.html`    | `Reset your GovLetter password`                    |
 | Reauthentication          | `reauthentication.html`  | `Your GovLetter verification code`                 |
 
-The **Security** notification emails (password changed, email changed, etc.)
-share the same look — use `confirm-signup.html` as the base and swap the
-heading/body copy for that event. They don't need an action button.
+### Security notification emails
+
+Under **Authentication → Emails** there's a **Security** section (toggle each on
+to enable, then open it to edit the template). These are informational alerts —
+no action button, just a "if this wasn't you, secure your account" notice.
+
+| Dashboard toggle        | File                                  | Suggested subject                              |
+| ----------------------- | ------------------------------------- | ---------------------------------------------- |
+| Password changed        | `security-password-changed.html`      | `Your GovLetter password was changed`          |
+| Email address changed   | `security-email-changed.html`         | `Your GovLetter email address was changed`     |
+| Phone number changed    | `security-phone-changed.html`         | `Your GovLetter phone number was changed`      |
+| Sign-in method linked   | `security-signin-method-linked.html`  | `A new sign-in method was added`               |
+| Sign-in method removed  | `security-signin-method-removed.html` | `A sign-in method was removed`                 |
+| MFA method added        | `security-mfa-added.html`             | `Two-factor authentication was added`          |
+| MFA method removed      | `security-mfa-removed.html`           | `Two-factor authentication was removed`        |
+
+The "Go to your account" button uses `{{ .SiteURL }}`. If you'd like to show the
+affected email/time, Supabase exposes `{{ .Email }}` (and sometimes `{{ .Time }}`)
+in these templates — add them to the body if desired.
 
 ## Template variables
 
