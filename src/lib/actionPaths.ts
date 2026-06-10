@@ -62,6 +62,9 @@ const CFPB_DEBT = "https://www.consumerfinance.gov/consumer-tools/debt-collectio
 const HUD_COUNSELOR = "https://www.hud.gov/i_want_to/talk_to_a_housing_counselor";
 const MEDICAID_GOV = "https://www.medicaid.gov/";
 const USCIS_FIND_LEGAL = "https://www.uscis.gov/scams-fraud-and-misconduct/avoid-scams/find-legal-services";
+const STUDENT_AID = "https://studentaid.gov/manage-loans/default";
+const STUDENT_AID_IDR = "https://studentaid.gov/manage-loans/repayment/plans/income-driven";
+const DMV_SERVICES = "https://www.usa.gov/motor-vehicle-services";
 
 // ---------------------------------------------------------------------------
 // State court self-help portals (for court / eviction responses).
@@ -1184,6 +1187,200 @@ function medicaid(): ActionPathsResult {
   };
 }
 
+function trafficCitation(stateCode?: string | null): ActionPathsResult {
+  return {
+    question: "You got a traffic ticket / citation. How would you like to handle it?",
+    paths: [
+      {
+        key: "contest",
+        label: "Contest it in court",
+        description: "Plead not guilty and ask for a hearing — useful if the ticket is wrong or points would hurt your license/insurance.",
+        tone: "caution",
+        recommended: true,
+        steps: [
+          "Find the response deadline on the citation (often 15–30 days).",
+          "Enter a not-guilty plea and request a hearing the way the citation describes.",
+          "Bring evidence (photos, witnesses, records) to your hearing.",
+        ],
+        formKeys: [],
+        externalUrl: courtSelfHelpUrl(stateCode),
+        externalLabel: "Traffic court self-help",
+      },
+      {
+        key: "traffic_school",
+        label: "Ask about traffic school",
+        description: "Many courts let you take a defensive-driving course to keep points off your record.",
+        steps: ["Ask the court (by the deadline) whether traffic school is available for your ticket."],
+        formKeys: [],
+      },
+      {
+        key: "pay",
+        label: "Just pay the ticket",
+        description: "Paying usually counts as pleading guilty and may add points — pay by the deadline to avoid extra penalties.",
+        steps: ["Pay through the court or citation portal printed on the ticket and keep the confirmation."],
+        formKeys: [],
+      },
+    ],
+  };
+}
+
+function dmvNotice(): ActionPathsResult {
+  return {
+    question: "This is a DMV / driver's license notice. How would you like to respond?",
+    paths: [
+      {
+        key: "reinstate",
+        label: "Reinstate my license / registration",
+        description: "Resolve the underlying issue (unpaid tickets, insurance lapse, fees) and complete your state's reinstatement steps.",
+        tone: "positive",
+        recommended: true,
+        steps: [
+          "Read the notice for exactly why the action was taken and what's required to fix it.",
+          "Pay any reinstatement fees and resolve the underlying cause.",
+          "Follow your state DMV's reinstatement process.",
+        ],
+        formKeys: [],
+        externalUrl: DMV_SERVICES,
+        externalLabel: "Find your state DMV",
+      },
+      {
+        key: "hearing",
+        label: "Request a DMV hearing",
+        description: "For suspensions you can contest (points, admin actions), request an administrative hearing by the deadline.",
+        tone: "caution",
+        steps: ["Request a hearing as the notice instructs, before the deadline, to keep your driving privileges if possible."],
+        formKeys: [],
+      },
+      {
+        key: "insurance",
+        label: "File required insurance (SR-22)",
+        description: "If the notice requires proof of insurance (SR-22/FR-44), your insurer can file it with the state.",
+        steps: ["Ask your auto insurer to file the SR-22/FR-44 with your state DMV."],
+        formKeys: [],
+      },
+    ],
+  };
+}
+
+function jurySummons(): ActionPathsResult {
+  return {
+    question: "You received a jury duty summons. How would you like to respond?",
+    paths: [
+      {
+        key: "respond",
+        label: "Respond and plan to serve",
+        description: "Confirm receipt and note your reporting date and instructions.",
+        recommended: true,
+        steps: [
+          "Complete and return the questionnaire by the date on the summons (many courts allow online response).",
+          "Note your reporting date, time, and location, and any call-in instructions.",
+        ],
+        formKeys: [],
+      },
+      {
+        key: "excusal",
+        label: "Request an excusal or postponement",
+        description: "If serving on that date is a hardship, ask to be excused or to reschedule.",
+        steps: [
+          "Follow the summons instructions to request an excusal or deferral, with any required proof.",
+          "Submit the request before the deadline.",
+        ],
+        formKeys: [],
+      },
+    ],
+  };
+}
+
+function probateEstate(stateCode?: string | null): ActionPathsResult {
+  return {
+    question: "This is a probate / estate notice. How would you like to respond?",
+    paths: [
+      {
+        key: "attorney",
+        label: "Talk to a probate attorney",
+        description: "Estate matters have strict deadlines (creditor claims, will contests) and vary a lot by state — professional advice is worth it.",
+        tone: "caution",
+        recommended: true,
+        steps: [
+          "Note any deadline on the notice (claim periods can be just a few months).",
+          "Consult a probate attorney, especially if significant assets or a dispute are involved.",
+        ],
+        formKeys: [],
+        externalUrl: courtSelfHelpUrl(stateCode),
+        externalLabel: "Probate court self-help",
+      },
+      {
+        key: "heir",
+        label: "I'm an heir or beneficiary",
+        description: "Respond to the notice to protect your interest in the estate.",
+        steps: [
+          "Read what the notice asks of you and the deadline.",
+          "File any objection or claim with the probate court on time.",
+        ],
+        formKeys: [],
+      },
+      {
+        key: "creditor",
+        label: "I'm owed money by the estate (creditor)",
+        description: "File a creditor's claim against the estate before the claim deadline.",
+        steps: [
+          "Find the creditor-claim deadline in the notice.",
+          "File your claim with the probate court, with documentation, before it expires.",
+        ],
+        formKeys: [],
+        letterType: "generic_response",
+      },
+    ],
+  };
+}
+
+function studentLoan(): ActionPathsResult {
+  return {
+    question: "This is about a student loan. How would you like to handle it?",
+    paths: [
+      {
+        key: "lower_payment",
+        label: "Lower my monthly payment",
+        description: "Federal loans offer income-driven repayment (IDR) plans — payments are based on income and can be as low as $0.",
+        tone: "positive",
+        recommended: true,
+        steps: [
+          "Confirm whether your loans are federal (studentaid.gov) or private (your lender).",
+          "For federal loans, apply for an income-driven repayment plan.",
+          "Ask your servicer to confirm your new payment in writing.",
+        ],
+        formKeys: [],
+        externalUrl: STUDENT_AID_IDR,
+        externalLabel: "Income-driven repayment (federal)",
+      },
+      {
+        key: "get_out_of_default",
+        label: "Get out of default",
+        description: "If a federal loan is in default, loan rehabilitation or consolidation can restore good standing and stop wage garnishment or tax-refund offset.",
+        tone: "caution",
+        steps: [
+          "Contact your federal loan servicer or the default resolution group.",
+          "Ask about loan rehabilitation or consolidation to exit default.",
+        ],
+        formKeys: [],
+        externalUrl: STUDENT_AID,
+        externalLabel: "Get out of default (federal)",
+      },
+      {
+        key: "dispute",
+        label: "Dispute the loan or balance",
+        description: "If the loan isn't yours, was paid, or the balance is wrong, dispute it in writing.",
+        steps: [
+          "Write to the servicer/collector identifying the error and requesting verification.",
+          "For a loan you never took out, also report possible identity theft.",
+        ],
+        formKeys: [],
+        letterType: "debt_validation",
+      },
+    ],
+  };
+}
+
 /**
  * Returns the guided action paths for a given doc_type, or `null` when there is
  * no tailored set (the caller can then fall back to the plain forms list).
@@ -1234,6 +1431,12 @@ export function getActionPaths(
 
   if (t.startsWith("uscis")) return uscis();
   if (t.startsWith("medicaid")) return medicaid();
+
+  if (t === "traffic_citation") return trafficCitation(stateCode);
+  if (t === "dmv_notice") return dmvNotice();
+  if (t === "jury_summons") return jurySummons();
+  if (t === "probate_estate") return probateEstate(stateCode);
+  if (t === "student_loan") return studentLoan();
 
   // Letters that are clearly actionable but without a tailored path.
   const actionable = [
