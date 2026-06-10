@@ -15,6 +15,7 @@ import type { ActionPath, ActionPathsResult } from "@/lib/actionPaths";
 import type { Form } from "@/pages/Result";
 import { FormCard } from "@/components/FormCard";
 import { LegalDisclaimer } from "@/components/LegalDisclaimer";
+import { ResponseLetterGenerator } from "@/components/ResponseLetterGenerator";
 
 interface GuidedActionsProps {
   result: ActionPathsResult;
@@ -122,7 +123,16 @@ export function GuidedActions({ result, formsByKey, analysisId }: GuidedActionsP
             </div>
           )}
 
-          {forms.length === 0 && !selected.externalUrl && (
+          {/* AI-drafted response letter for this option */}
+          {selected.letterType && analysisId && (
+            <ResponseLetterGenerator
+              analysisId={analysisId}
+              letterType={selected.letterType}
+              label={`Draft: ${selected.label}`}
+            />
+          )}
+
+          {forms.length === 0 && !selected.externalUrl && !selected.letterType && (
             <p className="text-sm text-muted-foreground">
               Follow the steps above using the contact details on your letter.
             </p>

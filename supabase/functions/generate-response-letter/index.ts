@@ -1,0 +1,221 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.7";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+// Supported response letters. Each maps to focused drafting guidance.
+type LetterType =
+  | "debt_validation"
+  | "debt_dispute"
+  | "medical_bill_negotiation"
+  | "medical_bill_itemized"
+  | "utility_deferral"
+  | "hoa_dispute"
+  | "court_answer"
+  | "eviction_response"
+  | "generic_dispute"
+  | "generic_response";
+
+const LETTER_GUIDANCE: Record<LetterType, { title: string; guidance: string }> = {
+  debt_validation: {
+    title: "Debt Validation Letter (FDCPA)",
+    guidance:
+      "Draft a formal debt validation request under the Fair Debt Collection Practices Act (FDCPA), 15 U.S.C. §1692g. The writer disputes the debt and requests that the collector verify it. Demand: (1) the amount owed, (2) the name of the original creditor, (3) proof the collector owns or is authorized to collect the debt, and (4) that all collection activity and credit reporting pause until verification is provided. State that this request is made within 30 days of first contact if applicable. Keep a firm but professional tone. Do NOT admit the debt is owed.",
+  },
+  debt_dispute: {
+    title: "Debt Dispute Letter",
+    guidance:
+      "Draft a letter disputing the accuracy or validity of the debt. Ask the collector to investigate and to stop reporting the disputed item to credit bureaus until resolved. Reference FDCPA rights. Do not admit liability.",
+  },
+  medical_bill_negotiation: {
+    title: "Medical Bill Negotiation / Financial Assistance Letter",
+    guidance:
+      "Draft a letter to the hospital/provider billing department requesting a reduction, a hardship discount, financial assistance/charity care eligibility review, and an affordable interest-free payment plan. Politely note willingness to pay a fair amount and request the provider hold the account from collections during review.",
+  },
+  medical_bill_itemized: {
+    title: "Request for Itemized Medical Bill",
+    guidance:
+      "Draft a letter requesting a fully itemized bill with CPT/HCPCS codes for every charge, so the patient can verify accuracy and check against their insurance EOB. Ask that collection activity pause until the itemized bill is provided.",
+  },
+  utility_deferral: {
+    title: "Utility Payment Arrangement / Deferral Request",
+    guidance:
+      "Draft a letter to the utility company requesting a deferred payment plan or budget billing to avoid disconnection, and asking them to note any medical or weather protections that may apply. Request written confirmation of any arrangement.",
+  },
+  hoa_dispute: {
+    title: "HOA Violation Dispute Letter",
+    guidance:
+      "Draft a letter to the homeowners association disputing or requesting a hearing on the alleged covenant violation. Request the specific CC&R provision cited, evidence of the violation, and the formal hearing/appeal process. Ask that fines be held in abeyance pending the hearing.",
+  },
+  court_answer: {
+    title: "Answer / Response to Court Summons (draft)",
+    guidance:
+      "Draft a general 'Answer' style response to a civil summons/complaint. Include a caption placeholder (court name, parties, case number), a numbered response admitting/denying allegations generally (deny for lack of information where unknown), a short statement of any general defenses, and a request that the case be decided on the merits. CRITICAL: Add a prominent note that most courts REQUIRE filing on the court's official Answer form by the deadline, that this draft is a starting point only, and that they should consult the court self-help center or an attorney. This is not legal advice.",
+  },
+  eviction_response: {
+    title: "Response to Eviction / Pay-or-Quit Notice (draft)",
+    guidance:
+      "Draft a response to a landlord's eviction or pay-or-quit notice. Depending on the situation, it may request a payment plan, point out needed repairs/habitability, or state intent to contest. Add a prominent note that if a court case (unlawful detainer) is filed, they must respond on the court's official form by the deadline, and should contact local legal aid. Not legal advice.",
+  },
+  generic_dispute: {
+    title: "Dispute / Disagreement Letter",
+    guidance:
+      "Draft a clear letter contesting the notice. State what the writer disagrees with, why, request a review or correction, and ask for written confirmation. Reference any deadline on the notice.",
+  },
+  generic_response: {
+    title: "Response Letter",
+    guidance:
+      "Draft a clear, professional response that takes the action the letter requests, references the relevant account/notice numbers, and asks for written confirmation. Reference any deadline.",
+  },
+};
+
+function isLetterType(v: unknown): v is LetterType {
+  return typeof v === "string" && v in LETTER_GUIDANCE;
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    if (req.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+        status: 405,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const openaiApiKey = Deno.env.get("OPENAI_API_KEY") ?? "";
+    if (!supabaseUrl || !supabaseServiceKey) throw new Error("Supabase env not configured");
+    if (!openaiApiKey) throw new Error("OPENAI_API_KEY not configured");
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) throw new Error("No authorization header");
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) throw new Error("Unauthorized");
+
+    const body = (await req.json().catch(() => ({}))) as {
+      analysisId?: string;
+      letterType?: string;
+      userNotes?: string;
+    };
+
+    const { analysisId, userNotes } = body;
+    if (!analysisId) throw new Error("Missing analysisId");
+    if (!isLetterType(body.letterType)) throw new Error("Invalid letterType");
+    const letterType = body.letterType;
+
+    // Fetch the analysis and verify ownership.
+    const { data: analysis, error: aErr } = await supabase
+      .from("analyses")
+      .select(
+        "id, user_id, simple_summary, legal_summary, recipient_name, amount, agency, issuer, doc_type, state_code, deadline, extracted_fields, mentioned_laws",
+      )
+      .eq("id", analysisId)
+      .single();
+
+    if (aErr || !analysis) throw new Error("Analysis not found");
+    if (analysis.user_id !== user.id) throw new Error("Forbidden");
+
+    const ef = (analysis.extracted_fields ?? {}) as Record<string, unknown>;
+    const guide = LETTER_GUIDANCE[letterType];
+
+    const today = new Date().toISOString().split("T")[0];
+
+    const context = {
+      today,
+      letter_type: letterType,
+      sender_name: ef.taxpayer_name ?? analysis.recipient_name ?? null,
+      sender_address: ef.address ?? null,
+      sender_city_state_zip: ef.city_state_zip ?? null,
+      recipient_agency: ef.agency ?? analysis.agency ?? analysis.issuer ?? null,
+      account_or_notice: ef.account_number ?? ef.notice_number ?? null,
+      amount: ef.amount_due ?? analysis.amount ?? null,
+      state_code: analysis.state_code ?? null,
+      deadline: analysis.deadline ?? null,
+      doc_type: analysis.doc_type ?? null,
+      document_summary: analysis.simple_summary ?? null,
+      legal_summary: analysis.legal_summary ?? null,
+      user_notes: userNotes ?? null,
+    };
+
+    const systemPrompt = [
+      "You are an expert U.S. consumer-rights and correspondence assistant.",
+      `Write a complete, ready-to-send ${guide.title} in formal U.S. business-letter format.`,
+      guide.guidance,
+      "",
+      "Rules:",
+      "- Use a standard letter layout: sender block, date, recipient block, RE: line, salutation, body, closing, signature line.",
+      "- Where a value is unknown, insert a clearly marked placeholder in square brackets (e.g., [Your full name], [Account number], [Court name]).",
+      "- Be concise, factual, and professional. No invented facts. Do not state the debt/charge is valid.",
+      "- Always include a short final line noting the letter is a self-help draft and not legal advice, and to keep a copy and send by trackable mail where appropriate.",
+      "- Return STRICT JSON only.",
+      "",
+      'JSON shape: {"subject": "short RE: line", "body": "the full letter text with real newlines", "checklist": ["3-6 short next-step bullets: what to attach, how to send, deadline reminder"]}',
+    ].join("\n");
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openaiApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        temperature: 0.4,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: `Document + extracted context (JSON):\n${JSON.stringify(context, null, 2)}`,
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${await response.text()}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error("OpenAI returned empty content");
+
+    const parsed = JSON.parse(content) as {
+      subject?: string;
+      body?: string;
+      checklist?: string[];
+    };
+
+    if (!parsed.body) throw new Error("No letter body generated");
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        letterType,
+        title: guide.title,
+        subject: parsed.subject ?? guide.title,
+        body: parsed.body,
+        checklist: Array.isArray(parsed.checklist) ? parsed.checklist.slice(0, 8) : [],
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    const status = message === "Unauthorized" || message === "Forbidden" ? 401 : 400;
+    return new Response(JSON.stringify({ success: false, error: message }), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});

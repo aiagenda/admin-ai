@@ -50,6 +50,7 @@ interface Analysis {
   // New law registry / playbook fields
   mentioned_laws?: string[] | null;
   doc_type?: string | null;
+  state_code?: string | null;
   issuer?: string | null;
   // Document metadata
   document_id?: string;
@@ -150,7 +151,7 @@ export default function Result() {
         }
 
         // Fetch the forms referenced by the guided action paths for this doc_type
-        const guided = getActionPaths(analysisData.doc_type);
+        const guided = getActionPaths(analysisData.doc_type, analysisData.state_code);
         if (guided) {
           const pathFormKeys = Array.from(
             new Set(guided.paths.flatMap((p) => p.formKeys)),
@@ -889,7 +890,7 @@ export default function Result() {
   const todoLegal = parseTodoList(analysis.todo_legal, null);
 
   // Guided "what would you like to do?" paths for this document type
-  const guidedActions = getActionPaths(analysis.doc_type);
+  const guidedActions = getActionPaths(analysis.doc_type, analysis.state_code);
 
   // Calculate todo progress percentage
   const todoProgressPercentage = todoSimple.length > 0
