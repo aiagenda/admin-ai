@@ -265,6 +265,17 @@ async function getOCRImprovements(
 }
 
 /**
+ * Detect when a vision model returned a refusal / apology instead of OCR text.
+ * Such responses must NOT be passed downstream as if they were document content.
+ */
+function looksLikeRefusal(text: string): boolean {
+  const t = text.trim();
+  if (t.length > 400) return false; // real OCR output is usually longer than a refusal
+  return /^(i (?:can'?t|cannot|am unable|'?m unable|'?m sorry|am sorry)\b|sorry,|i'?m not able\b|unfortunately,? i)/i.test(t)
+    || /\b(can'?t|cannot|unable to) (?:help|assist)\b.*\bimage/i.test(t);
+}
+
+/**
  * Extract text using OpenAI Vision API (OCR)
  * This is the most accurate method for scanned PDFs
  */
@@ -297,20 +308,18 @@ async function extractTextWithVisionOCR(
             model: "gpt-4o",
             messages: [
               {
+                role: "system",
+                content:
+                  "You are a precise OCR transcription engine. You will be given a photo or scan of a US government, tax, or official document. Transcribe ALL visible text exactly as it appears — preserve line breaks, dates, amounts, and account numbers. Pay special attention to handwritten digits, carefully distinguishing 0/O, 1/I, 5/S, 6/G. If part of the image is blurry or unclear, transcribe what you can and mark the rest with [illegible]. Output ONLY the transcribed text. Never refuse, never apologize, and never add commentary or explanations.",
+              },
+              {
                 role: "user",
                 content: [
                   {
                     type: "text",
                     text: await (async () => {
                       // Base OCR prompt
-                      let ocrPrompt = `Extract all text from this US government/official document image. 
-Pay special attention to HANDWRITTEN NUMBERS:
-- Amounts (összeg) may be handwritten - extract them carefully, digit by digit
-- Bank account numbers (bankszámlaszám) may contain handwritten digits - be very careful with similar-looking characters (0 vs O, 1 vs I, 5 vs S, 6 vs G)
-- Dates may be handwritten - extract them in YYYY-MM-DD format
-- When in doubt about a handwritten digit, try to identify it based on context
-
-Preserve formatting, dates, amounts, account numbers, and all details exactly as shown. Return only the extracted text, no analysis.`;
+                      let ocrPrompt = `Transcribe all text from this document image, exactly as shown. Return only the extracted text, no analysis or commentary.`;
 
                       // Add learned improvements if supabase client is available
                       if (supabase) {
@@ -327,6 +336,7 @@ Preserve formatting, dates, amounts, account numbers, and all details exactly as
                     type: "image_url",
                     image_url: {
                       url: imageBase64,
+                      detail: "high",
                     },
                   },
                 ],
@@ -348,8 +358,10 @@ Preserve formatting, dates, amounts, account numbers, and all details exactly as
 
         const data = await response.json();
         const extractedText = data.choices?.[0]?.message?.content;
-        
-        if (extractedText) {
+
+        if (extractedText && looksLikeRefusal(extractedText)) {
+          console.warn(`Page ${i + 1}: Vision model refused OCR ("${extractedText.slice(0, 80)}…"), discarding`);
+        } else if (extractedText) {
           textParts.push(extractedText);
           console.log(`Page ${i + 1}/${pagesToProcess}: Extracted ${extractedText.length} characters`);
         } else {
@@ -408,6 +420,11 @@ Return only the extracted text, no analysis.`;
         model: glmModel,
         messages: [
           {
+            role: "system",
+            content:
+              "You are a precise OCR transcription engine. Transcribe ALL visible text from the document image exactly as it appears. Output only the transcribed text. Never refuse, apologize, or add commentary.",
+          },
+          {
             role: "user",
             content: [
               { type: "text", text: ocrPrompt },
@@ -426,7 +443,11 @@ Return only the extracted text, no analysis.`;
 
     const data = await response.json();
     const extractedText = data.choices?.[0]?.message?.content;
-    if (extractedText) textParts.push(extractedText);
+    if (extractedText && looksLikeRefusal(extractedText)) {
+      console.warn(`GLM page ${i + 1}: model refused OCR, discarding`);
+    } else if (extractedText) {
+      textParts.push(extractedText);
+    }
   }
 
   const fullText = textParts.join("\n\n").trim();
