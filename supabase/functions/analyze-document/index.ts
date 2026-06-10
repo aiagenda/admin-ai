@@ -642,7 +642,7 @@ function getUsLanguagePrompt(todayStr: string): string {
   "detected_category": "tax" | "healthcare" | "education" | "social" | "transport" | "property" | "business" | "other" or null,
   "detected_tags": ["tag1", "tag2"] or [],
   "mentioned_laws": ["26 U.S.C. §6331", "IRC §6651"] or [],
-  "doc_type": "irs_notice_balance_due" | "irs_notice_intent_to_levy" | "irs_notice_generic" | "state_tax_balance_due" | "state_tax_audit" | "state_tax_refund_offset" | "state_tax_generic" | "state_tax_CA_balance_due" (pattern: state_tax_XX_balance_due for any US state) | "ssa_overpayment" | "ssa_benefit_change" | "ssa_generic" | "uscis_rfe" | "uscis_biometrics" | "uscis_decision" | "medicare_premium" | "medicare_lis" | "medicare_generic" | "va_debt" | "va_benefit" | "unemployment_determination" | "court_summons" | "court_judgment" | "child_support" | "bank_collection" | "credit_card_chargeoff" | "mortgage_default" | "utility_disconnect" | "hoa_violation" | "eviction_notice" | "medical_bill" | "insurance_eob" | "official_letter_generic" | "unknown",
+  "doc_type": "irs_notice_balance_due" | "irs_notice_intent_to_levy" | "irs_notice_deficiency" | "irs_notice_cp2000" | "irs_identity_verification" | "irs_audit" | "irs_penalty" | "irs_lien" | "irs_notice_generic" | "state_tax_balance_due" | "state_tax_audit" | "state_tax_refund_offset" | "state_tax_generic" | "state_tax_CA_balance_due" (pattern: state_tax_XX_balance_due for any US state) | "ssa_overpayment" | "ssa_benefit_change" | "ssa_generic" | "uscis_rfe" | "uscis_biometrics" | "uscis_decision" | "medicare_premium" | "medicare_lis" | "medicare_generic" | "medicaid_notice" | "va_debt" | "va_benefit" | "unemployment_determination" | "court_summons" | "court_judgment" | "child_support" | "wage_garnishment" | "bank_collection" | "credit_card_chargeoff" | "mortgage_default" | "utility_disconnect" | "hoa_violation" | "eviction_notice" | "medical_bill" | "insurance_eob" | "official_letter_generic" | "unknown",
   "state_code": "two-letter US state code or null (e.g. CA, NY, TX)",
   "issuer": "irs" | "state_tax_authority" | "ssa" | "uscis" | "cms" | "va" | "court" | "bank" | "utility" | "hoa" | "landlord" | "hospital" | "insurer" | "employer" | "other" or null,
   "extracted_fields": {
@@ -659,7 +659,17 @@ function getUsLanguagePrompt(todayStr: string): string {
 
 IMPORTANT RULES:
 1. ALL output must be in English.
-2. doc_type: pick the best match from the enum. IRS mail → irs_notice_*; state department of revenue → state_tax_XX_balance_due where XX is the two-letter state code (e.g. state_tax_CA_balance_due); or state_tax_generic if state unknown; Social Security Administration → ssa_*; USCIS → uscis_*; Medicare → medicare_*; VA → va_*; unemployment office → unemployment_determination; court papers → court_* or child_support; debt collectors/banks → bank_*; utilities → utility_disconnect; medical → medical_bill or insurance_eob; unclear official letter → official_letter_generic or unknown.
+2. doc_type: pick the best match from the enum. For IRS mail be specific:
+   - Notice of Deficiency / "90-day letter" (CP3219A, CP3219N, Letter 3219/531, mentions petitioning U.S. Tax Court) → irs_notice_deficiency
+   - CP2000 / underreported income / proposed changes from matched 1099/W-2 data → irs_notice_cp2000
+   - Identity verification (5071C, 4883C, 5747C, 6330C, "verify your identity", idverify.irs.gov) → irs_identity_verification
+   - Audit / examination (Letter 566, 525, 915, 2205, 3572, CP75/CP75A EITC) → irs_audit
+   - Penalty notice where a penalty is assessed (failure to file/pay, accuracy) → irs_penalty
+   - Notice of Federal Tax Lien (Letter 3172, CP504B mentioning a lien) → irs_lien
+   - Intent to levy (CP504, LT11, Letter 1058) → irs_notice_intent_to_levy
+   - Balance due (CP14, CP501/502/503) → irs_notice_balance_due
+   - Any other IRS letter → irs_notice_generic
+   Then: state department of revenue → state_tax_XX_balance_due (XX = state code), or state_tax_generic if unknown; Social Security → ssa_*; Medicaid eligibility/denial/renewal → medicaid_notice; Medicare → medicare_*; USCIS → uscis_*; VA → va_*; unemployment office → unemployment_determination; court papers → court_* or child_support; a wage/bank garnishment order (not an IRS levy) → wage_garnishment; debt collectors/banks → bank_*; mortgage servicer default/foreclosure → mortgage_default; utilities → utility_disconnect; HOA → hoa_violation; landlord eviction/pay-or-quit → eviction_notice; medical → medical_bill or insurance_eob; unclear official letter → official_letter_generic or unknown.
 3. state_code: required when issuer is state_tax_authority or state unemployment; null for federal-only letters.
 4. mentioned_laws: explicit citations only. Empty array if none.
 5. deadlines: YYYY-MM-DD; compute relative dates from today (${todayStr}).

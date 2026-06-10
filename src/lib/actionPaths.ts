@@ -15,12 +15,15 @@
 export type LetterType =
   | "debt_validation"
   | "debt_dispute"
+  | "credit_report_dispute"
   | "medical_bill_negotiation"
   | "medical_bill_itemized"
   | "utility_deferral"
   | "hoa_dispute"
   | "court_answer"
   | "eviction_response"
+  | "cp2000_response"
+  | "penalty_abatement"
   | "generic_dispute"
   | "generic_response";
 
@@ -52,8 +55,13 @@ export interface ActionPathsResult {
 
 const IRS_DIRECT_PAY = "https://www.irs.gov/payments";
 const IRS_OIC_PREQUAL = "https://irs.treasury.gov/oic_pre_qualifier/";
+const IRS_ID_VERIFY = "https://www.irs.gov/identity-theft-fraud-scams/identity-verification-service";
+const US_TAX_COURT = "https://ustaxcourt.gov/petitioners.html";
 const SSA_OVERPAYMENT = "https://www.ssa.gov/overpayments/";
 const CFPB_DEBT = "https://www.consumerfinance.gov/consumer-tools/debt-collection/";
+const HUD_COUNSELOR = "https://www.hud.gov/i_want_to/talk_to_a_housing_counselor";
+const MEDICAID_GOV = "https://www.medicaid.gov/";
+const USCIS_FIND_LEGAL = "https://www.uscis.gov/scams-fraud-and-misconduct/avoid-scams/find-legal-services";
 
 // ---------------------------------------------------------------------------
 // State court self-help portals (for court / eviction responses).
@@ -733,6 +741,449 @@ function genericOfficial(): ActionPathsResult {
   };
 }
 
+function irsCp2000(): ActionPathsResult {
+  return {
+    question: "The IRS proposes changes to your return (CP2000). How would you like to respond?",
+    paths: [
+      {
+        key: "respond",
+        label: "Respond to the CP2000 (agree or disagree)",
+        description: "Use the Response form included with the notice to agree or disagree with the proposed changes.",
+        recommended: true,
+        steps: [
+          "Compare the proposed changes to your own records (1099s, W-2s, brokerage statements).",
+          "On the CP2000 Response form, check 'agree' or 'disagree' for each item.",
+          "If you disagree, attach copies of documents that support your figures.",
+          "Respond by the date on the notice (usually 30 days) — a CP2000 is NOT a bill yet and NOT an amended return.",
+        ],
+        formKeys: [],
+        letterType: "cp2000_response",
+      },
+      {
+        key: "agree_pay",
+        label: "I agree — and need to pay",
+        description: "If the proposed amount is correct but you can't pay in full, request an installment agreement.",
+        steps: [
+          "Sign and return the CP2000 Response form agreeing to the changes.",
+          "Pay online, or request a payment plan with Form 9465.",
+        ],
+        formKeys: ["irs_form_9465"],
+        externalUrl: IRS_DIRECT_PAY,
+        externalLabel: "Pay the IRS online",
+      },
+      {
+        key: "authorize_rep",
+        label: "Have a tax pro handle it",
+        description: "Authorize a CPA, attorney, or enrolled agent to respond for you.",
+        steps: ["Complete Form 2848 (Power of Attorney) naming your representative."],
+        formKeys: ["irs_form_2848"],
+      },
+    ],
+  };
+}
+
+function irsNoticeOfDeficiency(): ActionPathsResult {
+  return {
+    question: "This is a Notice of Deficiency (\"90-day letter\"). You have a strict deadline — choose carefully.",
+    paths: [
+      {
+        key: "tax_court",
+        label: "Petition the U.S. Tax Court (90-day deadline)",
+        description: "This is the only way to dispute the tax BEFORE paying it. The deadline is exactly 90 days from the date on the notice (150 if you're outside the U.S.) and CANNOT be extended.",
+        tone: "caution",
+        recommended: true,
+        steps: [
+          "Find the date printed on the notice — your petition is due 90 days from that date (150 days if addressed to you outside the U.S.).",
+          "File a petition online at the U.S. Tax Court (a small filing fee applies, or request a waiver).",
+          "Strongly consider hiring a tax attorney or CPA before filing — this is a court case.",
+          "Missing this deadline means the IRS can assess the tax and you lose the right to challenge it in Tax Court.",
+        ],
+        formKeys: [],
+        externalUrl: US_TAX_COURT,
+        externalLabel: "File a U.S. Tax Court petition",
+      },
+      {
+        key: "agree",
+        label: "I agree with the changes",
+        description: "If the IRS is right, you can sign the enclosed waiver (Form 5564) and arrange payment.",
+        steps: [
+          "Sign and return Form 5564 (Notice of Deficiency – Waiver), enclosed with the notice.",
+          "Pay online, or request a payment plan with Form 9465.",
+        ],
+        formKeys: ["irs_form_9465"],
+        externalUrl: IRS_DIRECT_PAY,
+        externalLabel: "Pay the IRS online",
+      },
+      {
+        key: "advocate",
+        label: "Get help from the Taxpayer Advocate",
+        description: "Free IRS-internal help if this is causing hardship. Note: contacting them does NOT extend the 90-day Tax Court deadline.",
+        steps: ["Complete Form 911 to request Taxpayer Advocate Service assistance."],
+        formKeys: ["irs_form_911"],
+      },
+    ],
+  };
+}
+
+function irsIdentityVerification(): ActionPathsResult {
+  return {
+    question: "The IRS needs to verify your identity before processing your return. How would you like to do it?",
+    paths: [
+      {
+        key: "verify_online",
+        label: "Verify my identity online",
+        description: "The fastest way — confirm your identity on the official IRS verification service.",
+        tone: "positive",
+        recommended: true,
+        steps: [
+          "Have the letter (e.g. 5071C/4883C/5747C), your prior-year return, and this year's return handy.",
+          "Go to the IRS Identity Verification Service and follow the steps, or call the number on your letter.",
+          "Only use the official irs.gov link — never a link from a text or email.",
+        ],
+        formKeys: [],
+        externalUrl: IRS_ID_VERIFY,
+        externalLabel: "IRS Identity Verification Service",
+      },
+      {
+        key: "identity_theft",
+        label: "I didn't file this return",
+        description: "If the IRS is asking about a return you never filed, report identity theft.",
+        tone: "caution",
+        steps: [
+          "Complete Form 14039 (Identity Theft Affidavit).",
+          "Follow the letter's instructions and keep copies of everything.",
+        ],
+        formKeys: ["irs_form_14039"],
+      },
+    ],
+  };
+}
+
+function irsAudit(): ActionPathsResult {
+  return {
+    question: "The IRS is examining (auditing) your return. How would you like to handle it?",
+    paths: [
+      {
+        key: "respond",
+        label: "Send the records they asked for",
+        description: "Most audits are resolved by providing documentation by the deadline.",
+        recommended: true,
+        steps: [
+          "List exactly which items/years the letter is questioning.",
+          "Gather receipts, statements, and records that support those items.",
+          "Send COPIES (never originals) by the deadline, to the address/fax on the letter.",
+        ],
+        formKeys: [],
+        letterType: "generic_response",
+      },
+      {
+        key: "authorize_rep",
+        label: "Have a tax pro represent me",
+        description: "A CPA, attorney, or enrolled agent can deal with the auditor for you.",
+        steps: ["Complete Form 2848 (Power of Attorney) naming your representative."],
+        formKeys: ["irs_form_2848"],
+      },
+      {
+        key: "disagree",
+        label: "I disagree with the audit result",
+        description: "You can appeal the examiner's findings or request audit reconsideration.",
+        tone: "caution",
+        steps: [
+          "Follow the appeal instructions in the examination report (you usually have 30 days).",
+          "If the audit already closed, you can request audit reconsideration with new documents.",
+        ],
+        formKeys: [],
+        letterType: "generic_dispute",
+      },
+      {
+        key: "advocate",
+        label: "Get help from the Taxpayer Advocate",
+        description: "Free help if the audit is causing hardship or is stuck.",
+        steps: ["Complete Form 911 to request Taxpayer Advocate Service assistance."],
+        formKeys: ["irs_form_911"],
+      },
+    ],
+  };
+}
+
+function irsPenalty(): ActionPathsResult {
+  return {
+    question: "The IRS charged a penalty. How would you like to respond?",
+    paths: [
+      {
+        key: "abate",
+        label: "Ask the IRS to remove the penalty",
+        description: "You may qualify for First-Time Abatement (clean 3-year history) or reasonable-cause relief.",
+        tone: "positive",
+        recommended: true,
+        steps: [
+          "If you filed and paid on time the last 3 years, request First-Time Abatement.",
+          "Otherwise, explain the reasonable cause (illness, disaster, records lost, reliance on a pro).",
+          "Call the number on the notice, or send the request — you can also use Form 843.",
+        ],
+        formKeys: ["irs_form_843"],
+        letterType: "penalty_abatement",
+      },
+      {
+        key: "pay",
+        label: "Pay the penalty",
+        description: "Pay the balance to stop additional interest.",
+        steps: ["Pay online and keep the confirmation."],
+        formKeys: [],
+        externalUrl: IRS_DIRECT_PAY,
+        externalLabel: "Pay the IRS online",
+      },
+    ],
+  };
+}
+
+function irsLien(): ActionPathsResult {
+  return {
+    question: "The IRS filed (or intends to file) a Notice of Federal Tax Lien. How would you like to respond?",
+    paths: [
+      {
+        key: "cdp_hearing",
+        label: "Request a Collection Due Process hearing (30-day deadline)",
+        description: "You generally have 30 days from the lien notice to request a CDP hearing, where you can propose alternatives or dispute the lien.",
+        tone: "caution",
+        recommended: true,
+        steps: [
+          "Complete Form 12153 (Request for a CDP or Equivalent Hearing) before the 30-day deadline.",
+          "State what you want (lien withdrawal, payment plan, offer, or that you dispute the liability).",
+        ],
+        formKeys: ["irs_form_12153"],
+      },
+      {
+        key: "resolve",
+        label: "Resolve the balance",
+        description: "Paying or arranging payment is the path to releasing the lien.",
+        steps: [
+          "Pay in full, or request an installment agreement (Form 9465).",
+          "If you can't pay, see whether an Offer in Compromise (Form 656) fits.",
+        ],
+        formKeys: ["irs_form_9465", "irs_form_656"],
+        externalUrl: IRS_DIRECT_PAY,
+        externalLabel: "Pay the IRS online",
+      },
+      {
+        key: "appeal",
+        label: "Appeal the lien filing",
+        description: "Use the Collection Appeals Program to challenge the lien filing itself.",
+        steps: ["Complete Form 9423 (Collection Appeal Request)."],
+        formKeys: ["irs_form_9423"],
+      },
+    ],
+  };
+}
+
+function foreclosure(): ActionPathsResult {
+  return {
+    question: "This is about your mortgage / a possible foreclosure. Act quickly — free help is available.",
+    paths: [
+      {
+        key: "hud_counselor",
+        label: "Talk to a HUD-approved housing counselor (free)",
+        description: "Free, government-approved counselors help you understand your options and contact your servicer.",
+        tone: "positive",
+        recommended: true,
+        steps: [
+          "Call the HOPE™ Hotline at 888-995-4673 (888-995-HOPE), available 24/7, or find a local counselor on HUD's site.",
+          "Have your mortgage statement and this notice ready.",
+        ],
+        formKeys: [],
+        externalUrl: HUD_COUNSELOR,
+        externalLabel: "Find a HUD-approved housing counselor",
+      },
+      {
+        key: "loss_mitigation",
+        label: "Apply for loss mitigation / loan modification",
+        description: "Ask your loan servicer about options to keep your home (modification, forbearance, repayment plan).",
+        steps: [
+          "Contact your servicer's loss-mitigation department (number on your statement).",
+          "Submit a COMPLETE loss-mitigation application — under federal rules the servicer generally must review it before moving to foreclosure.",
+          "Keep copies and written confirmation of everything you send.",
+        ],
+        formKeys: [],
+        letterType: "generic_response",
+      },
+      {
+        key: "legal_help",
+        label: "Get legal help / contest the foreclosure",
+        description: "If a foreclosure case is filed, deadlines are short. Free or low-cost legal aid may be available.",
+        tone: "caution",
+        steps: [
+          "Contact local legal aid right away if you've been served with court papers.",
+          "Do not ignore court deadlines — losing by default forfeits your defenses.",
+        ],
+        formKeys: [],
+        externalUrl: NATIONAL_COURT_HELP,
+        externalLabel: "Find legal help",
+      },
+    ],
+  };
+}
+
+function wageGarnishment(stateCode?: string | null): ActionPathsResult {
+  return {
+    question: "Your wages or bank account are being garnished. How would you like to respond?",
+    paths: [
+      {
+        key: "claim_exemption",
+        label: "Claim your exemptions (protect your income)",
+        description: "A lot of income is legally protected — Social Security, disability, veterans' benefits, and a portion of wages. You can file a claim of exemption with the court.",
+        tone: "caution",
+        recommended: true,
+        steps: [
+          "Find the deadline on the garnishment papers to file a claim of exemption — it's often very short.",
+          "List protected income (Social Security, SSI, VA, child support, and the protected share of wages).",
+          "File the exemption claim with the court that issued the garnishment.",
+        ],
+        formKeys: [],
+        externalUrl: courtSelfHelpUrl(stateCode),
+        externalLabel: "State court self-help",
+      },
+      {
+        key: "dispute_debt",
+        label: "Dispute the underlying debt",
+        description: "If you don't owe this debt or it isn't yours, dispute it.",
+        steps: [
+          "Send a written dispute / debt-validation request to the creditor or collector.",
+          "Keep proof you sent it (certified mail).",
+        ],
+        formKeys: [],
+        letterType: "debt_validation",
+      },
+      {
+        key: "legal_help",
+        label: "Get legal help",
+        description: "Garnishment rules are state-specific — legal aid can help you protect more of your income.",
+        steps: ["Contact local legal aid or a consumer attorney."],
+        formKeys: [],
+        externalUrl: NATIONAL_COURT_HELP,
+        externalLabel: "Find legal help",
+      },
+    ],
+  };
+}
+
+function childSupport(stateCode?: string | null): ActionPathsResult {
+  return {
+    question: "This is about child support. How would you like to respond?",
+    paths: [
+      {
+        key: "respond_deadline",
+        label: "Respond by the deadline",
+        description: "If this is a court summons or an enforcement notice, you must respond on time to protect your rights.",
+        tone: "caution",
+        recommended: true,
+        steps: [
+          "Find the response deadline and the court or child-support agency handling your case.",
+          "File your response (often on an official court form) before the deadline.",
+        ],
+        formKeys: [],
+        externalUrl: courtSelfHelpUrl(stateCode),
+        externalLabel: "State court self-help",
+        letterType: "court_answer",
+      },
+      {
+        key: "modify",
+        label: "Ask to change the amount",
+        description: "If your income or circumstances changed, you can request a modification — don't just stop paying.",
+        steps: [
+          "Contact your state child-support agency to request a review/modification.",
+          "Gather proof of your current income and expenses.",
+        ],
+        formKeys: [],
+      },
+      {
+        key: "payment_plan",
+        label: "Arrange a payment plan for arrears",
+        description: "If you've fallen behind, the agency may set up an affordable repayment plan.",
+        steps: ["Contact your state child-support agency before enforcement (license suspension, garnishment) starts."],
+        formKeys: [],
+      },
+    ],
+  };
+}
+
+function uscis(): ActionPathsResult {
+  return {
+    question: "This is an immigration (USCIS) notice. Immigration deadlines are strict — choose carefully.",
+    paths: [
+      {
+        key: "respond_rfe",
+        label: "Respond to the request by the deadline",
+        description: "For a Request for Evidence (RFE) or Notice of Intent to Deny (NOID), send ALL requested evidence in ONE response before the deadline.",
+        tone: "caution",
+        recommended: true,
+        steps: [
+          "Find the exact response deadline on the notice — missing it usually means denial.",
+          "Gather every document listed, and include the notice's barcode/cover page on top.",
+          "Submit everything together in a single response and keep copies + proof of mailing.",
+        ],
+        formKeys: [],
+      },
+      {
+        key: "attorney",
+        label: "Talk to an immigration attorney or accredited rep",
+        description: "Immigration outcomes are high-stakes. Free or low-cost accredited help is available — avoid 'notario' scams.",
+        steps: [
+          "Find a licensed immigration attorney or a DOJ-recognized accredited representative.",
+          "Bring the notice and your full case history.",
+        ],
+        formKeys: [],
+        externalUrl: USCIS_FIND_LEGAL,
+        externalLabel: "Find legal services (USCIS)",
+      },
+      {
+        key: "appeal",
+        label: "If you were denied — appeal or file a motion",
+        description: "Many denials can be appealed or reopened with Form I-290B within a short deadline.",
+        steps: [
+          "Check the notice for appeal rights and the deadline (often 30 days).",
+          "File Form I-290B (Notice of Appeal or Motion) if it applies to your case.",
+        ],
+        formKeys: [],
+        externalUrl: "https://www.uscis.gov/i-290b",
+        externalLabel: "About Form I-290B",
+      },
+    ],
+  };
+}
+
+function medicaid(): ActionPathsResult {
+  return {
+    question: "This is a Medicaid notice. How would you like to respond?",
+    paths: [
+      {
+        key: "appeal",
+        label: "Appeal / request a fair hearing",
+        description: "If your Medicaid was denied, reduced, or terminated, you have the right to appeal — and the deadline is often short.",
+        tone: "caution",
+        recommended: true,
+        steps: [
+          "Find the appeal deadline on the notice (sometimes as little as 10–30 days).",
+          "Request a fair hearing as instructed on the notice.",
+          "If you appeal before the change takes effect, your benefits may continue during the appeal.",
+        ],
+        formKeys: [],
+      },
+      {
+        key: "renew",
+        label: "Send the information they requested (renewal)",
+        description: "For a renewal or information request, respond by the deadline to avoid losing coverage.",
+        steps: [
+          "Gather the requested documents (income, residency, household).",
+          "Submit them by the deadline through your state Medicaid agency.",
+        ],
+        formKeys: [],
+        externalUrl: MEDICAID_GOV,
+        externalLabel: "Medicaid.gov",
+      },
+    ],
+  };
+}
+
 /**
  * Returns the guided action paths for a given doc_type, or `null` when there is
  * no tailored set (the caller can then fall back to the plain forms list).
@@ -750,7 +1201,13 @@ export function getActionPaths(
 
   if (t === "irs_notice_balance_due") return irsBalanceDue();
   if (t === "irs_notice_intent_to_levy") return irsIntentToLevy();
-  if (t.startsWith("irs_notice")) return irsGeneric();
+  if (t === "irs_notice_deficiency") return irsNoticeOfDeficiency();
+  if (t === "irs_notice_cp2000") return irsCp2000();
+  if (t === "irs_identity_verification") return irsIdentityVerification();
+  if (t === "irs_audit") return irsAudit();
+  if (t === "irs_penalty") return irsPenalty();
+  if (t === "irs_lien") return irsLien();
+  if (t.startsWith("irs_notice") || t.startsWith("irs_")) return irsGeneric();
 
   if (t.startsWith("state_tax")) {
     if (t.includes("balance_due")) return stateTaxBalanceDue();
@@ -764,15 +1221,19 @@ export function getActionPaths(
 
   if (t === "court_summons") return courtSummons(stateCode);
   if (t === "court_judgment") return courtJudgment(stateCode);
-  if (t === "child_support") return courtSummons(stateCode);
+  if (t === "child_support") return childSupport(stateCode);
+  if (t === "wage_garnishment") return wageGarnishment(stateCode);
   if (t === "eviction_notice") return evictionNotice(stateCode);
 
   if (t === "bank_collection" || t === "credit_card_chargeoff") return debtCollection();
-  if (t === "mortgage_default") return debtCollection();
+  if (t === "mortgage_default") return foreclosure();
 
   if (t === "medical_bill") return medicalBill();
   if (t === "utility_disconnect") return utilityDisconnect();
   if (t === "hoa_violation") return hoaViolation();
+
+  if (t.startsWith("uscis")) return uscis();
+  if (t.startsWith("medicaid")) return medicaid();
 
   // Letters that are clearly actionable but without a tailored path.
   const actionable = [

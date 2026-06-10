@@ -10,12 +10,15 @@ const corsHeaders = {
 type LetterType =
   | "debt_validation"
   | "debt_dispute"
+  | "credit_report_dispute"
   | "medical_bill_negotiation"
   | "medical_bill_itemized"
   | "utility_deferral"
   | "hoa_dispute"
   | "court_answer"
   | "eviction_response"
+  | "cp2000_response"
+  | "penalty_abatement"
   | "generic_dispute"
   | "generic_response";
 
@@ -29,6 +32,11 @@ const LETTER_GUIDANCE: Record<LetterType, { title: string; guidance: string }> =
     title: "Debt Dispute Letter",
     guidance:
       "Draft a letter disputing the accuracy or validity of the debt. Ask the collector to investigate and to stop reporting the disputed item to credit bureaus until resolved. Reference FDCPA rights. Do not admit liability.",
+  },
+  credit_report_dispute: {
+    title: "Credit Report Dispute Letter (FCRA)",
+    guidance:
+      "Draft a credit-report dispute letter under the Fair Credit Reporting Act (FCRA), 15 U.S.C. §1681i, addressed to a credit bureau (Equifax, Experian, or TransUnion — use a [Credit bureau name/address] placeholder). Clearly identify each inaccurate item (account name, account number placeholder), state specifically why it is inaccurate or unverifiable, and demand the bureau investigate and correct or delete it within 30 days, then send an updated report. Note the right to add a 100-word statement of dispute. Advise enclosing COPIES (never originals) of supporting documents and sending by certified mail with return receipt. Do not admit any debt is valid.",
   },
   medical_bill_negotiation: {
     title: "Medical Bill Negotiation / Financial Assistance Letter",
@@ -59,6 +67,16 @@ const LETTER_GUIDANCE: Record<LetterType, { title: string; guidance: string }> =
     title: "Response to Eviction / Pay-or-Quit Notice (draft)",
     guidance:
       "Draft a response to a landlord's eviction or pay-or-quit notice. Depending on the situation, it may request a payment plan, point out needed repairs/habitability, or state intent to contest. Add a prominent note that if a court case (unlawful detainer) is filed, they must respond on the court's official form by the deadline, and should contact local legal aid. Not legal advice.",
+  },
+  cp2000_response: {
+    title: "Response to IRS Notice CP2000",
+    guidance:
+      "Draft a response to IRS Notice CP2000 (proposed changes from underreported income the IRS matched to third-party records). This letter accompanies the CP2000 Response form included with the notice. Structure it to handle BOTH cases with clearly bracketed options: (A) If the taxpayer AGREES — state agreement with the proposed changes, that they are signing and returning the CP2000 Response form, and how they will pay (full payment, or request an installment agreement via Form 9465). (B) If the taxpayer DISAGREES — state which specific proposed items they dispute and why, and reference attached supporting documentation (corrected 1099s, brokerage statements, basis records, etc.). Make clear this is NOT an amended return (Form 1040-X) unless the IRS instructs otherwise, and that the response is due by the date on the notice (typically 30 days). Do not admit additional tax is owed unless the agree option is chosen.",
+  },
+  penalty_abatement: {
+    title: "IRS Penalty Abatement Request",
+    guidance:
+      "Draft an IRS penalty abatement request letter. Include both grounds with bracketed placeholders so the taxpayer can keep whichever applies: (1) First-Time Abatement (FTA) — if they have filed and paid on time for the prior three years with no penalties, request FTA administrative relief; and/or (2) Reasonable Cause — explain the specific circumstances that prevented compliance (serious illness, death in the family, natural disaster, unavoidable absence, inability to obtain records, or reliance on a tax professional), with [dates] and [details] as placeholders. Reference the notice number and the specific penalty (failure-to-file §6651(a)(1), failure-to-pay §6651(a)(2), or accuracy §6662). Request that the penalty be removed and written confirmation sent. Note the request may alternatively be filed on Form 843. Do NOT invent facts — use placeholders for the taxpayer's real circumstances.",
   },
   generic_dispute: {
     title: "Dispute / Disagreement Letter",
