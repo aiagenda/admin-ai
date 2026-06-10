@@ -56,7 +56,7 @@ interface Analysis {
   document_id?: string;
 }
 
-interface Form {
+export interface Form {
   id: string;
   key: string;
   name: string;
