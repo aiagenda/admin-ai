@@ -992,10 +992,11 @@ function getLanguagePrompt(_language: string, todayStr: string): string {
  * Analyze extracted text using OpenAI GPT-4o
  */
 async function analyzeWithOpenAI(
-  text: string, 
+  text: string,
   openaiApiKey: string,
   supabase?: ReturnType<typeof createClient>,
-  category?: string | null
+  category?: string | null,
+  outputLanguage: string = "en"
 ): Promise<{ analysis: AnalysisResult; promptVersionId: string | null; detectedLanguage: string }> {
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -1047,7 +1048,13 @@ async function analyzeWithOpenAI(
       console.log("ℹ️ No feedback data available for improvements");
     }
   }
-  
+
+  if (outputLanguage === "es") {
+    systemPrompt +=
+      "\n\nLANGUAGE OVERRIDE: Write every human-readable text value in NEUTRAL LATIN-AMERICAN SPANISH — this includes simple_summary, legal_summary, what_is_it, what_to_do, todo_simple, todo_legal, and deadline_info. Keep all STRUCTURED values exactly as specified in English: the doc_type enum value, the issuer enum value, dates in YYYY-MM-DD format, and the JSON keys. Keep official form names, agency names, statute citations, and proper nouns in their original form (e.g., 'IRS', 'Form 9465', 'Notice of Deficiency'). Use clear, plain Spanish a layperson understands.";
+    console.log("✅ Output language override: Spanish");
+  }
+
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -1131,6 +1138,7 @@ Deno.serve(async (req) => {
     }
 
     const { document_id, file_url } = body;
+    const outputLanguage = body.language === "es" ? "es" : "en";
     documentIdForErrorHandling = document_id;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
@@ -1279,7 +1287,7 @@ Deno.serve(async (req) => {
     
     // Analyze the extracted text with OpenAI
     console.log("Analyzing text with OpenAI GPT-4o...");
-    const analysisResponse = await analyzeWithOpenAI(extractedText, openaiApiKey, supabase, documentCategory);
+    const analysisResponse = await analyzeWithOpenAI(extractedText, openaiApiKey, supabase, documentCategory, outputLanguage);
     const analysis = analysisResponse.analysis;
     
     // Prepare todo arrays as JSON strings

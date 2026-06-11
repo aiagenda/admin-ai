@@ -31,7 +31,7 @@ function formatFileSize(bytes: number) {
 }
 
 
-function getProcessingMessage(status: string, elapsedSec: number, t: (k: string, t) => string) {
+function getProcessingMessage(status: string, elapsedSec: number, t: (k: string) => string) {
   if (status === "completed") return t("uploadPage.processingRedirect");
   if (status !== "processing") return t("uploadPage.processingError");
 
@@ -109,7 +109,7 @@ async function optimizeImage(file: File): Promise<File> {
 }
 
 export default function Upload() {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -352,6 +352,7 @@ export default function Upload() {
         body: JSON.stringify({
           document_id: doc.id,
           file_url: path,
+          language: i18n.language?.startsWith("es") ? "es" : "en",
         }),
       })
         .then(async (res) => {
