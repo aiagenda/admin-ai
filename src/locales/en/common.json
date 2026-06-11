@@ -282,5 +282,41 @@
     "planBusiness": "Business 50",
     "planProLegacy": "Pro (legacy)",
     "planEnterprise": "Professional"
+  },
+  "pricingPage": {
+    "badge": "Refund policy in Terms of Service",
+    "heroTitlePre": "Don't let a scary letter",
+    "heroTitleHighlight": "go unanswered",
+    "heroDesc": "Upload the letter and we'll tell you exactly what it means, what to do, and when. Try it free — pay only when you need it.",
+    "freeSection": "Free trial",
+    "freeName": "1 free document",
+    "freeDesc": "One free document — lightweight analysis to try the workflow",
+    "freeCta": "Get started",
+    "docSection": "Per-document (one-time)",
+    "subSection": "Monthly plans",
+    "subSectionDesc": "Upload letters regularly? A monthly plan is cheaper per document.",
+    "popular": "Most popular",
+    "perDocument": "document",
+    "perMonth": "month",
+    "buy": "Buy",
+    "subscribe": "Subscribe",
+    "disclaimer": "GovLetter is a document-explanation tool, not a tax advisor or law firm. Always verify deadlines and amounts against your original notice and consult a qualified professional before taking action.",
+    "plans": {
+      "basicName": "Basic",
+      "basicDesc": "Quick plain-English explanation",
+      "basicFeatures": ["Plain-English summary", "IRS & agency letter support", "Deadlines & next steps", "Email notification"],
+      "proName": "Pro",
+      "proDesc": "Deeper analysis + response draft",
+      "proFeatures": ["In-depth legal analysis", "Suggested response draft", "Recommended IRS forms", "PDF export"],
+      "monthlyName": "Monthly 10",
+      "monthlyDesc": "For regular use",
+      "monthlyFeatures": ["10 documents / month", "Cancel anytime", "All letter types covered"],
+      "businessName": "Business 50",
+      "businessDesc": "For offices & small businesses",
+      "businessFeatures": ["50 documents / month", "Priority processing", "Team-friendly"],
+      "enterpriseName": "CPA / Professional",
+      "enterpriseDesc": "For accounting firms & enrolled agents",
+      "enterpriseFeatures": ["Bookkeeping module", "Invoice OCR", "Excel export for accountants", "Unlimited documents (fair use)"]
+    }
   }
 }

@@ -3,105 +3,67 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, FileText, Zap, CalendarRange, Receipt, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageSEO } from "@/components/PageSEO";
-// ─── US / USD plans ───────────────────────────────────────────────────────────
-
-const docPlansUS = [
-  {
-    name: "Basic",
-    price: "$3.99",
-    per: "document",
-    description: "Quick plain-English explanation",
-    cta: "Buy",
-    planKey: "basic_doc" as const,
-    features: [
-      "Plain-English summary",
-      "IRS & agency letter support",
-      "Deadlines & next steps",
-      "Email notification",
-    ],
-  },
-  {
-    name: "Pro",
-    price: "$9.99",
-    per: "document",
-    description: "Deeper analysis + response draft",
-    cta: "Buy",
-    planKey: "pro_doc" as const,
-    features: [
-      "In-depth legal analysis",
-      "Suggested response draft",
-      "Recommended IRS forms",
-      "PDF export",
-    ],
-    highlight: true,
-  },
-];
-
-const subPlansUS = [
-  {
-    name: "Monthly 10",
-    price: "$9.99",
-    per: "month",
-    description: "For regular use",
-    cta: "Subscribe",
-    planKey: "monthly" as const,
-    features: [
-      "10 documents / month",
-      "Cancel anytime",
-      "All letter types covered",
-    ],
-  },
-  {
-    name: "Business 50",
-    price: "$29.99",
-    per: "month",
-    description: "For offices & small businesses",
-    cta: "Subscribe",
-    planKey: "business" as const,
-    features: [
-      "50 documents / month",
-      "Priority processing",
-      "Team-friendly",
-    ],
-  },
-  {
-    name: "CPA / Professional",
-    price: "$49.99",
-    per: "month",
-    description: "For accounting firms & enrolled agents",
-    cta: "Subscribe",
-    planKey: "enterprise" as const,
-    features: [
-      "Bookkeeping module",
-      "Invoice OCR",
-      "Excel export for accountants",
-      "Unlimited documents (fair use)",
-    ],
-  },
-];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Pricing() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation("common");
 
-  const docPlans = docPlansUS;
-  const subPlans = subPlansUS;
+  const tp = (k: string) => t(`pricingPage.${k}`);
+  const feat = (k: string) => t(`pricingPage.plans.${k}`, { returnObjects: true }) as string[];
 
-  const freeLabel      = "Free trial";
-  const freeDesc       = "One free document — lightweight analysis to try the workflow";
-  const freeCta        = "Get started";
-  const freePrice      = "$0";
-  const docSectionHdr  = "Per-document (one-time)";
-  const subSectionHdr  = "Monthly plans";
-  const subSectionDesc = "Upload letters regularly? A monthly plan is cheaper per document.";
-  const heroTitle      = <>Don&apos;t let a scary letter <span className="text-primary">go unanswered</span></>;
-  const heroDesc       = "Upload the letter and we'll tell you exactly what it means, what to do, and when. Try it free — pay only when you need it.";
-  const badgeText      = "Refund policy in Terms of Service";
-  const popularLabel   = "Most popular";
+  // Prices are USD literals (same in every language); labels come from i18n.
+  const docPlans = [
+    {
+      planKey: "basic_doc" as const,
+      name: tp("plans.basicName"),
+      price: "$3.99",
+      per: tp("perDocument"),
+      description: tp("plans.basicDesc"),
+      features: feat("basicFeatures"),
+    },
+    {
+      planKey: "pro_doc" as const,
+      name: tp("plans.proName"),
+      price: "$9.99",
+      per: tp("perDocument"),
+      description: tp("plans.proDesc"),
+      features: feat("proFeatures"),
+      highlight: true,
+    },
+  ];
+
+  const subPlans = [
+    {
+      planKey: "monthly" as const,
+      name: tp("plans.monthlyName"),
+      price: "$9.99",
+      per: tp("perMonth"),
+      description: tp("plans.monthlyDesc"),
+      features: feat("monthlyFeatures"),
+    },
+    {
+      planKey: "business" as const,
+      name: tp("plans.businessName"),
+      price: "$29.99",
+      per: tp("perMonth"),
+      description: tp("plans.businessDesc"),
+      features: feat("businessFeatures"),
+    },
+    {
+      planKey: "enterprise" as const,
+      name: tp("plans.enterpriseName"),
+      price: "$49.99",
+      per: tp("perMonth"),
+      description: tp("plans.enterpriseDesc"),
+      features: feat("enterpriseFeatures"),
+    },
+  ];
 
   return (
     <div className="min-h-screen py-12 px-4">
@@ -110,23 +72,25 @@ export default function Pricing() {
 
         {/* Hero */}
         <div className="text-center space-y-4 mb-12 max-w-3xl mx-auto">
-          <Badge variant="secondary" className="mb-1">{badgeText}</Badge>
-          <h1 className="text-4xl md:text-5xl font-bold">{heroTitle}</h1>
-          <p className="text-xl text-muted-foreground">{heroDesc}</p>
+          <Badge variant="secondary" className="mb-1">{tp("badge")}</Badge>
+          <h1 className="text-4xl md:text-5xl font-bold">
+            {tp("heroTitlePre")} <span className="text-primary">{tp("heroTitleHighlight")}</span>
+          </h1>
+          <p className="text-xl text-muted-foreground">{tp("heroDesc")}</p>
         </div>
 
         {/* Free tier */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">{freeLabel}</h2>
+          <h2 className="text-2xl font-bold mb-4">{tp("freeSection")}</h2>
           <div className="max-w-md">
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-6 w-6 text-primary" />
-                  <CardTitle>1 free document</CardTitle>
+                  <CardTitle>{tp("freeName")}</CardTitle>
                 </div>
-                <CardDescription>{freeDesc}</CardDescription>
-                <p className="text-3xl font-bold pt-2">{freePrice}</p>
+                <CardDescription>{tp("freeDesc")}</CardDescription>
+                <p className="text-3xl font-bold pt-2">$0</p>
               </CardHeader>
               <CardContent>
                 <Button
@@ -134,7 +98,7 @@ export default function Pricing() {
                   variant="outline"
                   onClick={() => (user ? navigate("/upload") : navigate("/auth"))}
                 >
-                  {freeCta}
+                  {tp("freeCta")}
                 </Button>
               </CardContent>
             </Card>
@@ -143,7 +107,7 @@ export default function Pricing() {
 
         {/* Per-document plans */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">{docSectionHdr}</h2>
+          <h2 className="text-2xl font-bold mb-4">{tp("docSection")}</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {docPlans.map((plan) => (
               <div key={plan.planKey} className="relative">
@@ -153,7 +117,7 @@ export default function Pricing() {
                 <Card className={`relative h-full ${plan.highlight ? "border-violet-200 dark:border-violet-900" : ""}`}>
                   {plan.highlight && (
                     <Badge className="mb-2 bg-gradient-to-r from-violet-500 to-fuchsia-500">
-                      {popularLabel}
+                      {tp("popular")}
                     </Badge>
                   )}
                   <CardHeader>
@@ -184,7 +148,7 @@ export default function Pricing() {
                           : navigate(`/auth?redirect=/pricing`)
                       }
                     >
-                      {plan.cta}
+                      {tp("buy")}
                     </Button>
                   </CardContent>
                 </Card>
@@ -195,8 +159,8 @@ export default function Pricing() {
 
         {/* Monthly subscription plans */}
         <div>
-          <h2 className="text-2xl font-bold mb-2">{subSectionHdr}</h2>
-          <p className="text-muted-foreground mb-4 max-w-2xl">{subSectionDesc}</p>
+          <h2 className="text-2xl font-bold mb-2">{tp("subSection")}</h2>
+          <p className="text-muted-foreground mb-4 max-w-2xl">{tp("subSectionDesc")}</p>
           <div className="grid md:grid-cols-3 gap-6">
             {subPlans.map((plan) => (
               <Card key={plan.planKey} className="h-full flex flex-col">
@@ -234,7 +198,7 @@ export default function Pricing() {
                         : navigate(`/auth?redirect=/pricing`)
                     }
                   >
-                    {plan.cta}
+                    {tp("subscribe")}
                   </Button>
                 </CardContent>
               </Card>
@@ -245,9 +209,7 @@ export default function Pricing() {
         {/* Disclaimer */}
         <p className="text-xs text-muted-foreground text-center mt-10 max-w-2xl mx-auto">
           <Shield className="inline h-3 w-3 mr-1" />
-          GovLetter is a document-explanation tool, not a tax advisor or law firm. Always verify
-          deadlines and amounts against your original notice and consult a qualified professional
-          before taking action.
+          {tp("disclaimer")}
         </p>
       </div>
     </div>

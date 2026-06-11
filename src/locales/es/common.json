@@ -282,5 +282,41 @@
     "planBusiness": "Empresa 50",
     "planProLegacy": "Pro (antiguo)",
     "planEnterprise": "Profesional"
+  },
+  "pricingPage": {
+    "badge": "Política de reembolso en los Términos del servicio",
+    "heroTitlePre": "No dejes una carta intimidante",
+    "heroTitleHighlight": "sin responder",
+    "heroDesc": "Sube la carta y te diremos exactamente qué significa, qué hacer y para cuándo. Pruébalo gratis: paga solo cuando lo necesites.",
+    "freeSection": "Prueba gratis",
+    "freeName": "1 documento gratis",
+    "freeDesc": "Un documento gratis — análisis breve para probar el flujo",
+    "freeCta": "Comenzar",
+    "docSection": "Por documento (pago único)",
+    "subSection": "Planes mensuales",
+    "subSectionDesc": "¿Recibes cartas con frecuencia? Un plan mensual sale más barato por documento.",
+    "popular": "Más popular",
+    "perDocument": "documento",
+    "perMonth": "mes",
+    "buy": "Comprar",
+    "subscribe": "Suscribirse",
+    "disclaimer": "GovLetter es una herramienta para explicar documentos, no un asesor fiscal ni un bufete de abogados. Verifica siempre las fechas límite y los montos con tu aviso original y consulta a un profesional calificado antes de actuar.",
+    "plans": {
+      "basicName": "Básico",
+      "basicDesc": "Explicación rápida en lenguaje claro",
+      "basicFeatures": ["Resumen en lenguaje claro", "Compatible con cartas del IRS y agencias", "Fechas límite y próximos pasos", "Notificación por correo"],
+      "proName": "Pro",
+      "proDesc": "Análisis más profundo + borrador de respuesta",
+      "proFeatures": ["Análisis legal a fondo", "Borrador de respuesta sugerido", "Formularios del IRS recomendados", "Exportación a PDF"],
+      "monthlyName": "Mensual 10",
+      "monthlyDesc": "Para uso regular",
+      "monthlyFeatures": ["10 documentos / mes", "Cancela cuando quieras", "Todos los tipos de carta incluidos"],
+      "businessName": "Empresa 50",
+      "businessDesc": "Para oficinas y pequeñas empresas",
+      "businessFeatures": ["50 documentos / mes", "Procesamiento prioritario", "Apto para equipos"],
+      "enterpriseName": "CPA / Profesional",
+      "enterpriseDesc": "Para firmas contables y agentes inscritos",
+      "enterpriseFeatures": ["Módulo de contabilidad", "OCR de facturas", "Exportación a Excel para contadores", "Documentos ilimitados (uso justo)"]
+    }
   }
 }
