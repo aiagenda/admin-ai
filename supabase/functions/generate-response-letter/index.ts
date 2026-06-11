@@ -125,9 +125,15 @@ Deno.serve(async (req) => {
       analysisId?: string;
       letterType?: string;
       userNotes?: string;
+      /** "strategies" lists tailored response options; "letter" drafts the letter. */
+      mode?: string;
+      /** Chosen strategy (sent back when mode === "letter"). */
+      strategyTitle?: string;
+      strategyDetail?: string;
     };
 
-    const { analysisId, userNotes } = body;
+    const { analysisId, userNotes, strategyTitle, strategyDetail } = body;
+    const mode = body.mode === "strategies" ? "strategies" : "letter";
     if (!analysisId) throw new Error("Missing analysisId");
     if (!isLetterType(body.letterType)) throw new Error("Invalid letterType");
     const letterType = body.letterType;
@@ -184,10 +190,97 @@ Deno.serve(async (req) => {
       user_notes: userNotes ?? null,
     };
 
+    // ---- Mode A: propose tailored response strategies -----------------------
+    if (mode === "strategies") {
+      const stratSystem = [
+        "You are an expert U.S. consumer-rights and legal-correspondence assistant.",
+        `The user received a document of type "${analysis.doc_type ?? "unknown"}" and wants to respond with a ${guide.title}.`,
+        "Based ONLY on the document context, list the realistic ways this person could respond.",
+        "Think like a paralegal explaining options to a worried layperson.",
+        "For a court summons / debt, that usually includes: (a) accept/agree and arrange payment or a plan, (b) partially dispute, (c) fully dispute with a specific reason (wrong amount, never received goods/service, identity/mistaken party, debt too old / statute of limitations, already paid), (d) procedural issues (improper service, wrong court).",
+        "Tailor the options to THIS document. Do not invent facts about the user. Each option must be something the user could honestly choose.",
+        "Be neutral: do NOT tell them they owe the money or that they should admit anything. Present trade-offs.",
+        "Return STRICT JSON only.",
+        "",
+        'JSON shape: {"intro": "1 short sentence framing the choice", "strategies": [{"id": "kebab-case-id", "title": "short option label", "summary": "1-2 sentences on what this means", "bestFor": "when this fits (short)", "considerations": "key risk/trade-off or what proof is needed (short)"}]}',
+        "Provide 2 to 5 strategies, most-common first.",
+      ].join("\n");
+
+      const stratResp = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${openaiApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          temperature: 0.3,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: stratSystem },
+            { role: "user", content: `Document context (JSON):\n${JSON.stringify(context, null, 2)}` },
+          ],
+        }),
+      });
+
+      if (!stratResp.ok) throw new Error(`OpenAI API error: ${await stratResp.text()}`);
+      const stratData = await stratResp.json();
+      const stratContent = stratData.choices?.[0]?.message?.content;
+      if (!stratContent) throw new Error("OpenAI returned empty content");
+
+      const stratParsed = JSON.parse(stratContent) as {
+        intro?: string;
+        strategies?: Array<{
+          id?: string;
+          title?: string;
+          summary?: string;
+          bestFor?: string;
+          considerations?: string;
+        }>;
+      };
+
+      const strategies = (Array.isArray(stratParsed.strategies) ? stratParsed.strategies : [])
+        .filter((s) => s && s.title)
+        .slice(0, 5)
+        .map((s, i) => ({
+          id: s.id || `option-${i + 1}`,
+          title: s.title as string,
+          summary: s.summary ?? "",
+          bestFor: s.bestFor ?? "",
+          considerations: s.considerations ?? "",
+        }));
+
+      if (strategies.length === 0) throw new Error("No strategies generated");
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          mode: "strategies",
+          letterType,
+          title: guide.title,
+          intro: stratParsed.intro ?? "Pick the approach that fits your situation.",
+          strategies,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ---- Mode B: draft the letter for the chosen strategy --------------------
+    const strategyLines = strategyTitle
+      ? [
+          "",
+          "CHOSEN RESPONSE STRATEGY (write the letter to match this exactly):",
+          `- Approach: ${strategyTitle}`,
+          strategyDetail ? `- Details: ${strategyDetail}` : "",
+          "Do not contradict this choice. If the user chose to dispute, do NOT admit liability. If they chose to accept/arrange payment, write accordingly but never invent amounts they didn't confirm.",
+        ].filter(Boolean)
+      : [];
+
     const systemPrompt = [
       "You are an expert U.S. consumer-rights and correspondence assistant.",
       `Write a complete, ready-to-send ${guide.title} in formal U.S. business-letter format.`,
       guide.guidance,
+      ...strategyLines,
       "",
       "Rules:",
       "- Use a standard letter layout: sender block, date, recipient block, RE: line, salutation, body, closing, signature line.",
@@ -239,7 +332,9 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         letterType,
+        mode: "letter",
         title: guide.title,
+        strategyTitle: strategyTitle ?? null,
         subject: parsed.subject ?? guide.title,
         body: parsed.body,
         checklist: Array.isArray(parsed.checklist) ? parsed.checklist.slice(0, 8) : [],
