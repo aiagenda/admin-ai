@@ -28,6 +28,8 @@ interface ResponseLetterGeneratorProps {
   onBack?: () => void;
   /** Render inline inside GuidedActions (no nested card). */
   embedded?: boolean;
+  /** When true, offer AI response strategies before drafting; else draft directly. */
+  useStrategies?: boolean;
 }
 
 interface Strategy {
@@ -61,6 +63,7 @@ export function ResponseLetterGenerator({
   label,
   onBack,
   embedded = false,
+  useStrategies = false,
 }: ResponseLetterGeneratorProps) {
   const [step, setStep] = useState<Step>("intro");
   const [loading, setLoading] = useState(false);
@@ -188,12 +191,13 @@ export function ResponseLetterGenerator({
       <div className="space-y-1">
         <h4 className="text-sm font-semibold">Response letter</h4>
         <p className="text-sm text-muted-foreground">
-          First, we'll look at your document and show you the realistic ways to
-          respond. You pick the one that fits — then we draft that letter for you.
+          {useStrategies
+            ? "First, we'll look at your document and show you the realistic ways to respond. You pick the one that fits — then we draft that letter for you."
+            : "We'll draft a personalized letter using the details from your document. You can edit it, then download or copy it."}
         </p>
       </div>
       <Button
-        onClick={loadStrategies}
+        onClick={useStrategies ? loadStrategies : generateLetter}
         size="lg"
         disabled={loading}
         className="w-full max-w-full whitespace-normal h-auto min-h-11 py-3 px-4"
@@ -201,12 +205,17 @@ export function ResponseLetterGenerator({
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 mr-2 shrink-0 animate-spin" />
-            Looking at your options…
+            {useStrategies ? "Looking at your options…" : "Writing your letter…"}
           </>
-        ) : (
+        ) : useStrategies ? (
           <>
             <ListChecks className="h-4 w-4 mr-2 shrink-0" />
             See my response options
+          </>
+        ) : (
+          <>
+            <Sparkles className="h-4 w-4 mr-2 shrink-0" />
+            Generate my response letter
           </>
         )}
       </Button>
@@ -318,10 +327,10 @@ export function ResponseLetterGenerator({
           variant="ghost"
           size="sm"
           className="w-fit -ml-2 mb-1 text-muted-foreground"
-          onClick={() => setStep("strategies")}
+          onClick={() => setStep(useStrategies ? "strategies" : "intro")}
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Change approach
+          {useStrategies ? "Change approach" : "Start over"}
         </Button>
         <div className="flex flex-wrap items-center gap-2">
           <h4 className="text-base font-semibold">{result.title}</h4>

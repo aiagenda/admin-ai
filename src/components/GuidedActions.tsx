@@ -130,6 +130,7 @@ export function GuidedActions({ result, formsByKey, analysisId }: GuidedActionsP
               analysisId={analysisId}
               letterType={selected.letterType}
               label={selected.label}
+              useStrategies={selected.useStrategies}
             />
           )}
 

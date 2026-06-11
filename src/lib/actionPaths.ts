@@ -41,6 +41,14 @@ export interface ActionPath {
   externalLabel?: string;
   /** When set, offers an AI-drafted response letter of this type. */
   letterType?: LetterType;
+  /**
+   * When true, the letter step first asks the AI for tailored response
+   * strategies (accept / dispute / procedural ...) and lets the user pick one.
+   * Only enable on broad "respond/answer" paths — for already-specific paths
+   * (settle, validate, itemized ...) we draft the letter directly to avoid a
+   * redundant second choice.
+   */
+  useStrategies?: boolean;
   /** Highlight as the suggested default. At most one per document. */
   recommended?: boolean;
   /** Visual tone for the option card. */
@@ -450,6 +458,7 @@ function courtSummons(stateCode?: string | null): ActionPathsResult {
         ],
         formKeys: [],
         letterType: "court_answer",
+        useStrategies: true,
         externalUrl: courtSelfHelpUrl(stateCode),
         externalLabel: "Official court self-help & forms",
       },
@@ -532,6 +541,7 @@ function evictionNotice(stateCode?: string | null): ActionPathsResult {
         ],
         formKeys: [],
         letterType: "eviction_response",
+        useStrategies: true,
       },
       {
         key: "court_answer",
@@ -727,6 +737,7 @@ function genericOfficial(): ActionPathsResult {
         ],
         formKeys: [],
         letterType: "generic_response",
+        useStrategies: true,
       },
       {
         key: "dispute",
