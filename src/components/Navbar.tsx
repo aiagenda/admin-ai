@@ -217,7 +217,6 @@ export function Navbar() {
           <NavLink to="/">{t("home")}</NavLink>
           <NavLink to="/pricing">{t("pricing")}</NavLink>
           <NavLink to="/blog">{t("blog")}</NavLink>
-          <NavLink to="/help">{t("helpFaq")}</NavLink>
           <NavLink to="/help">{t("help")}</NavLink>
           <SolutionsDropdown mobile />
         </>
@@ -230,7 +229,6 @@ export function Navbar() {
           {(hasInvoiceAccess || isAdmin) && <NavLink to="/invoices">{t("accounting")}</NavLink>}
           <NavLink to="/settings">{t("settings")}</NavLink>
           <NavLink to="/blog">{t("blog")}</NavLink>
-          <NavLink to="/help">{t("helpFaq")}</NavLink>
           <NavLink to="/help">{t("help")}</NavLink>
           {!checkingAdmin && isAdmin && (
             <>
