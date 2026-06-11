@@ -318,26 +318,7 @@ export function Navbar() {
 
             <LanguageSwitcher />
 
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 min-h-[44px] min-w-[44px] p-2 touch-manipulation">
-                    <User className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => navigate("/upload")}>{t("uploadDoc")}</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")}>{t("settings")}</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/help")}>
-                    {t("helpFaq")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={signOut} className="text-destructive">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    {t("signOut")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
+            {!user && (
               <Button onClick={() => navigate("/auth")} size="sm" className="min-h-[44px] px-3 touch-manipulation text-xs sm:text-sm">
                 {t("loginShort")}
               </Button>
@@ -350,11 +331,21 @@ export function Navbar() {
                   <span className="sr-only">{t("openMenu")}</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[280px] sm:w-[320px]">
+              <SheetContent side="right" className="w-[280px] sm:w-[320px] flex flex-col">
                 <SheetHeader>
-                  <SheetTitle className="text-left">{t("menu")}</SheetTitle>
+                  <SheetTitle className="text-left">{user ? t("profile") : t("menu")}</SheetTitle>
                 </SheetHeader>
-                <div className="flex flex-col gap-1 mt-6">{mobileNavLinks}</div>
+                <div className="flex flex-col gap-1 mt-6 flex-1 overflow-y-auto">{mobileNavLinks}</div>
+                {user && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => { setMobileMenuOpen(false); signOut(); }}
+                    className="justify-start text-destructive mt-2 min-h-[44px] touch-manipulation"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    {t("signOut")}
+                  </Button>
+                )}
               </SheetContent>
             </Sheet>
           </div>
