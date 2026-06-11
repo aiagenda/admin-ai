@@ -132,17 +132,35 @@ Deno.serve(async (req) => {
     if (!isLetterType(body.letterType)) throw new Error("Invalid letterType");
     const letterType = body.letterType;
 
-    // Fetch the analysis and verify ownership.
-    const { data: analysis, error: aErr } = await supabase
+    // Fetch analysis (by analyses.id or document_id) and verify ownership via documents.user_id.
+    const analysisFields =
+      "id, document_id, simple_summary, legal_summary, recipient_name, amount, agency, issuer, doc_type, state_code, deadline, extracted_fields, mentioned_laws";
+
+    let analysisRow = await supabase
       .from("analyses")
-      .select(
-        "id, user_id, simple_summary, legal_summary, recipient_name, amount, agency, issuer, doc_type, state_code, deadline, extracted_fields, mentioned_laws",
-      )
+      .select(analysisFields)
       .eq("id", analysisId)
+      .maybeSingle();
+
+    if (!analysisRow.data) {
+      analysisRow = await supabase
+        .from("analyses")
+        .select(analysisFields)
+        .eq("document_id", analysisId)
+        .maybeSingle();
+    }
+
+    const analysis = analysisRow.data;
+    if (analysisRow.error || !analysis) throw new Error("Analysis not found");
+
+    const { data: doc, error: docErr } = await supabase
+      .from("documents")
+      .select("user_id")
+      .eq("id", analysis.document_id)
       .single();
 
-    if (aErr || !analysis) throw new Error("Analysis not found");
-    if (analysis.user_id !== user.id) throw new Error("Forbidden");
+    if (docErr || !doc) throw new Error("Analysis not found");
+    if (doc.user_id !== user.id) throw new Error("Forbidden");
 
     const ef = (analysis.extracted_fields ?? {}) as Record<string, unknown>;
     const guide = LETTER_GUIDANCE[letterType];

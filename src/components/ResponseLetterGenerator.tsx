@@ -25,6 +25,8 @@ interface ResponseLetterGeneratorProps {
   /** Human label for the button/section. */
   label: string;
   onBack?: () => void;
+  /** Render inline inside GuidedActions (no nested card). */
+  embedded?: boolean;
 }
 
 interface LetterResult {
@@ -46,6 +48,7 @@ export function ResponseLetterGenerator({
   letterType,
   label,
   onBack,
+  embedded = false,
 }: ResponseLetterGeneratorProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<LetterResult | null>(null);
@@ -137,10 +140,42 @@ export function ResponseLetterGenerator({
     }
   };
 
+  const generateButton = (
+    <Button onClick={generate} size="lg" disabled={loading} className="w-full max-w-full whitespace-normal h-auto min-h-11 py-3 px-4">
+      {loading ? (
+        <>
+          <Loader2 className="h-4 w-4 mr-2 shrink-0 animate-spin" />
+          Writing your letter…
+        </>
+      ) : (
+        <>
+          <Sparkles className="h-4 w-4 mr-2 shrink-0" />
+          Generate my response letter
+        </>
+      )}
+    </Button>
+  );
+
   // ---- Initial / generating state ------------------------------------------
   if (!result) {
+    if (embedded) {
+      return (
+        <div className="space-y-4 min-w-0 border-t pt-6">
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold">Response letter</h4>
+            <p className="text-sm text-muted-foreground">
+              We'll draft a personalized letter using the details from your document.
+              You can edit it, then download or copy it.
+            </p>
+          </div>
+          {generateButton}
+          <LegalDisclaimer variant="general" compact />
+        </div>
+      );
+    }
+
     return (
-      <Card className="border-primary/30">
+      <Card className="border-primary/30 overflow-hidden">
         <CardHeader>
           {onBack && (
             <Button
@@ -159,20 +194,8 @@ export function ResponseLetterGenerator({
             You can edit it, then download or copy it.
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Button onClick={generate} size="lg" disabled={loading} className="w-full sm:w-auto">
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Writing your letter…
-              </>
-            ) : (
-              <>
-                <Sparkles className="h-4 w-4 mr-2" />
-                Generate my response letter
-              </>
-            )}
-          </Button>
+        <CardContent className="space-y-4 min-w-0">
+          {generateButton}
           <LegalDisclaimer variant="general" compact />
         </CardContent>
       </Card>
@@ -181,7 +204,7 @@ export function ResponseLetterGenerator({
 
   // ---- Result state ---------------------------------------------------------
   return (
-    <Card className="border-primary/30">
+    <Card className="border-primary/30 overflow-hidden">
       <CardHeader>
         {onBack && (
           <Button
@@ -205,7 +228,7 @@ export function ResponseLetterGenerator({
           <p className="text-sm text-muted-foreground">RE: {result.subject}</p>
         )}
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-5 min-w-0">
         <Textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}

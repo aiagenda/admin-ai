@@ -68,7 +68,7 @@ export function GuidedActions({ result, formsByKey, analysisId }: GuidedActionsP
           <CardTitle className="text-xl">{selected.label}</CardTitle>
           <p className="text-sm text-muted-foreground">{selected.description}</p>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 min-w-0 overflow-hidden">
           {/* Steps */}
           <div className="space-y-3">
             <h4 className="text-sm font-semibold">Your steps</h4>
@@ -126,9 +126,10 @@ export function GuidedActions({ result, formsByKey, analysisId }: GuidedActionsP
           {/* AI-drafted response letter for this option */}
           {selected.letterType && analysisId && (
             <ResponseLetterGenerator
+              embedded
               analysisId={analysisId}
               letterType={selected.letterType}
-              label={`Draft: ${selected.label}`}
+              label={selected.label}
             />
           )}
 
