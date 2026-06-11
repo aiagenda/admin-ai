@@ -446,14 +446,14 @@ function courtSummons(stateCode?: string | null): ActionPathsResult {
     question: "You've received a court summons. Acting before the deadline is critical.",
     paths: [
       {
-        key: "answer",
-        label: "File an Answer (respond to the case)",
-        description: "Prepare a written response so you don't lose by default. We'll draft a starting point.",
+        key: "respond",
+        label: "Respond to the case",
+        description: "We'll help you choose how to respond — settle, dispute, or challenge it — and draft the letter so you don't lose by default.",
         tone: "caution",
         recommended: true,
         steps: [
           "Note the response deadline on the summons (often 20–30 days) — missing it can mean an automatic loss.",
-          "Use the draft Answer below as a starting point.",
+          "Choose how you want to respond below; we'll draft it for you.",
           "File on your court's official Answer form and keep a stamped copy.",
         ],
         formKeys: [],
@@ -461,17 +461,6 @@ function courtSummons(stateCode?: string | null): ActionPathsResult {
         useStrategies: true,
         externalUrl: courtSelfHelpUrl(stateCode),
         externalLabel: "Official court self-help & forms",
-      },
-      {
-        key: "settle",
-        label: "Try to settle before the hearing",
-        description: "Contact the other party or their attorney to resolve the matter.",
-        steps: [
-          "Reach out in writing and keep records of all communication.",
-          "Get any agreement in writing before the hearing date.",
-        ],
-        formKeys: [],
-        letterType: "generic_response",
       },
       {
         key: "get_help",

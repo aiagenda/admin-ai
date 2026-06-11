@@ -199,6 +199,7 @@ Deno.serve(async (req) => {
         "Think like a paralegal explaining options to a worried layperson.",
         "For a court summons / debt, that usually includes: (a) accept/agree and arrange payment or a plan, (b) partially dispute, (c) fully dispute with a specific reason (wrong amount, never received goods/service, identity/mistaken party, debt too old / statute of limitations, already paid), (d) procedural issues (improper service, wrong court).",
         "Tailor the options to THIS document. Do not invent facts about the user. Each option must be something the user could honestly choose.",
+        "Each option must be a different WRITTEN RESPONSE the user can send. Do NOT include 'hire a lawyer', 'get legal help', 'consult an attorney', or 'do nothing' as options — those are handled separately elsewhere.",
         "Be neutral: do NOT tell them they owe the money or that they should admit anything. Present trade-offs.",
         "Return STRICT JSON only.",
         "",
