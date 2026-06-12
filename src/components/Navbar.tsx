@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { FileText, LogOut, User, HelpCircle, Menu, Moon, Sun, Receipt, Layers, ShieldCheck } from "lucide-react";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -271,8 +270,6 @@ export function Navbar() {
               </Button>
             )}
 
-            <LanguageSwitcher />
-
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -313,8 +310,6 @@ export function Navbar() {
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
             )}
-
-            <LanguageSwitcher />
 
             {!user && (
               <Button onClick={() => navigate("/auth")} size="sm" className="min-h-[44px] px-3 touch-manipulation text-xs sm:text-sm">
