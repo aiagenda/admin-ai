@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { X, Smartphone, Download } from "lucide-react";
+
+// Routes where a fixed bottom banner would cover conversion-critical actions
+// (the sign-in submit button, the checkout flow). The bottom nav is hidden on
+// these same prefixes, so the banner has nothing to sit above either.
+const HIDDEN_PREFIXES = ["/auth", "/admin", "/checkout"];
 
 const DISMISS_KEY = "pwa-install-dismissed";
 const DISMISS_DAYS = 7;
@@ -17,6 +23,7 @@ export function PWAInstallBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     const standalone =
@@ -75,6 +82,7 @@ export function PWAInstallBanner() {
   };
 
   if (!visible || isStandalone) return null;
+  if (HIDDEN_PREFIXES.some((p) => pathname.startsWith(p))) return null;
 
   return (
     <div className="fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-0 left-0 right-0 z-50 p-3 md:pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
