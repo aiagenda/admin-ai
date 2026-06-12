@@ -131,6 +131,7 @@ export function GuidedActions({ result, formsByKey, analysisId }: GuidedActionsP
               letterType={selected.letterType}
               label={selected.label}
               useStrategies={selected.useStrategies}
+              presetStrategy={selected.strategyPreset}
             />
           )}
 

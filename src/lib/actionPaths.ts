@@ -41,6 +41,9 @@ export interface ActionPath {
   externalLabel?: string;
   /** When set, offers an AI-drafted response letter of this type. */
   letterType?: LetterType;
+  /** A pre-chosen strategy: the option card IS the strategy, so the letter is
+   *  drafted directly for it (no AI strategy step). Used by dispute flows. */
+  strategyPreset?: { title: string; detail: string };
   /**
    * When true, the letter step first asks the AI for tailored response
    * strategies (accept / dispute / procedural ...) and lets the user pick one.
@@ -443,28 +446,85 @@ function ssaGeneric(): ActionPathsResult {
 
 function courtSummons(stateCode?: string | null): ActionPathsResult {
   return {
-    question: "You've received a court summons. Acting before the deadline is critical.",
+    question: "You've received a court summons. How do you want to respond? (Don't ignore it — missing the deadline can mean an automatic loss.)",
     paths: [
       {
-        key: "respond",
-        label: "Respond to the case",
-        description: "We'll help you choose how to respond — settle, dispute, or challenge it — and draft the letter so you don't lose by default.",
-        tone: "caution",
-        recommended: true,
+        key: "accept_pay",
+        label: "Accept and arrange payment",
+        description: "Agree to the claim and arrange to pay — in full or through a payment plan.",
         steps: [
-          "Note the response deadline on the summons (often 20–30 days) — missing it can mean an automatic loss.",
-          "Choose how you want to respond below; we'll draft it for you.",
-          "File on your court's official Answer form and keep a stamped copy.",
+          "Make sure you can pay or can negotiate workable terms.",
+          "We'll draft an Answer that admits the claim and proposes payment.",
+          "File on your court's official Answer form by the deadline and keep a stamped copy.",
         ],
         formKeys: [],
         letterType: "court_answer",
-        useStrategies: true,
+        strategyPreset: {
+          title: "Accept and arrange payment",
+          detail: "The writer agrees to the claim and proposes to pay the amount owed in full or through a reasonable payment plan, and asks that any agreement be put in writing.",
+        },
+        externalUrl: courtSelfHelpUrl(stateCode),
+        externalLabel: "Official court self-help & forms",
+      },
+      {
+        key: "partial_dispute",
+        label: "Partially dispute",
+        description: "Agree to part of the claim but dispute the rest, such as the amount or specific damages.",
+        steps: [
+          "Be clear about exactly what you agree with and what you dispute.",
+          "Gather evidence that supports your position.",
+          "We'll draft an Answer that admits part and disputes the rest; file it by the deadline.",
+        ],
+        formKeys: [],
+        letterType: "court_answer",
+        strategyPreset: {
+          title: "Partially dispute",
+          detail: "The writer agrees to part of the claim but disputes specific amounts or damages, references supporting evidence, and does not admit the disputed portion.",
+        },
+        externalUrl: courtSelfHelpUrl(stateCode),
+        externalLabel: "Official court self-help & forms",
+      },
+      {
+        key: "full_dispute",
+        label: "Fully dispute",
+        description: "Dispute the entire claim if you believe it's wrong — wrong amount, mistaken identity, or statute of limitations.",
+        tone: "caution",
+        steps: [
+          "Gather strong evidence to support your position.",
+          "We'll draft an Answer that denies the claim and raises your general defenses.",
+          "File on the official Answer form by the deadline and be prepared for a hearing.",
+        ],
+        formKeys: [],
+        letterType: "court_answer",
+        strategyPreset: {
+          title: "Fully dispute",
+          detail: "The writer denies the entire claim (for example wrong amount, mistaken identity, or that the statute of limitations has expired), asks that it be decided on the merits, and does not admit any liability.",
+        },
+        externalUrl: courtSelfHelpUrl(stateCode),
+        externalLabel: "Official court self-help & forms",
+      },
+      {
+        key: "procedural",
+        label: "Raise procedural issues",
+        description: "Challenge the summons on procedural grounds, such as improper service or wrong jurisdiction.",
+        tone: "caution",
+        steps: [
+          "Note any errors in how the summons was served or filed.",
+          "We'll draft a response that raises the procedural objection.",
+          "Procedural defenses can be complex — consider the court self-help center or an attorney.",
+        ],
+        formKeys: [],
+        letterType: "court_answer",
+        strategyPreset: {
+          title: "Raise procedural issues",
+          detail: "The writer challenges the summons on procedural grounds such as improper service or lack of jurisdiction, while preserving (not waiving) defenses and without admitting the underlying claim.",
+        },
         externalUrl: courtSelfHelpUrl(stateCode),
         externalLabel: "Official court self-help & forms",
       },
       {
         key: "get_help",
-        label: "Get legal help",
+        label: "Not sure? Get legal help",
         description: "A lawyer or legal aid can guide you — many offer free help for those who qualify.",
         steps: [
           "Contact your local legal aid or the court self-help center.",
@@ -518,19 +578,55 @@ function evictionNotice(stateCode?: string | null): ActionPathsResult {
     question: "You've received an eviction or pay-or-quit notice. Time matters.",
     paths: [
       {
-        key: "respond",
-        label: "Respond to your landlord",
-        description: "Propose a payment plan, raise repair/habitability issues, or state your position in writing.",
+        key: "payment_plan",
+        label: "Offer to pay / propose a plan",
+        description: "If this is a pay-or-quit notice and you can catch up, offer to pay or propose a payment plan.",
         tone: "positive",
-        recommended: true,
         steps: [
-          "Read the notice for the deadline and exactly what is demanded.",
-          "Use the draft response letter below as a starting point.",
+          "Check the deadline and the exact amount demanded.",
+          "We'll draft a letter offering payment or a realistic plan.",
+          "Send it in a trackable way (keep proof) before the deadline.",
+        ],
+        formKeys: [],
+        letterType: "eviction_response",
+        strategyPreset: {
+          title: "Offer to pay or propose a payment plan",
+          detail: "The writer offers to pay the amount owed or proposes a specific, realistic payment plan to cure the default and stay in the home, and asks for written confirmation.",
+        },
+      },
+      {
+        key: "habitability",
+        label: "Raise repairs / habitability",
+        description: "If the unit has serious problems the landlord won't fix, that may be a defense.",
+        tone: "caution",
+        steps: [
+          "List the conditions and any repair requests you've made (with dates).",
+          "We'll draft a letter raising the habitability/repair issues.",
+          "Keep copies and photos as evidence.",
+        ],
+        formKeys: [],
+        letterType: "eviction_response",
+        strategyPreset: {
+          title: "Raise repairs and habitability",
+          detail: "The writer responds to the notice by documenting serious repair/habitability problems and prior repair requests, asserting these as a defense, without admitting the landlord's claim.",
+        },
+      },
+      {
+        key: "dispute",
+        label: "Dispute the notice",
+        description: "If the notice is wrong (already paid, improper notice, retaliation), state your position.",
+        tone: "caution",
+        steps: [
+          "Note exactly what is incorrect about the notice.",
+          "We'll draft a letter stating your position with any evidence.",
           "Send it in a trackable way and keep a copy.",
         ],
         formKeys: [],
         letterType: "eviction_response",
-        useStrategies: true,
+        strategyPreset: {
+          title: "Dispute the notice",
+          detail: "The writer disputes the notice (for example the rent was already paid, the notice was improper or defective, or it is retaliatory), states the facts, and does not admit the claim.",
+        },
       },
       {
         key: "court_answer",

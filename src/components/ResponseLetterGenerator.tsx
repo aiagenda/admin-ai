@@ -30,6 +30,8 @@ interface ResponseLetterGeneratorProps {
   embedded?: boolean;
   /** When true, offer AI response strategies before drafting; else draft directly. */
   useStrategies?: boolean;
+  /** A strategy already chosen by the option card — draft the letter for it directly. */
+  presetStrategy?: { title: string; detail: string };
 }
 
 interface Strategy {
@@ -64,6 +66,7 @@ export function ResponseLetterGenerator({
   onBack,
   embedded = false,
   useStrategies = false,
+  presetStrategy,
 }: ResponseLetterGeneratorProps) {
   const [step, setStep] = useState<Step>("intro");
   const [loading, setLoading] = useState(false);
@@ -112,12 +115,16 @@ export function ResponseLetterGenerator({
 
   const generateLetter = async () => {
     const chosen = strategies.find((s) => s.id === selectedId) || null;
+    const stratTitle = chosen?.title ?? presetStrategy?.title;
+    const stratDetail = [chosen?.summary ?? presetStrategy?.detail, notes.trim()]
+      .filter(Boolean)
+      .join(" — ");
     setLoading(true);
     try {
       const json = await callFn({
         mode: "letter",
-        strategyTitle: chosen?.title,
-        strategyDetail: [chosen?.summary, notes.trim()].filter(Boolean).join(" — "),
+        strategyTitle: stratTitle,
+        strategyDetail: stratDetail,
         userNotes: notes.trim() || undefined,
       });
       const r: LetterResult = {
@@ -125,7 +132,7 @@ export function ResponseLetterGenerator({
         subject: json.subject,
         body: json.body,
         checklist: json.checklist || [],
-        strategyTitle: json.strategyTitle ?? chosen?.title ?? null,
+        strategyTitle: json.strategyTitle ?? stratTitle ?? null,
       };
       setResult(r);
       setBody(r.body);
@@ -191,13 +198,28 @@ export function ResponseLetterGenerator({
       <div className="space-y-1">
         <h4 className="text-sm font-semibold">Response letter</h4>
         <p className="text-sm text-muted-foreground">
-          {useStrategies
+          {presetStrategy
+            ? `We'll draft a "${presetStrategy.title}" letter using the details from your document. Add anything specific below (optional), then we'll write it.`
+            : useStrategies
             ? "First, we'll look at your document and show you the realistic ways to respond. You pick the one that fits — then we draft that letter for you."
             : "We'll draft a personalized letter using the details from your document. You can edit it, then download or copy it."}
         </p>
       </div>
+      {presetStrategy && (
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">
+            Anything we should know? <span className="font-normal text-muted-foreground">(optional)</span>
+          </label>
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="e.g. I never received the equipment they're billing me for; I already paid $500 in January."
+            rows={3}
+          />
+        </div>
+      )}
       <Button
-        onClick={useStrategies ? loadStrategies : generateLetter}
+        onClick={presetStrategy ? generateLetter : useStrategies ? loadStrategies : generateLetter}
         size="lg"
         disabled={loading}
         className="w-full max-w-full whitespace-normal h-auto min-h-11 py-3 px-4"
@@ -205,7 +227,12 @@ export function ResponseLetterGenerator({
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 mr-2 shrink-0 animate-spin" />
-            {useStrategies ? "Looking at your options…" : "Writing your letter…"}
+            {useStrategies && !presetStrategy ? "Looking at your options…" : "Writing your letter…"}
+          </>
+        ) : presetStrategy ? (
+          <>
+            <Sparkles className="h-4 w-4 mr-2 shrink-0" />
+            Write this response
           </>
         ) : useStrategies ? (
           <>
